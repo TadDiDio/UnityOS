@@ -3,12 +3,12 @@ using System.Collections.Generic;
 
 namespace DeveloperConsole
 {
-    public class DefaultTerminalOutput : ITerminalApplication
+    public class TerminalOutput : ITerminalApplication
     {
         private List<string> _outputBuffer; 
         private static Vector2 _scrollPosition = Vector2.zero;
 
-        public DefaultTerminalOutput(List<string> outputBuffer)
+        public TerminalOutput(List<string> outputBuffer)
         {
             _outputBuffer = outputBuffer;
         }

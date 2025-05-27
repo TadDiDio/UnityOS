@@ -104,12 +104,12 @@ namespace DeveloperConsole
     {
         protected WindowedCommand()
         {
-            ConsoleKernel.Register(this);
+            GraphicsManager.Register(this);
         }
 
         ~WindowedCommand()
         {
-            ConsoleKernel.Unregister(this);
+            GraphicsManager.Unregister(this);
         }
         
         public abstract void OnGUI(GUIContext context);

@@ -5,39 +5,22 @@ namespace DeveloperConsole
 {
     public static class TypeParserRegistry
     {
-        static TypeParserRegistry()
+        private static Dictionary<Type, ITypeParser> _typeParsers = new();
+        public static void RegisterTypeParser<T>(BaseTypeParser<T> parser)
         {
-            // TODO: Expose something here to allow users to inject their own
-            IntParser intParser = new();
-            FloatParser floatParser = new();
-            StringParser stringParser = new();
-            BoolParser boolParser = new();
-            Vector2Parser vector2Parser = new();
-            Vector3Parser vector3Parser = new();
-            ColorParser colorParser = new();
-            AlphaColorParser alphaColorParser = new();
-            
-            RegisterTypeParser(intParser);
-            RegisterTypeParser(floatParser);
-            RegisterTypeParser(stringParser);
-            RegisterTypeParser(boolParser);
-            RegisterTypeParser(vector2Parser);
-            RegisterTypeParser(vector3Parser);
-            RegisterTypeParser(colorParser);
-            RegisterTypeParser(alphaColorParser);
+            _typeParsers.TryAdd(typeof(T), parser);
         }
         
-        private static Dictionary<Type, ITypeParser> _typeParsers = new();
-        public static void RegisterTypeParser<T>(ITypeParser<T> parser) => _typeParsers.Add(typeof(T), parser);
-        public static bool TryGetTypeParser<T>(out ITypeParser<T> parser)
+        public static bool TryParse<T>(TokenStream stream, out T obj)
         {
-            parser = null;
+            obj = default;
+            if (!_typeParsers.TryGetValue(typeof(T), out var raw))
+            {
+                // TODO: Error, no parser registered for T
+                return false;
+            }
             
-            if (!_typeParsers.TryGetValue(typeof(T), out var raw)) return false;
-            if (raw is not BaseTypeParser<T> casted) return false;
-            
-            parser = casted;
-            return true;
+            return raw is BaseTypeParser<T> parser && parser.TryParse(stream, out obj);
         }
     }
 }

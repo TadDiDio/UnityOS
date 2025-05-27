@@ -1,4 +1,4 @@
-namespace DeveloperConsole.BuiltIn.Commands
+namespace DeveloperConsole
 {
     public class MathCommand : Command
     {

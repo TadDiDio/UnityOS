@@ -8,7 +8,8 @@ namespace DeveloperConsole
 
         protected override bool TryParseType(TokenStream tokenSubSteam, out TEnum obj)
         {
-            return Enum.TryParse(tokenSubSteam.Next(), true, out obj);
+            return Enum.TryParse(tokenSubSteam.Next(), true, out obj) &&
+                   Enum.IsDefined(typeof(TEnum), obj);
         }
     }
 }

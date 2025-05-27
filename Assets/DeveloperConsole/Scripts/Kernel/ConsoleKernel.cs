@@ -13,31 +13,25 @@ namespace DeveloperConsole
         public static event Action<Event> OnEvent;
 
         private static List<ITickable> _tickableComponents = new();
-        private static List<IGraphical> _graphicalComponents = new();
 
-        private static KernelGUI _kernelGUI = new();
+        private static TerminalGUI _terminalGUI;
         private static ConsoleState _consoleState;
 
-        private static DefaultTerminalOutput _defaultTerminalOutput; 
+        private static TerminalOutput _terminalOutput; 
         private static Stack<ITerminalApplication> _terminalApplications = new();
 
-        private static ITokenizer _tokenizer = new DefaultTokenizer();
-        
         #region SETUP
-        static ConsoleKernel()
+        public static void Initialize(ConsoleState consoleState, TerminalGUI terminalGUI, TerminalOutput terminalOutput)
         {
-            ConsoleInputManager.InputSubmitted += OnInput;
-            
 #if UNITY_EDITOR
             AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
 #endif
+
+            _terminalGUI = terminalGUI;
+            _consoleState = consoleState;
+            _terminalOutput = terminalOutput;
             
-            _consoleState = JsonFileManager.Load();
-            _defaultTerminalOutput = new DefaultTerminalOutput(_consoleState.OutputBuffer);
-            
-            // TODO: Setup default pipeline here, prob move this to proper initialization later
-            ConsoleInputManager.RegisterInputMethod(_kernelGUI);
-            ConsoleOutputManager.RegisterOutputSink(new DefaultTerminalOutput(_consoleState.OutputBuffer));
+            ConsoleInputManager.InputSubmitted += OnInput;
         }
         
 #if UNITY_EDITOR
@@ -49,45 +43,23 @@ namespace DeveloperConsole
         }
 #endif
         
-        public static void Register(object component)
+        public static void RegisterTickable(ITickable tickable)
         {
-            if (component is ITickable tickable)
+            if (_tickableComponents.Contains(tickable))
             {
-                if (_tickableComponents.Contains(tickable))
-                {
-                    // TODO: Console error
-                }
-                else _tickableComponents.Add(tickable);
+                // TODO: Console error
+                return; 
             }
-            
-            if (component is IGraphical graphical)
-            {
-                if (_graphicalComponents.Contains(graphical))
-                {
-                    // TODO: Console error
-                }
-                else _graphicalComponents.Add(graphical);
-            }
+            _tickableComponents.Add(tickable);
         }
-        public static void Unregister(object component)
+        public static void UnregisterTickable(ITickable tickable)
         {
-            if (component is ITickable tickable)
+            if (!_tickableComponents.Contains(tickable))
             {
-                if (!_tickableComponents.Contains(tickable))
-                {
-                    // TODO: Console error
-                }
-                else _tickableComponents.Remove(tickable);
+                // TODO: Console error
+                return; 
             }
-            
-            if (component is IGraphical graphical)
-            {
-                if (!_graphicalComponents.Contains(graphical))
-                {
-                    // TODO: Console error
-                }
-                else _graphicalComponents.Remove(graphical);
-            }
+            _tickableComponents.Remove(tickable);
         }
         
         #endregion
@@ -99,6 +71,8 @@ namespace DeveloperConsole
 
         public static void OnGUI(int screenWidth, int screenHeight)
         {
+            OnEvent?.Invoke(Event.current);
+            
             // TODO: Move this padding to config
             int padding = 10;
             Rect screenRect = new(padding, padding, screenWidth - 2 * padding, screenHeight - 2 * padding);
@@ -108,10 +82,8 @@ namespace DeveloperConsole
                 Style = _consoleState.ConsoleStyle
             };
             
-            _kernelGUI.Draw(context, ActiveTerminalApplication());
-            
-            foreach (var graphical in _graphicalComponents) graphical.OnGUI(context);
-            OnEvent?.Invoke(Event.current);
+            _terminalGUI.Draw(context, ActiveTerminalApplication());
+            GraphicsManager.OnGUI(context);
         }
         
         private static void OnInput(string rawInput)
@@ -123,7 +95,7 @@ namespace DeveloperConsole
 
         private static ITerminalApplication ActiveTerminalApplication()
         {
-            return _terminalApplications.Count > 0 ? _terminalApplications.Peek() : _defaultTerminalOutput;
+            return _terminalApplications.Count > 0 ? _terminalApplications.Peek() : _terminalOutput;
         }
 
         public static async void RunInput(string rawInput)
@@ -132,7 +104,7 @@ namespace DeveloperConsole
             {
                 if (!TokenizeAndValidate(rawInput, out var tokenizationResult)) return;
 
-                var parseResult = Parser.Parse(tokenizationResult.Tokens);
+                var parseResult = ConsoleParser.Parse(tokenizationResult.Tokens);
                 if (parseResult.Error is not ParseError.None)
                 {
                     // TODO: Output error
@@ -164,14 +136,10 @@ namespace DeveloperConsole
 
         private static bool TokenizeAndValidate(string rawInput, out TokenizationResult result)
         {
-            result = _tokenizer.Tokenize(rawInput);
+            // TODO Move this all to manager
+            result = TokenizationManager.Tokenizer.Tokenize(rawInput);
             if (!result.Success) return false;
             return result.Tokens.Count >= 1;
-        }
-        
-        private static void Print(object obj)
-        {
-            Debug.Log(obj.ToString());
         }
     }
 }

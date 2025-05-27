@@ -1,0 +1,8 @@
+namespace DeveloperConsole
+{
+    public static class TokenizationManager
+    {
+        public static ITokenizer Tokenizer { get; private set; } = new DefaultTokenizer();
+        public static void SetTokenizer(ITokenizer tokenizer) => Tokenizer = tokenizer;
+    }
+}

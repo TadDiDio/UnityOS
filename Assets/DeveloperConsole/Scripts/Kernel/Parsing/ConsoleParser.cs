@@ -4,8 +4,12 @@ using System.Collections.Generic;
 
 namespace DeveloperConsole
 {
-    public static class Parser
+    public static class ConsoleParser
     {
+        public static bool TryParse<T>(TokenStream stream, out T obj)
+        {
+            return TypeParserRegistry.TryParse(stream, out obj);
+        }
         public static ParseResult Parse(List<string> tokens)
         {
             ParseResult result = new();
