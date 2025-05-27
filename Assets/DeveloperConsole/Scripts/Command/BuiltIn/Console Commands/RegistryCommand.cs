@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 
-namespace DeveloperConsole.BuiltIn
+namespace DeveloperConsole
 {
-    public class RegistryCommand : BuiltInCommand
+    public class RegistryCommand : ConsoleCommand
     {
         protected override string Name() => "reg";
         protected override string Description() => "Shows a registry of all commands.";
 
-        protected override CommandResult Execute(BuiltInCommandArgs args)
+        protected override CommandResult Execute(ConsoleCommandArgs args)
         {
             List<string> lines = new();
 

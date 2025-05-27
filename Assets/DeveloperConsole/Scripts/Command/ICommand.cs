@@ -14,7 +14,6 @@ namespace DeveloperConsole
     }
 
     #region COMMAND BASES
-
     public abstract class CommandBase : ICommand
     {
         protected abstract string Name();
@@ -56,20 +55,19 @@ namespace DeveloperConsole
 
         public abstract Task<CommandResult> ExecuteAsync(CommandArgsBase args);
     }
-    public abstract class BuiltInCommand : CommandBase
+    public abstract class ConsoleCommand : CommandBase
     {
         public override async Task<CommandResult> ExecuteAsync(CommandArgsBase args)
         {
-            if (args is BuiltInCommandArgs commandArgs) return await Task.FromResult(Execute(commandArgs));
+            if (args is ConsoleCommandArgs commandArgs) return await Task.FromResult(Execute(commandArgs));
             
             Debug.LogError($"Invalid casting from type {args.GetType()} to BuiltInCommandArgs. Ensure " +
-                           $"that this command inherits from {typeof(BuiltInCommand)} or use " +
+                           $"that this command inherits from {typeof(ConsoleCommand)} or use " +
                            $"{typeof(Command)} if you don't need to modify console state."); 
             return null;
         }
-        protected abstract CommandResult Execute(BuiltInCommandArgs args);
+        protected abstract CommandResult Execute(ConsoleCommandArgs args);
     }
-    
     public abstract class Command : CommandBase
     {
         public override async Task<CommandResult> ExecuteAsync(CommandArgsBase args)
@@ -78,12 +76,11 @@ namespace DeveloperConsole
             
             Debug.LogError($"Invalid casting from type {args.GetType()} to CommandArgs. Ensure " +
                            $"that this command inherits from {typeof(Command)} or use " +
-                           $"{typeof(BuiltInCommand)} if you wish to modify console state."); 
+                           $"{typeof(ConsoleCommand)} if you wish to modify console state."); 
             return null;
         }
         protected abstract CommandResult Execute(CommandArgs args);
     }
-    
     public abstract class AsyncCommand : CommandBase
     {
         public override async Task<CommandResult> ExecuteAsync(CommandArgsBase args)
@@ -92,19 +89,17 @@ namespace DeveloperConsole
             
             Debug.LogError($"Invalid casting from type {args.GetType()} to CommandArgs. Ensure " +
                            $"that this command inherits from {typeof(Command)} or use " +
-                           $"{typeof(BuiltInCommand)} if you wish to modify console state."); 
+                           $"{typeof(ConsoleCommand)} if you wish to modify console state."); 
             return null;
         }
         public abstract Task<CommandResult> ExecuteAsync(CommandArgs args);
     }
-    
     public abstract class TerminalCommand : Command, ITerminalApplication
     {
         public abstract void OnInput(string input);
         public abstract void ReceiveOutput(string message);
         public abstract void OnGUI(GUIContext context);
     }
-    
     public abstract class WindowedCommand : Command, IGraphical
     {
         protected WindowedCommand()
@@ -125,7 +120,7 @@ namespace DeveloperConsole
     {
         public List<string> Tokens;
     }
-    public class BuiltInCommandArgs : CommandArgsBase
+    public class ConsoleCommandArgs : CommandArgsBase
     {
         public List<string> Tokens;
         public ConsoleState ConsoleState;

@@ -1,14 +1,10 @@
-using UnityEngine;
-
 namespace DeveloperConsole
 {
     public static class ErrorLogging
     {
         public static string ParserError(ParseResult result)
         {
-            string message;
-
-            message = result.Error switch
+            var message = result.Error switch
             {
                 ParseError.InvalidCommandName => $"There is not command called {result.CommandName}.",
                 _ => "",

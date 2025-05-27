@@ -16,7 +16,6 @@ namespace DeveloperConsole
         private static List<IGraphical> _graphicalComponents = new();
 
         private static KernelGUI _kernelGUI = new();
-        
         private static ConsoleState _consoleState;
 
         private static DefaultTerminalOutput _defaultTerminalOutput; 
@@ -143,7 +142,7 @@ namespace DeveloperConsole
                 
                 
                 // Run
-                BuiltInCommandArgs args = new()
+                ConsoleCommandArgs args = new()
                 {
                     Tokens = tokenizationResult.Tokens,
                     ConsoleState = _consoleState
