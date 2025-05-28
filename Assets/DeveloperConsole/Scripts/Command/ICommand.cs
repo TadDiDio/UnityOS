@@ -104,7 +104,7 @@ namespace DeveloperConsole
     }
     public abstract class TerminalCommand : SimpleCommand, ITerminalApplication
     {
-        public abstract void OnInput(string input);
+        public abstract void OnInputRecieved(string input);
         public abstract void ReceiveOutput(string message);
         public abstract void OnGUI(GUIContext context);
     }

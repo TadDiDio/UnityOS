@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace DeveloperConsole
 {
@@ -17,17 +16,12 @@ namespace DeveloperConsole
             // TODO: Must be able to validate subcommand names here too. maybe flag included as arg in Parse() if is sub
             if (!ValidateCommandName(tokens[0], out var result, out ICommand command)) return result;
             
-            // EARLY SUCCESS: Single command word with no args can be executed
-            if (tokens.Count == 1)
-            {
-                result.Error = ParseError.None;
-                result.Command = command;
-                return result;
-            }
-            
             // Recursive subcommand analysis
             // TODO: Untested
-            if (IsSubcommand(tokens[1], command.GetType())) return Parse(tokens.Skip(1).ToList());
+            if (tokens.Count > 1 && IsSubcommand(tokens[1], command.GetType()))
+            {
+                return Parse(tokens.Skip(1).ToList());
+            }
             
             // Parse args
             ArgumentParser argParser = new(command, tokens);

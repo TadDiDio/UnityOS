@@ -9,8 +9,15 @@ namespace DeveloperConsole
     {
         private static readonly Dictionary<string, ICommand> _commandPrefabs = new();
 
-        public static void SetCommands(List<Type> commandTypes)
+        private static void ClearAllCommands()
         {
+            _commandPrefabs.Clear();
+        }
+        
+        public static void Initialize(List<Type> commandTypes)
+        {
+            StaticResetRegistry.Register(ClearAllCommands);
+
             foreach (var type in commandTypes) 
             {
                 ICommand instance = (ICommand)Activator.CreateInstance(type);

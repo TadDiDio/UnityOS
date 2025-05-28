@@ -17,29 +17,31 @@ namespace DeveloperConsole
         private static List<ITickable> _tickableComponents = new();
 
         private static TerminalGUI _terminalGUI;
-        private static TerminalOutput _terminalOutput; 
+        private static KernelApplication _kernelApplication; 
         private static Stack<ITerminalApplication> _terminalApplications = new();
 
         #region SETUP
-        public static void Initialize(ConsoleState consoleState, TerminalGUI terminalGUI, TerminalOutput terminalOutput)
+        public static void Initialize(ConsoleState consoleState, TerminalGUI terminalGUI, KernelApplication kernelApplication)
         {
+            StaticResetRegistry.Register(Reset);
+            
 #if UNITY_EDITOR
             AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
 #endif
 
             _terminalGUI = terminalGUI;
             _consoleState = consoleState;
-            _terminalOutput = terminalOutput;
+            _kernelApplication = kernelApplication;
             
-            ConsoleInputManager.InputSubmitted += OnInput;
+            InputManager.InputSubmitted += OnInput;
         }
         
 #if UNITY_EDITOR
         private static void OnBeforeAssemblyReload()
         {
-            ConsoleInputManager.InputSubmitted -= OnInput;
-            ConsoleInputManager.UnregisterAllInputMethods();
-            ConsoleOutputManager.UnregisterAllOutputSinks();
+            InputManager.InputSubmitted -= OnInput;
+            InputManager.UnregisterAllInputMethods();
+            OutputManager.UnregisterAllOutputSinks();
         }
 #endif
         
@@ -60,6 +62,16 @@ namespace DeveloperConsole
                 return; 
             }
             _tickableComponents.Remove(tickable);
+        }
+
+        private static void Reset()
+        {
+            _consoleState = null;
+            _terminalGUI = null;
+            _kernelApplication = null;
+            OnEventOccured = null;
+            _tickableComponents.Clear();
+            _terminalApplications.Clear();
         }
         
         #endregion
@@ -90,12 +102,12 @@ namespace DeveloperConsole
         {
             _consoleState.AddHistory(rawInput);
             
-            ActiveTerminalApplication().OnInput(rawInput);
+            ActiveTerminalApplication().OnInputRecieved(rawInput);
         }
 
         private static ITerminalApplication ActiveTerminalApplication()
         {
-            return _terminalApplications.Count > 0 ? _terminalApplications.Peek() : _terminalOutput;
+            return _terminalApplications.Count > 0 ? _terminalApplications.Peek() : _kernelApplication;
         }
 
         public static async void RunInput(string rawInput)
@@ -110,9 +122,12 @@ namespace DeveloperConsole
                 var parseResult = ConsoleParser.Parse(tokenizationResult.Tokens);
                 if (parseResult.Error is not ParseError.None)
                 {
-                    ConsoleOutputManager.SendOutput(ErrorLogging.ParserError(parseResult)); 
+                    OutputManager.SendOutput(ErrorLogging.ParserError(parseResult)); 
                     return;
                 }
+                
+                // TODO: PreCommandAttribute 
+                
                 
                 // Run
                 CommandArgsBase args = GetCommandArgs(parseResult.Command is ConsoleCommand, tokenizationResult.Tokens);
@@ -129,7 +144,7 @@ namespace DeveloperConsole
             {
                 string message = $"The console had an unexpected error, most likely while running a command:" +
                                  $" {e.Message}{Environment.NewLine}{e.StackTrace}";
-                ConsoleOutputManager.SendOutput(MessageFormatter.Error(message));
+                OutputManager.SendOutput(MessageFormatter.Error(message));
                 Debug.LogError(message);
             }
         }

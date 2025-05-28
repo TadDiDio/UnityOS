@@ -4,13 +4,13 @@ namespace DeveloperConsole
 {
     public static class ConsoleAPI
     {
-        public static KernelWrapper Kernel = new();
-        public static ParserWrapper Parser = new();
+        public static readonly KernelWrapper Kernel = new();
+        public static readonly ParserWrapper Parser = new();
         
-        public static InputWrapper Input = new();
-        public static OutputWrapper Output = new();
+        public static readonly InputWrapper Input = new();
+        public static readonly OutputWrapper Output = new();
         
-        public static GraphicsWrapper Graphics = new();
+        public static readonly GraphicsWrapper Graphics = new();
         
         public class KernelWrapper
         {
@@ -26,14 +26,14 @@ namespace DeveloperConsole
 
         public class InputWrapper
         {
-            public void RegisterSource(IConsoleInputSource source) => ConsoleInputManager.RegisterInputMethod(source);
-            public void UnregisterSource(IConsoleInputSource source) => ConsoleInputManager.UnregisterInputMethod(source);
+            public void RegisterSource(IConsoleInputSource source) => InputManager.RegisterInputMethod(source);
+            public void UnregisterSource(IConsoleInputSource source) => InputManager.UnregisterInputMethod(source);
         }
         
         public class OutputWrapper
         {
-            public void RegisterSink(IConsoleOutputSink sink) => ConsoleOutputManager.RegisterOutputSink(sink);
-            public void UnregisterSink(IConsoleOutputSink sink) => ConsoleOutputManager.UnregisterOutputSink(sink);
+            public void RegisterSink(IConsoleOutputSink sink) => OutputManager.RegisterOutputSink(sink);
+            public void UnregisterSink(IConsoleOutputSink sink) => OutputManager.UnregisterOutputSink(sink);
         }
         
         public class GraphicsWrapper

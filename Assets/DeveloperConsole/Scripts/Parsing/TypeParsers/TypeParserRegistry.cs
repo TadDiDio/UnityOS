@@ -6,6 +6,17 @@ namespace DeveloperConsole
     public static class TypeParserRegistry
     {
         private static Dictionary<Type, BaseTypeParser> _typeParsers = new();
+
+        public static void Initialize()
+        {
+            StaticResetRegistry.Register(Clear);
+        }
+
+        private static void Clear()
+        {
+            _typeParsers.Clear();
+        }
+        
         public static void RegisterTypeParser<T>(BaseTypeParser parser)
         {
             _typeParsers.TryAdd(typeof(T), parser);
@@ -16,7 +27,7 @@ namespace DeveloperConsole
             obj = null;
             if (!_typeParsers.TryGetValue(type, out var parser))
             {
-                ConsoleOutputManager.SendOutput(MessageFormatter.Error($"There is no parser registered for type {type}."));
+                OutputManager.SendOutput(MessageFormatter.Error($"There is no parser registered for type {type}."));
                 return false;
             }
 

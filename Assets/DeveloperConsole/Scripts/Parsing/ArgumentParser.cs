@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
 using Codice.CM.Common.Serialization;
+using UnityEngine;
 
 namespace DeveloperConsole
 {
@@ -25,9 +26,7 @@ namespace DeveloperConsole
 
         public ArgumentParseResult Parse()
         {
-            ArgumentParseResult errorResult = new();
-            
-            errorResult = ParsePositionals();
+            var errorResult = ParsePositionals();
             if (!errorResult.Success) return errorResult;
             
             errorResult = ParseRemaining();
@@ -40,6 +39,14 @@ namespace DeveloperConsole
         {
             foreach (var field in ReflectionParsing.GetPositionalArgFieldsInOrder(_commandType))
             {
+                if (!_tokenStream.HasMore())
+                {
+                    return new ArgumentParseResult
+                    {
+                        Error = ArgumentParseError.MissingPositionalArg,
+                        ErroneousField = field
+                    };
+                }
                 if (!TypeParserRegistry.TryParse(field.FieldType, _tokenStream, out var obj))
                 {
                     return new ArgumentParseResult
@@ -233,11 +240,11 @@ namespace DeveloperConsole
     public enum ArgumentParseError
     {
         TypeParseFailed,
+        MissingPositionalArg,
         AttributeValidationError,
         UnrecognizedSwitch,
         MalformedSwitchName,
         DuplicateSwitch,
-        TooManyPositionalArgs,
         UnexpectedToken,
         BadVariadicContainer
     }

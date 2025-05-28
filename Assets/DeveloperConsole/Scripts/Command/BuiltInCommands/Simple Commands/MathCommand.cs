@@ -25,7 +25,7 @@ namespace DeveloperConsole
         [SwitchArg("message", 'm')] 
         private string Message;
 
-        [VariadicArgs] 
+        [VariadicArgs]
         private List<string> variadicArgs;
         
         protected override string Name() => "math";

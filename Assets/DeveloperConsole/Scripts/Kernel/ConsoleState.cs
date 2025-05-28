@@ -11,7 +11,7 @@ namespace DeveloperConsole
         public List<string> CommandHistory = new();
         
         // TODO: split into fields to avoid GUI calls
-        public GUIStyle ConsoleStyle = new(GUI.skin.label)
+        public GUIStyle ConsoleStyle = new()
         {
             fontSize = 12,
             richText = true,

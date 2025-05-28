@@ -12,12 +12,14 @@ namespace DeveloperConsole
         
         public static void Initialize()
         {
+            StaticResetRegistry.Register(Reset);
             EditorApplication.update += OnTick;
             SceneView.duringSceneGui += OnGUI;
-            AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
+            AssemblyReloadEvents.beforeAssemblyReload += Reset;
         }
 
-        private static void OnBeforeAssemblyReload()
+
+        private static void Reset()
         {
             EditorApplication.update -= OnTick;
             SceneView.duringSceneGui -= OnGUI;

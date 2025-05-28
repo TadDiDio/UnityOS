@@ -12,12 +12,36 @@ namespace DeveloperConsole
     #if UNITY_EDITOR
     [InitializeOnLoad]
     #endif
-    public abstract class ConsoleBootstrapper
+    public static class ConsoleBootstrapper
     {
         private static bool _commonElementsInitialized;
+
+        public static void Bootstrap()
+        {
+            if (Application.isPlaying)
+            {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+                RuntimeBootstrap();
+#endif
+            }
+            else
+            {
+#if UNITY_EDITOR
+                EditorBootstrap();
+#endif
+            }
+        }
+        private static void ResetConsole()
+        {
+            _commonElementsInitialized = false;
+        }
         
 #if UNITY_EDITOR
-        static ConsoleBootstrapper() => EditorBootstrap();
+        static ConsoleBootstrapper()
+        {
+            StaticResetRegistry.Register(ResetConsole);
+            EditorBootstrap();
+        }
         private static void EditorBootstrap()
         {
             CommonBootstrap();
@@ -25,16 +49,19 @@ namespace DeveloperConsole
         }
 #endif
      
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void RuntimeBootstrap()
         {
             // TODO: Only do this if the user wants and if it is URP
             //DebugManager.instance.enableRuntimeUI = false;
+         
+            StaticResetRegistry.Register(ResetConsole);
             
             CommonBootstrap();
             PlayModeTickerSpawner.SpawnConsole();
         }
-        
+#endif
         private static void CommonBootstrap()
         {
             if (_commonElementsInitialized) return;
@@ -43,7 +70,7 @@ namespace DeveloperConsole
 
             if (!config) config = ConsoleConfiguration.Default();
             
-            CommandRegistry.SetCommands(AutoRegistration.CommandTypes());
+            CommandRegistry.Initialize(AutoRegistration.CommandTypes());
             InitializeTypeParsers(config.AutoDetectSetup);
             
             // Load console state
@@ -51,16 +78,19 @@ namespace DeveloperConsole
             
             // Create and register terminal
             TerminalGUI terminalGUI = new TerminalGUI();
-            TerminalOutput terminalOutput = new TerminalOutput(consoleState.OutputBuffer);
-            ConsoleInputManager.RegisterInputMethod(terminalGUI);
-            ConsoleOutputManager.RegisterOutputSink(terminalOutput);
-
-            // Initialize kernel
-            ConsoleKernel.Initialize(consoleState, terminalGUI, terminalOutput);
+            KernelApplication kernelApplication = new KernelApplication(consoleState.OutputBuffer);
+            InputManager.RegisterInputMethod(terminalGUI);
+            OutputManager.RegisterOutputSink(kernelApplication);
+            
+            // Initialize modules
+            GraphicsManager.Initialize();
+            InputManager.Initialize();
+            OutputManager.Initialize();
+            TypeParserRegistry.Initialize();
+            ConsoleKernel.Initialize(consoleState, terminalGUI, kernelApplication);
             
             _commonElementsInitialized = true;
         }
-
         private static void InitializeTypeParsers(bool autoDetect)
         {
             TypeParserRegistry.RegisterTypeParser<int>(new IntParser());;
