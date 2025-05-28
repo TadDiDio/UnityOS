@@ -6,11 +6,11 @@ namespace DeveloperConsole
     public class SwitchArgAttribute : Attribute
     {
         public string Name { get; }
-        public char ShortName { get; }
+        public string ShortName { get; }
         public SwitchArgAttribute(string name, char shortName)
         {
-            Name = name;
-            ShortName = shortName;
+            Name = $"--{name.TrimStart('-')}";
+            ShortName = $"-{shortName}";
         }
     }
 }

@@ -17,7 +17,7 @@ namespace DeveloperConsole.Tests
 
             while (stream.HasMore())
             {
-                Assert.False(parser.TryParse(stream, out bool x));
+                Assert.False(parser.TryParse(stream, out object x));
             }
         }
     
@@ -32,7 +32,7 @@ namespace DeveloperConsole.Tests
             int count = 0;
             while (stream.HasMore())
             {
-                Assert.True(parser.TryParse(stream, out bool x));
+                Assert.True(parser.TryParse(stream, out object x));
                 Assert.AreEqual(bool.Parse(tokens[count++]), x);
             }
         }

@@ -3,11 +3,11 @@ using System.Linq;
 
 namespace DeveloperConsole
 {
-    public abstract class BaseTypeParser<TType> : ITypeParser<TType>
+    public abstract class BaseTypeParser
     {
         public abstract int TokenCount();
 
-        public bool TryParse(TokenStream tokenStream, out TType obj)
+        public bool TryParse(TokenStream tokenStream, out object obj)
         {
             List<string> subtokens = tokenStream.Read(TokenCount()).ToList();
             TokenStream subtokenStream = new(subtokens);
@@ -25,6 +25,6 @@ namespace DeveloperConsole
             
             return result;
         }
-        protected abstract bool TryParseType(TokenStream tokenSubSteam, out TType obj);
+        protected abstract bool TryParseType(TokenStream tokenSubSteam, out object obj);
     }
 }

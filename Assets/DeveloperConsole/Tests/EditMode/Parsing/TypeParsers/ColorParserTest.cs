@@ -17,11 +17,11 @@ namespace DeveloperConsole.Tests
             List<string> tokens = new() { "0", ".5", "0", "1", "0.1", ".4325643"};
             TokenStream stream = new(tokens);
 
-            Assert.True(parser.TryParse(stream, out Color x));
+            Assert.True(parser.TryParse(stream, out object x));
             Assert.AreEqual(new Color(0, 0.5f, 0), x);
             Assert.AreEqual(stream.Remaining().Count(), 3);
             
-            Assert.True(parser.TryParse(stream, out Color y));
+            Assert.True(parser.TryParse(stream, out object y));
             Assert.AreEqual(new Color(1, 0.1f, .4325643f), y);
             Assert.False(stream.HasMore());
         }

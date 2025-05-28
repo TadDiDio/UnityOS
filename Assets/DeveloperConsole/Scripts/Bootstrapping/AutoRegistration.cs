@@ -29,7 +29,7 @@ namespace DeveloperConsole
 
         public static List<(Type parsedType, Type parserType)> TypeParsersTypes()
         {
-            var baseGenericType = typeof(BaseTypeParser<>);
+            var baseGenericType = typeof(BaseTypeParser);
             var results = new List<(Type, Type)>();
 
             var allTypes = AppDomain.CurrentDomain.GetAssemblies()

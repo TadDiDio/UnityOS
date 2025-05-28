@@ -17,11 +17,11 @@ namespace DeveloperConsole.Tests
             List<string> tokens = new() { "-1", "0", "10", "-123123", "-843927.8", "43.23"};
             TokenStream stream = new(tokens);
 
-            Assert.True(parser.TryParse(stream, out Vector3 x));
+            Assert.True(parser.TryParse(stream, out object x));
             Assert.AreEqual(new Vector3(-1, 0, 10), x);
             Assert.AreEqual(stream.Remaining().Count(), 3);
             
-            Assert.True(parser.TryParse(stream, out Vector3 y));
+            Assert.True(parser.TryParse(stream, out object y));
             Assert.AreEqual(new Vector3(-123123, -843927.8f, 43.23f), y);
             Assert.False(stream.HasMore());
         }
@@ -34,10 +34,10 @@ namespace DeveloperConsole.Tests
             List<string> tokens = new() { null, "1", "one", "3", "1"};
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out Vector3 x));
+            Assert.False(parser.TryParse(stream, out object x));
             Assert.AreEqual(stream.Remaining().Count(), 2);
             
-            Assert.False(parser.TryParse(stream, out Vector3 y));
+            Assert.False(parser.TryParse(stream, out object y));
             Assert.False(stream.HasMore());
         }
     }

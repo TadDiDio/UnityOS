@@ -115,14 +115,15 @@ namespace DeveloperConsole
         public abstract void OnGUI(GUIContext context);
     }
     #endregion
-    public abstract class CommandArgsBase { }
-    public class CommandArgs : CommandArgsBase
+
+    public abstract class CommandArgsBase
     {
         public List<string> Tokens;
+
     }
+    public class CommandArgs : CommandArgsBase { }
     public class ConsoleCommandArgs : CommandArgsBase
     {
-        public List<string> Tokens;
         public ConsoleState ConsoleState;
     }
     public class CommandResult

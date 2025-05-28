@@ -22,7 +22,7 @@ namespace DeveloperConsole.Tests
             List<string> tokens = new() { "dog", "cat", " dog", " 1 ", "DOG", "CAT" };
             TokenStream stream = new(tokens);
 
-            Assert.True(parser.TryParse(stream, out TestEnum x));
+            Assert.True(parser.TryParse(stream, out object x));
             Assert.AreEqual(TestEnum.Dog, x);
             Assert.AreEqual(stream.Remaining().Count(), 5);
             

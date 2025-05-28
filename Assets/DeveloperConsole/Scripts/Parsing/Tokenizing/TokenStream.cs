@@ -10,6 +10,7 @@ namespace DeveloperConsole
         
         public TokenStream(List<string> tokens) => _tokens = tokens;
         public bool HasMore() => _position < _tokens.Count;
+        public int Count() => _tokens.Count - _position;
         public string Peek() => HasMore() ? _tokens[_position] : null;
         public string Next() => HasMore() ? _tokens[_position++] : null;
         public IEnumerable<string> Remaining() => _tokens.Skip(_position);

@@ -63,14 +63,14 @@ namespace DeveloperConsole
 
         private static void InitializeTypeParsers(bool autoDetect)
         {
-            TypeParserRegistry.RegisterTypeParser(new IntParser());;
-            TypeParserRegistry.RegisterTypeParser(new FloatParser());
-            TypeParserRegistry.RegisterTypeParser(new StringParser());
-            TypeParserRegistry.RegisterTypeParser(new BoolParser());
-            TypeParserRegistry.RegisterTypeParser(new Vector2Parser());
-            TypeParserRegistry.RegisterTypeParser(new Vector3Parser());
-            TypeParserRegistry.RegisterTypeParser(new ColorParser());
-            TypeParserRegistry.RegisterTypeParser(new AlphaColorParser());
+            TypeParserRegistry.RegisterTypeParser<int>(new IntParser());;
+            TypeParserRegistry.RegisterTypeParser<float>(new FloatParser());
+            TypeParserRegistry.RegisterTypeParser<string>(new StringParser());
+            TypeParserRegistry.RegisterTypeParser<bool>(new BoolParser());
+            TypeParserRegistry.RegisterTypeParser<Vector2>(new Vector2Parser());
+            TypeParserRegistry.RegisterTypeParser<Vector3>(new Vector3Parser());
+            TypeParserRegistry.RegisterTypeParser<Color>(new ColorParser());
+            TypeParserRegistry.RegisterTypeParser<Color>(new AlphaColorParser());
 
             if (!autoDetect) return;
             

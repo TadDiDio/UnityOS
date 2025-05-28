@@ -5,7 +5,7 @@ namespace DeveloperConsole
     [AttributeUsage(AttributeTargets.Field)]
     public class PositionalArgAttribute : Attribute
     {
-        public int index { get; }
-        public PositionalArgAttribute(int index) => this.index = index;
+        public int Index { get; }
+        public PositionalArgAttribute(int index) => Index = index;
     }
 }

@@ -2,14 +2,13 @@ using UnityEngine;
 
 namespace DeveloperConsole
 {
-    public class ColorParser : BaseTypeParser<Color>
+    public class ColorParser : BaseTypeParser
     {
         public override int TokenCount() => 3;
 
-        protected override bool TryParseType(TokenStream tokenSubSteam, out Color obj)
+        protected override bool TryParseType(TokenStream tokenSubSteam, out object obj)
         {
-            // TODO Limit input values to 0 - 1 here and for alpha color
-            obj = default;
+            obj = null;
             if (!float.TryParse(tokenSubSteam.Next(), out float r) ||
                 !float.TryParse(tokenSubSteam.Next(), out float g) ||
                 !float.TryParse(tokenSubSteam.Next(), out float b)) return false;

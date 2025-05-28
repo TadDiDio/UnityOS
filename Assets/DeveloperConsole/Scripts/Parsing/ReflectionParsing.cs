@@ -25,5 +25,33 @@ namespace DeveloperConsole
                 .GetAttributes<SubcommandAttribute>()
                 .Any(attr => attr.Name == name);
         }
+
+        public static List<FieldInfo> GetPositionalArgFieldsInOrder(Type type)
+        {
+            return type.GetFields(AllFlags)
+                .Select(field => (Field: field, Attribute: field.GetCustomAttribute<PositionalArgAttribute>()))
+                .Where(x => x.Attribute != null)
+                .OrderBy(x => x.Attribute.Index)
+                .Select(x => x.Field)
+                .ToList();
+        }
+        
+        public static (FieldInfo, SwitchArgAttribute)? GetSwitchField(Type type, string name)
+        {
+            foreach (var field in type.GetFields(AllFlags))
+            {
+                var attr = field.GetCustomAttribute<SwitchArgAttribute>();
+                if (attr == null) continue;
+                
+                bool match = name.Length == 2 ? attr.ShortName == name : attr.Name == name;
+                if (match) return (field, attr);
+            }
+            return null;
+        }
+
+        public static List<FieldInfo> GetAllFields(Type type)
+        {
+            return type.GetFields(AllFlags).ToList();
+        }
     }
 }

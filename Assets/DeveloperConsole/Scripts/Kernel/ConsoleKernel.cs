@@ -10,13 +10,13 @@ namespace DeveloperConsole
 {
     public static class ConsoleKernel
     {
-        public static event Action<Event> OnEvent;
+        public static event Action<Event> OnEventOccured;
+
+        private static ConsoleState _consoleState;
 
         private static List<ITickable> _tickableComponents = new();
 
         private static TerminalGUI _terminalGUI;
-        private static ConsoleState _consoleState;
-
         private static TerminalOutput _terminalOutput; 
         private static Stack<ITerminalApplication> _terminalApplications = new();
 
@@ -71,7 +71,7 @@ namespace DeveloperConsole
 
         public static void OnGUI(int screenWidth, int screenHeight)
         {
-            OnEvent?.Invoke(Event.current);
+            OnEventOccured?.Invoke(Event.current);
             
             // TODO: Move this padding to config
             int padding = 10;
@@ -102,29 +102,26 @@ namespace DeveloperConsole
         {
             try
             {
-                if (!TokenizeAndValidate(rawInput, out var tokenizationResult)) return;
+                // Tokenize
+                var tokenizationResult = TokenizationManager.Tokenize(rawInput);
+                if (!tokenizationResult.Success || tokenizationResult.Tokens.Count == 0) return;
 
+                // Parse
                 var parseResult = ConsoleParser.Parse(tokenizationResult.Tokens);
                 if (parseResult.Error is not ParseError.None)
                 {
-                    // TODO: Output error
-                    ConsoleOutputManager.SendOutput(ErrorLogging.ParserError(parseResult));
+                    ConsoleOutputManager.SendOutput(ErrorLogging.ParserError(parseResult)); 
                     return;
                 }
                 
-                
                 // Run
-                ConsoleCommandArgs args = new()
-                {
-                    Tokens = tokenizationResult.Tokens,
-                    ConsoleState = _consoleState
-                };
-                    
+                CommandArgsBase args = GetCommandArgs(parseResult.Command is ConsoleCommand, tokenizationResult.Tokens);
                 var commandResult = await parseResult.Command.ExecuteAsync(args);
                 
                 // Send output
-            
-                // TODO: Move this to a callback after output is sent and use correct arg
+                // TODO: Move this to a callback after output is sent because async. Also block input while async
+                // processing unless user executes in background.
+                
                 _consoleState.AddOutput(commandResult.Message);
                 JsonFileManager.Save(_consoleState);
             }
@@ -134,12 +131,24 @@ namespace DeveloperConsole
             }
         }
 
-        private static bool TokenizeAndValidate(string rawInput, out TokenizationResult result)
+        private static CommandArgsBase GetCommandArgs(bool isConsoleCommand, List<string> tokens)
         {
-            // TODO Move this all to manager
-            result = TokenizationManager.Tokenizer.Tokenize(rawInput);
-            if (!result.Success) return false;
-            return result.Tokens.Count >= 1;
+            CommandArgsBase args;
+            
+            if (isConsoleCommand)
+            {
+                args = new ConsoleCommandArgs
+                {
+                    ConsoleState = _consoleState
+                };
+            }
+            else
+            {
+                args = new CommandArgs();
+            }
+
+            args.Tokens = tokens;
+            return args;
         }
     }
 }

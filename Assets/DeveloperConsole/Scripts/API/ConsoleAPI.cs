@@ -1,3 +1,5 @@
+using System;
+
 namespace DeveloperConsole
 {
     public static class ConsoleAPI
@@ -18,9 +20,8 @@ namespace DeveloperConsole
         
         public class ParserWrapper
         {
-            public bool TryParse<T>(TokenStream stream, out T obj) => ConsoleParser.TryParse(stream, out obj);
-
-            public void RegisterTypeParser<T>(BaseTypeParser<T> parser) => TypeParserRegistry.RegisterTypeParser(parser);
+            public bool TryParse<T>(Type type, TokenStream stream, out object obj) => ConsoleParser.TryParse(type, stream, out obj);
+            public void RegisterTypeParser<T>(BaseTypeParser parser) => TypeParserRegistry.RegisterTypeParser<T>(parser);
         }
 
         public class InputWrapper

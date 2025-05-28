@@ -27,6 +27,23 @@ namespace DeveloperConsole.Tests
             stream.Next();
             Assert.False(stream.HasMore());
         }
+        
+        [Test]
+        public void TokenStream_Count()
+        {
+            var tokens = new List<string> { };
+            var stream = new TokenStream(tokens);
+            Assert.AreEqual(stream.Count(), 0);
+
+            tokens = new List<string> { "hello", "world", "this is a string" };
+            stream = new TokenStream(tokens);
+
+            for (int i = tokens.Count - 1; i >= 0; i--)
+            {
+                stream.Next();
+                Assert.AreEqual(stream.Count(), i);
+            }
+        }
 
         [Test]
         public void TokenStream_Next()

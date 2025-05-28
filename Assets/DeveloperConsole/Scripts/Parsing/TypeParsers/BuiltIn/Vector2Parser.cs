@@ -2,13 +2,13 @@ using UnityEngine;
 
 namespace DeveloperConsole
 {
-    public class Vector2Parser : BaseTypeParser<Vector2>
+    public class Vector2Parser : BaseTypeParser
     {
         public override int TokenCount() => 2;
 
-        protected override bool TryParseType(TokenStream tokenSubSteam, out Vector2 obj)
+        protected override bool TryParseType(TokenStream tokenSubSteam, out object obj)
         {
-            obj = default;
+            obj = null;
             if (!float.TryParse(tokenSubSteam.Next(), out float x) ||
                 !float.TryParse(tokenSubSteam.Next(), out float y)) return false;
             

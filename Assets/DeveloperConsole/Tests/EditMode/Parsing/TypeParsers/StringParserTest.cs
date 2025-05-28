@@ -18,7 +18,7 @@ namespace DeveloperConsole.Tests
             int count = 0;
             while (stream.HasMore())
             {
-                Assert.True(parser.TryParse(stream, out string x));
+                Assert.True(parser.TryParse(stream, out object x));
                 Assert.AreEqual(tokens[count++], x);
             }
         }
