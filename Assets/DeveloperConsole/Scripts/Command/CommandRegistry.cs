@@ -15,6 +15,8 @@ namespace DeveloperConsole
             {
                 ICommand instance = (ICommand)Activator.CreateInstance(type);
                 
+                instance.RegisterTypeParsers();
+                
                 string commandName = instance.GetName();
                 if (!_commandPrefabs.TryAdd(commandName, instance))
                 {

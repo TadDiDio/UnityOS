@@ -6,6 +6,7 @@ namespace DeveloperConsole
     public abstract class ValidatedAttribute : Attribute
     {
         public abstract bool Validate(AttributeValidationData data);
+        public abstract string ErrorMessage();
     }
 
     public class AttributeValidationData

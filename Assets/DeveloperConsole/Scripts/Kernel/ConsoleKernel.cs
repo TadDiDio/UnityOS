@@ -127,7 +127,10 @@ namespace DeveloperConsole
             }
             catch (Exception e)
             {
-                Debug.LogError(e);
+                string message = $"The console had an unexpected error, most likely while running a command:" +
+                                 $" {e.Message}{Environment.NewLine}{e.StackTrace}";
+                ConsoleOutputManager.SendOutput(MessageFormatter.Error(message));
+                Debug.LogError(message);
             }
         }
 

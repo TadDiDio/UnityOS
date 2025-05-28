@@ -8,6 +8,7 @@ namespace DeveloperConsole
         private float Min;
         private float Max;
 
+        private float testedValue;
         public InRange(float min, float max)
         {
             Min = min;
@@ -19,6 +20,7 @@ namespace DeveloperConsole
             try
             {
                 float value = Convert.ToSingle(data.FieldInfo.GetValue(data.Object));
+                testedValue = value;
                 return value >= Min && value <= Max;
             }
             catch
@@ -26,5 +28,7 @@ namespace DeveloperConsole
                 return false;
             }
         }
+
+        public override string ErrorMessage() => $"Value {testedValue} is not in the range [{Min}, {Max}].";
     }
 }

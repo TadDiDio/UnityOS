@@ -9,5 +9,7 @@ namespace DeveloperConsole
         {
             return data.WasSet;
         }
+
+        public override string ErrorMessage() => "This argument must be explicitly included.";
     }
 }

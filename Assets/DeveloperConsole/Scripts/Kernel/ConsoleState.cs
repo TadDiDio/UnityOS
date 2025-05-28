@@ -9,6 +9,8 @@ namespace DeveloperConsole
     {
         public List<string> OutputBuffer = new();
         public List<string> CommandHistory = new();
+        
+        // TODO: split into fields to avoid GUI calls
         public GUIStyle ConsoleStyle = new(GUI.skin.label)
         {
             fontSize = 12,

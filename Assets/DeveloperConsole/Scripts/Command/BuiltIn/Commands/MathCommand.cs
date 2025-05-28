@@ -1,25 +1,56 @@
+using System.Collections.Generic;
+
 namespace DeveloperConsole
 {
-    public class MathCommand : Command
+    public enum MathCommandOperation
     {
-        [PositionalArg(0)] public float OperandA;
-        [PositionalArg(1)] public float OperandB;
-        [SwitchArg("operation", 'o')] public string Operation = "add";
+        Add,
+        Subtract,
+        Multiply,
+        Divide
+    }
+    public class MathCommand : SimpleCommand
+    {
+        [InRange(-5, 5)]
+        [PositionalArg(0)]
+        private float operandA;
+        
+        [PositionalArg(1)] 
+        private float operandB;
+        
+        [RequiredArg]
+        [SwitchArg("operation", 'o')] 
+        private MathCommandOperation operation;
+        
+        [SwitchArg("message", 'm')] 
+        private string Message;
+
+        [VariadicArgs] 
+        private List<string> variadicArgs;
         
         protected override string Name() => "math";
         protected override string Description() => "Tests math operations.";
 
+        public override void RegisterTypeParsers()
+        {
+            ConsoleAPI.Parser.RegisterTypeParser<MathCommandOperation>(new EnumParser<MathCommandOperation>());
+        }
+
         protected override CommandResult Execute(CommandArgs args)
         {
-            return Operation switch
+            string result = operation switch
             {
-                "add" => new CommandResult((OperandA + OperandB).ToString()),
-                "subtract" => new CommandResult((OperandA - OperandB).ToString()),
-                "multiply" => new CommandResult((OperandA * OperandB).ToString()),
-                "divide" when OperandB == 0 => new CommandResult("Cannot divide by zero."),
-                "divide" => new CommandResult((OperandA / OperandB).ToString()),
-                _ => new CommandResult("Invalid math operation.")
+                MathCommandOperation.Add => (operandA + operandB).ToString(),
+                MathCommandOperation.Subtract => (operandA - operandB).ToString(),
+                MathCommandOperation.Multiply => (operandA * operandB).ToString(),
+                MathCommandOperation.Divide when operandB == 0 => "Cannot divide by zero.",
+                MathCommandOperation.Divide => (operandA / operandB).ToString(),
+                _ => $"Invalid math operation: {operation}"
             };
+
+            string variadic = string.Join(" ", variadicArgs);
+            
+            return new CommandResult($"{result} {variadic}");
         }
     }
 }

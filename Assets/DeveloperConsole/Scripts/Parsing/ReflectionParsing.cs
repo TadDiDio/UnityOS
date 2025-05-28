@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 
 namespace DeveloperConsole
 {
@@ -52,6 +53,24 @@ namespace DeveloperConsole
         public static List<FieldInfo> GetAllFields(Type type)
         {
             return type.GetFields(AllFlags).ToList();
+        }
+        
+        public static (FieldInfo field, Type elementType)? GetVariadicArgsField(Type targetType)
+        {
+            foreach (var field in targetType.GetFields(AllFlags))
+            {
+                var attr = field.GetCustomAttribute<VariadicArgsAttribute>();
+                if (attr == null)
+                    continue;
+
+                if (field.FieldType.IsGenericType &&
+                    field.FieldType.GetGenericTypeDefinition() == typeof(List<>))
+                {
+                    var elementType = field.FieldType.GetGenericArguments()[0];
+                    return (field, elementType);
+                }
+            }
+            return null;
         }
     }
 }

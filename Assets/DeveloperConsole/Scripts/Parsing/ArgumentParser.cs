@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
-using UnityEngine;
+using Codice.CM.Common.Serialization;
 
 namespace DeveloperConsole
 {
@@ -10,7 +10,7 @@ namespace DeveloperConsole
     {
         private ICommand _command;
         private Type _commandType;
-        
+
         private TokenStream _tokenStream;
 
         private HashSet<FieldInfo> _fieldsSet = new(); 
@@ -27,15 +27,12 @@ namespace DeveloperConsole
         {
             ArgumentParseResult errorResult = new();
             
-            // First parse positionals, they must appear first
             errorResult = ParsePositionals();
             if (!errorResult.Success) return errorResult;
             
-            // Then parse existing switches
-            errorResult = ParseSwitches();
+            errorResult = ParseRemaining();
             if (!errorResult.Success) return errorResult;
             
-            // Finally check all validated attributes
             errorResult = ValidateAttributes();
             return !errorResult.Success ? errorResult : new ArgumentParseResult { Success = true };
         }
@@ -58,19 +55,11 @@ namespace DeveloperConsole
             
             return new ArgumentParseResult { Success = true };
         }
-        
-        private ArgumentParseResult ParseSwitches()
+        private ArgumentParseResult ParseRemaining()
         {
             while (_tokenStream.HasMore())
             {
-                if (!_tokenStream.Peek().StartsWith("-"))
-                {
-                    return new ArgumentParseResult
-                    {
-                        Error = ArgumentParseError.TooManyPositionalArgs,
-                        ErroneousToken = _tokenStream.Peek()
-                    };
-                }
+                if (!_tokenStream.Peek().StartsWith("-")) return SetVariadicArgs();
 
                 if (_tokenStream.Peek().StartsWith("---"))
                 {
@@ -123,7 +112,9 @@ namespace DeveloperConsole
                             ErroneousField = field,
                         };
                     }
-                
+                    
+                    PrependRemainingArgs(switchStream);
+                    
                     field.SetValue(_command, obj);
                     _fieldsSet.Add(field);
                 }
@@ -137,9 +128,77 @@ namespace DeveloperConsole
                 }
             }
             
+            SetEmptyVariadicListIfPresent();
+            
             return new ArgumentParseResult { Success = true };
         }
 
+        private void SetEmptyVariadicListIfPresent()
+        {
+            var result = ReflectionParsing.GetVariadicArgsField(_commandType);
+            if (!result.HasValue) return;
+            
+            var (field, type) = result.Value;
+            try
+            {
+                Type constructedListType = typeof(List<>).MakeGenericType(type);
+                object listInstance = Activator.CreateInstance(constructedListType);
+                field.SetValue(_command, listInstance);
+            }
+            finally { }
+        }
+        private ArgumentParseResult SetVariadicArgs()
+        {
+            var result = ReflectionParsing.GetVariadicArgsField(_commandType);
+            if (!result.HasValue)
+            {
+                return new ArgumentParseResult
+                {
+                    Error = ArgumentParseError.UnexpectedToken,
+                    ErroneousToken = _tokenStream.Peek()
+                };
+            }
+
+            var (field, type) = result.Value;
+
+            try
+            {
+                Type constructedListType = typeof(List<>).MakeGenericType(type);
+                object listInstance = Activator.CreateInstance(constructedListType);
+                MethodInfo addMethod = constructedListType.GetMethod("Add");
+
+                while (_tokenStream.HasMore())
+                {
+                    if (!TypeParserRegistry.TryParse(type, _tokenStream, out var obj))
+                    {
+                        return new ArgumentParseResult
+                        {
+                            Error = ArgumentParseError.TypeParseFailed,
+                            ErroneousField = field,
+                        };
+                    }
+                
+                    addMethod.Invoke(listInstance, new[] { obj });
+                }
+            
+                field.SetValue(_command, listInstance);
+            
+                return new ArgumentParseResult { Success = true };
+            }
+            catch
+            {
+                return new ArgumentParseResult { Error = ArgumentParseError.BadVariadicContainer };
+            }
+        }
+
+        private void PrependRemainingArgs(TokenStream remaining)
+        {
+            List<string> tokens = new();
+            tokens.AddRange(remaining.Remaining());
+            tokens.AddRange(_tokenStream.Remaining());
+            _tokenStream = new TokenStream(tokens);
+        }
+        
         private ArgumentParseResult ValidateAttributes()
         {
             var fields = ReflectionParsing.GetAllFields(_commandType);
@@ -179,6 +238,8 @@ namespace DeveloperConsole
         MalformedSwitchName,
         DuplicateSwitch,
         TooManyPositionalArgs,
+        UnexpectedToken,
+        BadVariadicContainer
     }
     public struct ArgumentParseResult
     {
