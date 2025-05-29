@@ -23,7 +23,8 @@ namespace DeveloperConsole
                     type.Namespace.StartsWith("DeveloperConsole") &&
                     typeof(ICommand).IsAssignableFrom(type) &&
                     !type.IsAbstract &&
-                    !type.IsInterface)
+                    !type.IsInterface &&
+                    type.GetCustomAttribute<ExcludeFromCmdRegistry>() == null)
                 .ToList();
         }
 

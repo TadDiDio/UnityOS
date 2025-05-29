@@ -6,6 +6,12 @@ namespace DeveloperConsole
 
         protected override bool TryParseType(TokenStream tokenSubSteam, out object obj)
         {
+            if (!tokenSubSteam.HasMore())
+            {
+                obj = true;
+                return true;
+            }
+            
             bool success = bool.TryParse(tokenSubSteam.Next(), out bool typed);
 
             obj = typed;

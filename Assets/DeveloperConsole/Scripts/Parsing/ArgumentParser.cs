@@ -2,8 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
-using Codice.CM.Common.Serialization;
-using UnityEngine;
 
 namespace DeveloperConsole
 {
@@ -13,15 +11,17 @@ namespace DeveloperConsole
         private Type _commandType;
 
         private TokenStream _tokenStream;
-
+        private ReflectionParser _reflectionParser;
+        
         private HashSet<FieldInfo> _fieldsSet = new(); 
         private HashSet<SwitchArgAttribute> _switchAttributesPresent = new(); 
         
-        public ArgumentParser(ICommand command, List<string> tokens)
+        public ArgumentParser(ICommand command, List<string> tokens, ReflectionParser reflectionParser)
         {
             _command = command;
             _commandType = command.GetType();
             _tokenStream = new TokenStream(tokens.Skip(1).ToList()); // Skip command name
+            _reflectionParser = reflectionParser;
         }
 
         public ArgumentParseResult Parse()
@@ -37,7 +37,7 @@ namespace DeveloperConsole
         }
         private ArgumentParseResult ParsePositionals()
         {
-            foreach (var field in ReflectionParsing.GetPositionalArgFieldsInOrder(_commandType))
+            foreach (var field in _reflectionParser.GetPositionalArgFieldsInOrder())
             {
                 if (!_tokenStream.HasMore())
                 {
@@ -47,12 +47,17 @@ namespace DeveloperConsole
                         ErroneousField = field
                     };
                 }
+                
+                List<string> remainingTokens = _tokenStream.Remaining().ToList();
                 if (!TypeParserRegistry.TryParse(field.FieldType, _tokenStream, out var obj))
                 {
+                    int tokensUsed = remainingTokens.Count - _tokenStream.Count();
+                    string failureToken = string.Join(", ", remainingTokens.Take(tokensUsed));
                     return new ArgumentParseResult
                     {
                         Error = ArgumentParseError.TypeParseFailed,
-                        ErroneousField = field
+                        ErroneousField = field,
+                        ErroneousToken = failureToken
                     };
                 }
 
@@ -78,54 +83,16 @@ namespace DeveloperConsole
                 }
 
                 List<string> tokens = new() { _tokenStream.Next() };
-
-                while (_tokenStream.HasMore())
-                {
-                    string next = _tokenStream.Peek();
-                    if (next.StartsWith("-")) break;
-
-                    tokens.Add(_tokenStream.Next());
-                }
                 
                 string switchName = tokens[0];
                 switchName = switchName.TrimStart('-');
                 switchName = switchName.Length == 1 ? $"-{switchName}" : $"--{switchName}";
 
                 // Get the field associated with the switch
-                var result = ReflectionParsing.GetSwitchField(_commandType, switchName);
+                var result = _reflectionParser.GetSwitchField(switchName);
 
-                if (result.HasValue)
-                {
-                    var (field, attribute) = result.Value;
-
-                    if (!_switchAttributesPresent.Add(attribute))
-                    {
-                        return new ArgumentParseResult
-                        {
-                            Error = ArgumentParseError.DuplicateSwitch,
-                            ErroneousField = field,
-                            ErroneousAttribute = attribute,
-                            ErroneousToken = switchName
-                        };
-                    }
-
-                    // Parse the value
-                    TokenStream switchStream = new(tokens.Skip(1).ToList()); // Skip switch name
-                    if (!TypeParserRegistry.TryParse(field.FieldType, switchStream, out var obj))
-                    {
-                        return new ArgumentParseResult
-                        {
-                            Error = ArgumentParseError.TypeParseFailed,
-                            ErroneousField = field,
-                        };
-                    }
-                    
-                    PrependRemainingArgs(switchStream);
-                    
-                    field.SetValue(_command, obj);
-                    _fieldsSet.Add(field);
-                }
-                else
+                bool isBoolSwitch;
+                if (!result.HasValue)
                 {
                     return new ArgumentParseResult
                     {
@@ -133,16 +100,69 @@ namespace DeveloperConsole
                         Error = ArgumentParseError.UnrecognizedSwitch,
                     };
                 }
+                
+                var (field, attribute) = result.Value;
+                isBoolSwitch = field.FieldType == typeof(bool);
+                    
+                while (_tokenStream.HasMore())
+                {
+                    string next = _tokenStream.Peek();
+                    
+                    // Only attempt to grab a single token if its a bool switch,
+                    // and if its not true or false, don't consume it
+                    if (isBoolSwitch)
+                    {
+                        if (!bool.TryParse(next, out bool _)) break;
+                    }
+                    
+                    // Don't consider negative numbers to be switches
+                    if (next.StartsWith("-"))
+                    {
+                        if (!float.TryParse(next, out float _)) break;
+                    };
+
+                    tokens.Add(_tokenStream.Next());
+                }
+               
+                if (!_switchAttributesPresent.Add(attribute))
+                {
+                    return new ArgumentParseResult
+                    {
+                        Error = ArgumentParseError.DuplicateSwitch,
+                        ErroneousField = field,
+                        ErroneousAttribute = attribute,
+                        ErroneousToken = switchName
+                    };
+                }
+
+                // Parse the value
+                TokenStream switchStream = new(tokens.Skip(1).ToList()); // Skip switch name
+                List<string> remainingTokens = switchStream.Remaining().ToList();
+                if (!TypeParserRegistry.TryParse(field.FieldType, switchStream, out var obj))
+                {
+                    int tokensUsed = remainingTokens.Count - switchStream.Count();
+                    string failureToken = string.Join(", ", remainingTokens.Take(tokensUsed));
+                    return new ArgumentParseResult
+                    {
+                        Error = ArgumentParseError.TypeParseFailed,
+                        ErroneousField = field,
+                        ErroneousToken = failureToken
+                    };
+                }
+                
+                PrependRemainingArgs(switchStream);
+                
+                field.SetValue(_command, obj);
+                _fieldsSet.Add(field);
             }
             
             SetEmptyVariadicListIfPresent();
             
             return new ArgumentParseResult { Success = true };
         }
-
         private void SetEmptyVariadicListIfPresent()
         {
-            var result = ReflectionParsing.GetVariadicArgsField(_commandType);
+            var result = _reflectionParser.GetVariadicArgsField(out bool _);
             if (!result.HasValue) return;
             
             var (field, type) = result.Value;
@@ -156,9 +176,13 @@ namespace DeveloperConsole
         }
         private ArgumentParseResult SetVariadicArgs()
         {
-            var result = ReflectionParsing.GetVariadicArgsField(_commandType);
+            var result = _reflectionParser.GetVariadicArgsField(out bool badContainer);
             if (!result.HasValue)
             {
+                if (badContainer)
+                {
+                    return new ArgumentParseResult { Error = ArgumentParseError.BadVariadicContainer };
+                }
                 return new ArgumentParseResult
                 {
                     Error = ArgumentParseError.UnexpectedToken,
@@ -176,12 +200,16 @@ namespace DeveloperConsole
 
                 while (_tokenStream.HasMore())
                 {
+                    List<string> remainingTokens = _tokenStream.Remaining().ToList();
                     if (!TypeParserRegistry.TryParse(type, _tokenStream, out var obj))
                     {
+                        int tokensUsed = remainingTokens.Count - _tokenStream.Count();
+                        string failureToken = string.Join(", ", remainingTokens.Take(tokensUsed));
                         return new ArgumentParseResult
                         {
                             Error = ArgumentParseError.TypeParseFailed,
                             ErroneousField = field,
+                            ErroneousToken = failureToken
                         };
                     }
                 
@@ -197,7 +225,6 @@ namespace DeveloperConsole
                 return new ArgumentParseResult { Error = ArgumentParseError.BadVariadicContainer };
             }
         }
-
         private void PrependRemainingArgs(TokenStream remaining)
         {
             List<string> tokens = new();
@@ -205,10 +232,9 @@ namespace DeveloperConsole
             tokens.AddRange(_tokenStream.Remaining());
             _tokenStream = new TokenStream(tokens);
         }
-        
         private ArgumentParseResult ValidateAttributes()
         {
-            var fields = ReflectionParsing.GetAllFields(_commandType);
+            var fields = _reflectionParser.GetAllFields();
 
             foreach (var field in fields)
             {

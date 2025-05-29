@@ -17,7 +17,8 @@ namespace DeveloperConsole
                 ParseError.InvalidCommandName => $"There is not command called {result.CommandName}.",
                 ParseError.ArgumentError => result.ArgumentParseResult.Error switch
                 {
-                    ArgumentParseError.TypeParseFailed => $"Failed to parse {result.ArgumentParseResult.ErroneousField.Name} " +
+                    ArgumentParseError.TypeParseFailed => $"Failed to parse '{result.ArgumentParseResult.ErroneousToken}' " +
+                                                          $"({result.ArgumentParseResult.ErroneousField.Name}) " +
                                                           $"as a {TypeFriendlyName(result.ArgumentParseResult.ErroneousField.FieldType)}",
                     ArgumentParseError.AttributeValidationError =>
                         $"Validation for attribute [{result.ArgumentParseResult.ErroneousAttribute.GetType().Name}]" +

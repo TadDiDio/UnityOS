@@ -2,34 +2,38 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using UnityEngine;
 
 namespace DeveloperConsole
 {
-    public static class ReflectionParsing
+    public class ReflectionParser
     {
         private static BindingFlags AllFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 
-        public static IEnumerable<FieldInfo> GetFieldsWithAttribute<TAttribute>(this Type type) where TAttribute : Attribute
+        private Type _commandType;
+        private FieldInfo[] _fields;
+
+        public ReflectionParser(Type commandType)
         {
-            return type.GetFields(AllFlags).Where(field => Attribute.IsDefined(field, typeof(TAttribute)));
+            _commandType = commandType;
+            _fields = _commandType.GetFields(AllFlags);
+        }
+        
+        public IEnumerable<FieldInfo> GetFieldsWithAttribute<TAttribute>() where TAttribute : Attribute
+        {
+            return _fields.Where(field => Attribute.IsDefined(field, typeof(TAttribute)));
         }
 
-        public static IEnumerable<TAttribute> GetAttributes<TAttribute>(this IEnumerable<FieldInfo> fields) where TAttribute : Attribute
+        public bool HasSubcommandWithName(string name)
         {
-            return fields.Select(field => field.GetCustomAttribute<TAttribute>()).Where(attr => attr != null);
-        }
-
-        public static bool HasSubcommandWithName(this IEnumerable<FieldInfo> fields, string name)
-        {
-            return fields
-                .GetAttributes<SubcommandAttribute>()
+            return _fields
+                .Select(field => field.GetCustomAttribute<SubcommandAttribute>())
+                .Where(attr => attr != null)
                 .Any(attr => attr.Name == name);
         }
 
-        public static List<FieldInfo> GetPositionalArgFieldsInOrder(Type type)
+        public List<FieldInfo> GetPositionalArgFieldsInOrder()
         {
-            return type.GetFields(AllFlags)
+            return _fields
                 .Select(field => (Field: field, Attribute: field.GetCustomAttribute<PositionalArgAttribute>()))
                 .Where(x => x.Attribute != null)
                 .OrderBy(x => x.Attribute.Index)
@@ -37,9 +41,9 @@ namespace DeveloperConsole
                 .ToList();
         }
         
-        public static (FieldInfo, SwitchArgAttribute)? GetSwitchField(Type type, string name)
+        public (FieldInfo, SwitchArgAttribute)? GetSwitchField(string name)
         {
-            foreach (var field in type.GetFields(AllFlags))
+            foreach (var field in _fields)
             {
                 var attr = field.GetCustomAttribute<SwitchArgAttribute>();
                 if (attr == null) continue;
@@ -50,14 +54,15 @@ namespace DeveloperConsole
             return null;
         }
 
-        public static List<FieldInfo> GetAllFields(Type type)
+        public List<FieldInfo> GetAllFields()
         {
-            return type.GetFields(AllFlags).ToList();
+            return _fields.ToList();
         }
         
-        public static (FieldInfo field, Type elementType)? GetVariadicArgsField(Type targetType)
+        public (FieldInfo field, Type elementType)? GetVariadicArgsField(out bool badContainer)
         {
-            foreach (var field in targetType.GetFields(AllFlags))
+            badContainer = false;
+            foreach (var field in _fields)
             {
                 var attr = field.GetCustomAttribute<VariadicArgsAttribute>();
                 if (attr == null)
@@ -69,6 +74,9 @@ namespace DeveloperConsole
                     var elementType = field.FieldType.GetGenericArguments()[0];
                     return (field, elementType);
                 }
+
+                badContainer = true;
+                return null;
             }
             return null;
         }

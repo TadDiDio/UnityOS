@@ -25,6 +25,9 @@ namespace DeveloperConsole
         [SwitchArg("message", 'm')] 
         private string Message;
 
+        [SwitchArg("flag", 'f')] 
+        private bool Flag;
+        
         [VariadicArgs]
         private List<string> variadicArgs;
         
@@ -50,7 +53,7 @@ namespace DeveloperConsole
 
             string variadic = string.Join(" ", variadicArgs);
             
-            return new CommandResult($"{result} {variadic}");
+            return new CommandResult($"{result}, flag is {Flag}, {variadic}");
         }
     }
 }

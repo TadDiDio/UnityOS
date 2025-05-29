@@ -114,6 +114,8 @@ namespace DeveloperConsole
         {
             try
             {
+                OutputManager.SendOutput($"> {rawInput}");
+                
                 // Tokenize
                 var tokenizationResult = TokenizationManager.Tokenize(rawInput);
                 if (!tokenizationResult.Success || tokenizationResult.Tokens.Count == 0) return;

@@ -13,8 +13,6 @@ namespace DeveloperConsole
             TokenStream subtokenStream = new(subtokens);
 
             obj = default;
-            if (!subtokenStream.HasMore()) return false;
-            
             bool result = TryParseType(subtokenStream, out obj);
 
             if (subtokenStream.HasMore())

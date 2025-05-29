@@ -16,15 +16,17 @@ namespace DeveloperConsole
             // TODO: Must be able to validate subcommand names here too. maybe flag included as arg in Parse() if is sub
             if (!ValidateCommandName(tokens[0], out var result, out ICommand command)) return result;
             
-            // Recursive subcommand analysis
+            ReflectionParser reflectionParser = new ReflectionParser(command.GetType());
+            
             // TODO: Untested
-            if (tokens.Count > 1 && IsSubcommand(tokens[1], command.GetType()))
+            // Recursive subcommand analysis
+            if (tokens.Count > 1 && reflectionParser.HasSubcommandWithName(tokens[1]))
             {
                 return Parse(tokens.Skip(1).ToList());
             }
             
             // Parse args
-            ArgumentParser argParser = new(command, tokens);
+            ArgumentParser argParser = new(command, tokens, reflectionParser);
             var argumentParseResult = argParser.Parse();
             if (!argumentParseResult.Success)
             {
@@ -49,11 +51,6 @@ namespace DeveloperConsole
 
             result.Error = ParseError.InvalidCommandName;
             return false;
-        }
-
-        private static bool IsSubcommand(string name, Type type)
-        {
-            return type.GetFieldsWithAttribute<SubcommandAttribute>().HasSubcommandWithName(name);
         }
     }
     

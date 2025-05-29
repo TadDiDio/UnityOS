@@ -9,7 +9,8 @@ namespace DeveloperConsole
         
         public void Draw(GUIContext context, ITerminalApplication terminalApplication)
         {
-            GUILayout.BeginArea(context.AreaRect, GUI.skin.window);
+            // BUG: THIS IS CAUSE ARTIFACT
+            GUILayout.BeginArea(context.AreaRect);
             
             terminalApplication.OnGUI(context);
             
