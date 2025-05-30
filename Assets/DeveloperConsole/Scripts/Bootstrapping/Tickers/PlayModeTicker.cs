@@ -9,7 +9,7 @@ namespace DeveloperConsole
     {
         // TODO: May need to handle duplicates here since bootstrapper checks before scene load
 
-        private void Update() => ConsoleKernel.Tick();
-        private void OnGUI() => ConsoleKernel.OnGUI(Screen.width, Screen.height);
+        private void Update() => Kernel.Instance.Tick();
+        private void OnGUI() => Kernel.Instance.OnGUI(Screen.width, Screen.height);
     }
 }

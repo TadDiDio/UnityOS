@@ -1,7 +1,7 @@
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-using System;
+
 using UnityEngine;
 
 namespace DeveloperConsole
@@ -15,7 +15,8 @@ namespace DeveloperConsole
     public static class ConsoleBootstrapper
     {
         private static bool _commonElementsInitialized;
-
+        private static ConsoleConfiguration _configurationOverride;
+        
         public static void Bootstrap()
         {
             if (Application.isPlaying)
@@ -31,21 +32,26 @@ namespace DeveloperConsole
 #endif
             }
         }
-        private static void ResetConsole()
+        public static void ResetConsole()
         {
+            _configurationOverride = null;
             _commonElementsInitialized = false;
+
+            Kernel.Instance.Dispose();
+            Kernel.Reset();
+            
+            // Unload runners
+            PlayModeTickerSpawner.Instance.DestroySceneConsole();
+            EditModeTicker.Reset();
+            PlayModeTickerSpawner.Reset();
         }
         
 #if UNITY_EDITOR
-        static ConsoleBootstrapper()
-        {
-            StaticResetRegistry.Register(ResetConsole);
-            EditorBootstrap();
-        }
+        static ConsoleBootstrapper() => EditorBootstrap();
         private static void EditorBootstrap()
         {
             CommonBootstrap();
-            EditModeTicker.Initialize();
+            EditModeTicker.Initialize(() => new EditModeTicker());
         }
 #endif
      
@@ -55,53 +61,36 @@ namespace DeveloperConsole
         {
             // TODO: Only do this if the user wants and if it is URP
             //DebugManager.instance.enableRuntimeUI = false;
-         
-            StaticResetRegistry.Register(ResetConsole);
-            
             CommonBootstrap();
-            PlayModeTickerSpawner.SpawnConsole();
+            PlayModeTickerSpawner.Initialize(() => new PlayModeTickerSpawner());
         }
 #endif
+
+        public static void SetConfigurationOverride(ConsoleConfiguration config)
+        {
+            _configurationOverride = config;
+        }
+        
         private static void CommonBootstrap()
         {
             if (_commonElementsInitialized) return;
             
-            ConsoleConfiguration config = ConsoleConfigLoader.GetConsoleConfigurationSelector().SelectedConfiguration;
-
-            if (!config) config = ConsoleConfiguration.Default();
+            ConsoleConfiguration config = GetConfiguration();
             
-            CommandRegistry.Initialize(AutoRegistration.AllCommands());
-            InitializeTypeParsers();
-            
-            // Load console state
             ConsoleState consoleState = JsonFileManager.Load();
             
-            // Create and register terminal
-            TerminalGUI terminalGUI = new TerminalGUI();
-            KernelApplication kernelApplication = new KernelApplication(consoleState.OutputBuffer);
-            InputManager.RegisterInputMethod(terminalGUI);
-            OutputManager.RegisterOutputSink(kernelApplication);
-            
-            // Initialize modules
-            GraphicsManager.Initialize();
-            InputManager.Initialize();
-            OutputManager.Initialize();
-            TypeParserRegistry.Initialize();
-            ConsoleKernel.Initialize(consoleState, terminalGUI, kernelApplication);
+            Kernel.Initialize(() => new Kernel(config, consoleState));
             
             _commonElementsInitialized = true;
         }
-        private static void InitializeTypeParsers()
+
+        private static ConsoleConfiguration GetConfiguration()
         {
-            // Initialize all built in parsers. Users will provide their own via command class hook.
-            TypeParserRegistry.RegisterTypeParser<int>(new IntParser());;
-            TypeParserRegistry.RegisterTypeParser<float>(new FloatParser());
-            TypeParserRegistry.RegisterTypeParser<string>(new StringParser());
-            TypeParserRegistry.RegisterTypeParser<bool>(new BoolParser());
-            TypeParserRegistry.RegisterTypeParser<Vector2>(new Vector2Parser());
-            TypeParserRegistry.RegisterTypeParser<Vector3>(new Vector3Parser());
-            TypeParserRegistry.RegisterTypeParser<Color>(new ColorParser());
-            TypeParserRegistry.RegisterTypeParser<Color>(new AlphaColorParser());
+            if (_configurationOverride != null) return _configurationOverride;
+            
+            ConsoleConfiguration config = ConsoleConfigLoader.GetConsoleConfigurationSelector().SelectedConfiguration;
+            if (config == null) config = new ConsoleConfiguration();
+            return config;
         }
     }
 }

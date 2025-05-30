@@ -6,31 +6,29 @@ namespace DeveloperConsole
     /// Captures logical and graphical update events to forward to the kernel while in edit mode.
     /// Acts as the edit mode entry point for the system.
     /// </summary>
-    public static class EditModeTicker
+    public class EditModeTicker : Singleton<EditModeTicker>
     {
         private const int ToolbarHeight = 25;
         
-        public static void Initialize()
+        public EditModeTicker()
         {
-            StaticResetRegistry.Register(Reset);
             EditorApplication.update += OnTick;
             SceneView.duringSceneGui += OnGUI;
-            AssemblyReloadEvents.beforeAssemblyReload += Reset;
+            AssemblyReloadEvents.beforeAssemblyReload += Reload;
         }
 
-
-        private static void Reset()
+        private void Reload()
         {
             EditorApplication.update -= OnTick;
             SceneView.duringSceneGui -= OnGUI;
         }
         
-        private static void OnTick() => ConsoleKernel.Tick();
-        private static void OnGUI(SceneView sceneView)
+        private void OnTick() => Kernel.Instance.Tick();
+        private void OnGUI(SceneView sceneView)
         {
             int width = (int)sceneView.position.width;
             int height = (int)sceneView.position.height - ToolbarHeight;
-            ConsoleKernel.OnGUI(width, height);
+            Kernel.Instance.OnGUI(width, height);
         }
     }
 }

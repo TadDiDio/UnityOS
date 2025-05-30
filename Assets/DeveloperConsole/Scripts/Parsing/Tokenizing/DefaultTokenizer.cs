@@ -28,7 +28,8 @@ namespace DeveloperConsole
             return new TokenizationResult
             {
                 Success = true,
-                Tokens = tokens
+                Tokens = tokens,
+                TokenStream = new TokenStream(tokens)
             };
         }
     }

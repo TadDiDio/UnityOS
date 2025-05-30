@@ -2,16 +2,11 @@ using System.Collections.Generic;
 
 namespace DeveloperConsole
 {
-    public static class GraphicsManager
+    public class WindowManager : IWindowManager
     {
-        private static List<IGraphical> _graphicalComponents = new();
-
-        public static void Initialize()
-        {
-            StaticResetRegistry.Register(UnregisterAll);
-        }
+        private List<IGraphical> _graphicalComponents = new();
         
-        public static void Register(IGraphical graphical)
+        public void Register(IGraphical graphical)
         {
             if (_graphicalComponents.Contains(graphical))
             {
@@ -22,7 +17,7 @@ namespace DeveloperConsole
             _graphicalComponents.Add(graphical);
         }
         
-        public static void Unregister(IGraphical graphical)
+        public void Unregister(IGraphical graphical)
         {
             if (!_graphicalComponents.Contains(graphical))
             {
@@ -33,9 +28,7 @@ namespace DeveloperConsole
             _graphicalComponents.Remove(graphical);
         }
 
-        public static void UnregisterAll() => _graphicalComponents.Clear();
-        
-        public static void OnGUI(GUIContext context)
+        public void OnGUI(GUIContext context)
         {
             foreach (var graphical in _graphicalComponents) graphical.OnGUI(context);
         }

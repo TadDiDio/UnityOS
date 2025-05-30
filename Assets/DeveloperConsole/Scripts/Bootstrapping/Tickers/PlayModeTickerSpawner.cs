@@ -7,12 +7,12 @@ namespace DeveloperConsole
     /// Spawns an observer in play mode to forward logical and gui events to the kernel.
     /// Acts as the play mode entry point for the system.
     /// </summary>
-    public static class PlayModeTickerSpawner
+    public class PlayModeTickerSpawner : Singleton<PlayModeTickerSpawner>
     {
         private const string GameObjectName = "[Developer Console]";
-        private static GameObject _console;
-        
-        public static void SpawnConsole()
+        private GameObject _console;
+
+        public PlayModeTickerSpawner()
         {
             var existing = Object.FindObjectsByType<PlayModeTicker>(FindObjectsSortMode.None);
             
@@ -27,11 +27,9 @@ namespace DeveloperConsole
             GameObject console = new GameObject(GameObjectName);
             console.AddComponent<PlayModeTicker>();
             Object.DontDestroyOnLoad(console);
-            
-            StaticResetRegistry.Register(Clear);
         }
 
-        private static void Clear()
+        public void DestroySceneConsole()
         {
             if (_console) Object.Destroy(_console);
         }

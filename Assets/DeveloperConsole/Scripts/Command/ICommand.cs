@@ -69,15 +69,7 @@ namespace DeveloperConsole
     }
     public abstract class WindowedCommand : SimpleCommand, IGraphical
     {
-        protected WindowedCommand()
-        {
-            GraphicsManager.Register(this);
-        }
-
-        ~WindowedCommand()
-        {
-            GraphicsManager.Unregister(this);
-        }
+        // TODO: Need to register with window command
         
         public abstract void OnGUI(GUIContext context);
     }

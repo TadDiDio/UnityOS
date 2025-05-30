@@ -1,6 +1,6 @@
 namespace DeveloperConsole
 {
-    public interface ITerminalApplication : IConsoleOutputSink, IGraphical
+    public interface ITerminalApplication : IOutputSink, IGraphical
     {
         public void OnInputRecieved(string input);
     }

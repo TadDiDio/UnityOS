@@ -11,5 +11,6 @@ namespace DeveloperConsole
     {
         public bool Success;
         public List<string> Tokens;
+        public TokenStream TokenStream;
     }
 }

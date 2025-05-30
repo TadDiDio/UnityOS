@@ -1,6 +1,6 @@
 namespace DeveloperConsole
 {
-    public interface IConsoleOutputSink
+    public interface IOutputSink
     {
         public void ReceiveOutput(string message);
     }

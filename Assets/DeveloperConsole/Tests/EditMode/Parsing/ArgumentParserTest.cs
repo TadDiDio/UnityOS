@@ -130,7 +130,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "positionaltest",
                 "1.5",
                 "1",
                 "true",
@@ -138,9 +137,11 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
-            
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
+
             var result = parser.Parse();
+            
+            Debug.Log(result.Error);
             
             Assert.True(result.Success);
             Assert.That(command.floatingPoint, Is.EqualTo(1.5f).Within(0.0001f));
@@ -156,15 +157,14 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "positionaltest",
                 "1.5",
                 "1",
                 "true",
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
-            
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
+
             var result = parser.Parse();
             
             Assert.False(result.Success);
@@ -179,7 +179,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "positionaltest",
                 "1.5",
                 "1",
                 "true",
@@ -188,7 +187,7 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -204,11 +203,10 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchtest",
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -222,11 +220,10 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchtestrequired",
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -242,13 +239,12 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchtestrequired",
                 "-o",
                 "1.5",
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -264,7 +260,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchtestrequired",
                 "-o",
                 "1.5",
                 "-m",
@@ -272,7 +267,7 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -286,13 +281,12 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchtest",
                 "-a",
                 "1.5",
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -307,7 +301,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchtest",
                 "-o",
                 "1.5",
                 "-o",
@@ -315,7 +308,7 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -332,13 +325,12 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchtest",
                 "-o",
                 "1.5",
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -353,7 +345,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchtest",
                 "--message",
                 "this is a test",
                 "-o",
@@ -361,7 +352,7 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -377,7 +368,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchtest",
                 "--message",
                 "this is a test",
                 "-o",
@@ -385,7 +375,7 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -401,7 +391,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchandpositionaltest",
                 "-5",
                 "1",
                 "10",
@@ -410,7 +399,7 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -427,7 +416,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchandpositionaltest",
                 "-o",
                 "1.5",
                 "-5",
@@ -436,7 +424,7 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -453,7 +441,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "variadictest",
                 "1.5",
                 "-5",
                 "0.4",
@@ -461,7 +448,7 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -479,7 +466,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "variadictest",
                 "1.5",
                 "-5",
                 "0.4",
@@ -488,7 +474,7 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -505,7 +491,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "variadicbadcontainertest",
                 "1.5",
                 "-5",
                 "0.4",
@@ -514,7 +499,7 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             
@@ -529,7 +514,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchandpositionalandvariadictest",
                 "4.23",
                 "-o",
                 "-5",
@@ -542,7 +526,7 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             Assert.True(result.Success);
@@ -561,7 +545,6 @@ namespace DeveloperConsole.Tests
             
             List<string> tokens = new()
             {
-                "switchandpositionalandvariadictest",
                 "4.23",
                 "-o",
                 "-5",
@@ -575,7 +558,7 @@ namespace DeveloperConsole.Tests
             };
 
             ReflectionParser reflectionParser = new(command);
-            ArgumentParser parser = new(command, tokens, reflectionParser);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
             var result = parser.Parse();
             Assert.False(result.Success);

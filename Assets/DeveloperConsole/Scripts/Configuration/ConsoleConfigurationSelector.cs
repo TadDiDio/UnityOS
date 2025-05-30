@@ -4,6 +4,7 @@ using UnityEditor;
 
 using UnityEngine;
 
+// TODO: All of this is invalid because the ConsoleConfiguration SO is now a class
 namespace DeveloperConsole
 {
     public class ConsoleConfigurationSelector : ScriptableObject

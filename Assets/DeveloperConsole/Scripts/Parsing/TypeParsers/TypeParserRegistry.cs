@@ -1,34 +1,28 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace DeveloperConsole
 {
-    public static class TypeParserRegistry
+    public class TypeParserRegistry : ITypeParserRegistryProvider
     {
-        private static Dictionary<Type, BaseTypeParser> _typeParsers = new();
-
-        public static void Initialize()
-        {
-            StaticResetRegistry.Register(Clear);
-        }
-
-        private static void Clear()
-        {
-            _typeParsers.Clear();
-        }
+        private Dictionary<Type, BaseTypeParser> _typeParsers = new();
+        private IOutputManager _outputManager;
         
-        public static void RegisterTypeParser<T>(BaseTypeParser parser)
+        public TypeParserRegistry(IOutputManager outputManager)
+        {
+            _outputManager = outputManager;
+        }
+        public void RegisterTypeParser<T>(BaseTypeParser parser)
         {
             _typeParsers.TryAdd(typeof(T), parser);
         }
         
-        public static bool TryParse(Type type, TokenStream stream, out object obj)
+        public bool TryParse(Type type, TokenStream stream, out object obj)
         {
             obj = null;
             if (!_typeParsers.TryGetValue(type, out var parser))
             {
-                OutputManager.SendOutput(MessageFormatter.Error($"There is no parser registered for type {type}."));
+                _outputManager.SendOutput(MessageFormatter.Error($"There is no parser registered for type {type}."));
                 return false;
             }
 

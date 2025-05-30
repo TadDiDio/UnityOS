@@ -12,4 +12,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 356214a55cb04ddf8a1fb7e2494ffb65, type: 3}
   m_Name: ConsoleConfigurationSelector
   m_EditorClassIdentifier: 
-  SelectedConfiguration: {fileID: 11400000, guid: 54416b801475f3c488d7b06ecbaa1520, type: 2}

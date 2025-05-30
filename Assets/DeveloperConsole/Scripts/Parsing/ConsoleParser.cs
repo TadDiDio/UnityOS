@@ -1,31 +1,36 @@
-using System.Linq;
-using System.Collections.Generic;
-
 namespace DeveloperConsole
 {
-    public static class ConsoleParser
+    public class ConsoleParser : IConsoleParser
     {
-        public static ParseResult Parse(List<string> tokens)
+        private ICommandRegistryProvider _commandRegistry;
+
+        public ConsoleParser(ICommandRegistryProvider commandRegistry)
         {
-            return Parse(tokens, "");
+            _commandRegistry = commandRegistry;
+        }
+        
+        public ParseResult Parse(TokenStream tokenStream)
+        {
+            return Parse(tokenStream, "");
         }
 
-        private static ParseResult Parse(List<string> tokens, string parentName)
+        private ParseResult Parse(TokenStream tokenStream, string parentName)
         {
             // Check registry for command
-            string fullyQualifiedCommandName = parentName == "" ? tokens[0] : $"{parentName}.{tokens[0]}";
+            string fullyQualifiedCommandName = parentName == "" ? tokenStream.Peek() : $"{parentName}.{tokenStream.Peek()}";
             if (!ValidateCommandName(fullyQualifiedCommandName, out var result, out ICommand command)) return result;
             
             ReflectionParser reflectionParser = new ReflectionParser(command);
             
             // Recursive subcommand analysis
-            if (tokens.Count > 1 && reflectionParser.HasSubcommandWithSimpleName(tokens[1]))
+            tokenStream.Next();
+            if (tokenStream.HasMore() && reflectionParser.HasSubcommandWithSimpleName(tokenStream.Peek()))
             {
-                return Parse(tokens.Skip(1).ToList(), fullyQualifiedCommandName);
+                return Parse(tokenStream, fullyQualifiedCommandName);
             }
             
             // Parse args
-            ArgumentParser argParser = new(command, tokens, reflectionParser);
+            ArgumentParser argParser = new(command, tokenStream, reflectionParser);
             var argumentParseResult = argParser.Parse();
             if (!argumentParseResult.Success)
             {
@@ -38,14 +43,14 @@ namespace DeveloperConsole
             result.Command = command;
             return result;
         }
-        private static bool ValidateCommandName(string name, out ParseResult result, out ICommand command)
+        private bool ValidateCommandName(string name, out ParseResult result, out ICommand command)
         {
             result = new ParseResult
             {
                 CommandName = name
             };
             
-            if (CommandRegistry.TryGetCommand(name, out command)) return true;
+            if (_commandRegistry.TryGetCommand(name, out command)) return true;
 
             result.Error = ParseError.InvalidCommandName;
             return false;

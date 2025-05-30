@@ -2,16 +2,11 @@ using System.Collections.Generic;
 
 namespace DeveloperConsole
 {
-    public static class OutputManager
+    public class OutputManager : IOutputManager
     {
-        public static List<IConsoleOutputSink> OutputSinks { get;  } = new();
+        public List<IOutputSink> OutputSinks { get;  } = new();
 
-        public static void Initialize()
-        {
-            StaticResetRegistry.Register(UnregisterAllOutputSinks);
-        }
-        
-        public static void RegisterOutputSink(IConsoleOutputSink outputSink)
+        public void RegisterOutputSink(IOutputSink outputSink)
         {
             if (OutputSinks.Contains(outputSink))
             {
@@ -22,7 +17,7 @@ namespace DeveloperConsole
             OutputSinks.Add(outputSink);
         }
 
-        public static void UnregisterOutputSink(IConsoleOutputSink outputSink)
+        public void UnregisterOutputSink(IOutputSink outputSink)
         {
             if (!OutputSinks.Contains(outputSink))
             {
@@ -32,10 +27,13 @@ namespace DeveloperConsole
             
             OutputSinks.Remove(outputSink);
         }
-        
-        public static void UnregisterAllOutputSinks() => OutputSinks.Clear();
-        
-        public static void SendOutput(string message)
+
+        public void UnregisterAllOutputSinks()
+        {
+            OutputSinks.Clear();
+        }
+
+        public void SendOutput(string message)
         {
             foreach (var output in OutputSinks) output.ReceiveOutput(message);
         }

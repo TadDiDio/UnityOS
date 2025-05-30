@@ -6,7 +6,7 @@ namespace DeveloperConsole
     public class KernelApplication : ITerminalApplication
     {
         private List<string> _outputBuffer; 
-        private static Vector2 _scrollPosition = Vector2.zero;
+        private Vector2 _scrollPosition = Vector2.zero;
 
         public KernelApplication(List<string> outputBuffer)
         {
@@ -25,7 +25,7 @@ namespace DeveloperConsole
         public void OnInputRecieved(string input)
         {
             _scrollPosition.y = float.MaxValue;
-            ConsoleKernel.RunInput(input);
+            Kernel.Instance.RunInput(input);
         }
     }
 }

@@ -13,7 +13,6 @@ namespace DeveloperConsole
             if (string.IsNullOrEmpty(rawName))
             {
                 string message = $"Name of {commandType} was null or empty. This is not allowed.";
-                OutputManager.SendOutput(MessageFormatter.Error(message));
                 Debug.Log(message);
                 return "";
             }
@@ -29,7 +28,6 @@ namespace DeveloperConsole
             if (attribute != null) return Name(attribute.Name, commandType);
             
             string message = $"Command type {commandType} does not have a {nameof(CommandAttribute)} attribute.";
-            OutputManager.SendOutput(MessageFormatter.Error(message));
             Debug.Log(message);
             return "";
         }
@@ -39,7 +37,6 @@ namespace DeveloperConsole
             if (string.IsNullOrEmpty(rawDescription))
             {
                 string message = $"Description of {commandType} was null or empty. This is not allowed.";
-                OutputManager.SendOutput(MessageFormatter.Error(message));
                 Debug.Log(message);
                 return "";
             }
@@ -62,10 +59,8 @@ namespace DeveloperConsole
             if (attribute != null) return Description(attribute.Description, commandType);
             
             string message = $"Command type {commandType} does not have a {nameof(CommandAttribute)} attribute.";
-            OutputManager.SendOutput(MessageFormatter.Error(message));
             Debug.Log(message);
             return "";
-
         }
     }
 }

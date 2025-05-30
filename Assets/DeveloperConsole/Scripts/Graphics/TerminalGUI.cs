@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace DeveloperConsole
 {
-    public class TerminalGUI : IConsoleInputSource
+    public class TerminalGUI : IInputSource
     {
         private bool _inputAvailable;
         private string _inputBuffer = "";

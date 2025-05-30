@@ -15,11 +15,18 @@ namespace DeveloperConsole
         private HashSet<FieldInfo> _fieldsSet = new(); 
         private HashSet<SwitchArgAttribute> _switchAttributesPresent = new(); 
         
-        public ArgumentParser(ICommand command, List<string> tokens, ReflectionParser reflectionParser)
+        /// <summary>
+        /// Creates a new ArgumentParser.
+        /// </summary>
+        /// <param name="command">The command to set up.</param>
+        /// <param name="tokenStream">The token stream containing arguments but not the command name.</param>
+        /// <param name="reflectionParser">A reflection parser initialized for the command type.</param>
+        public ArgumentParser(ICommand command, TokenStream tokenStream, ReflectionParser reflectionParser)
         {
             _command = command;
-            _tokenStream = new TokenStream(tokens.Skip(1).ToList()); // Skip command name
+            _tokenStream = tokenStream;
             _reflectionParser = reflectionParser;
+            _command.RegisterTypeParsers();
         }
 
         public ArgumentParseResult Parse()
@@ -47,7 +54,7 @@ namespace DeveloperConsole
                 }
                 
                 List<string> remainingTokens = _tokenStream.Remaining().ToList();
-                if (!TypeParserRegistry.TryParse(field.FieldType, _tokenStream, out var obj))
+                if (!Kernel.Instance.Get<ITypeParserRegistryProvider>().TryParse(field.FieldType, _tokenStream, out var obj))
                 {
                     int tokensUsed = remainingTokens.Count - _tokenStream.Count();
                     string failureToken = string.Join(", ", remainingTokens.Take(tokensUsed));
@@ -135,7 +142,7 @@ namespace DeveloperConsole
                 // Parse the value
                 TokenStream switchStream = new(tokens.Skip(1).ToList()); // Skip switch name
                 List<string> remainingTokens = switchStream.Remaining().ToList();
-                if (!TypeParserRegistry.TryParse(field.FieldType, switchStream, out var obj))
+                if (!Kernel.Instance.Get<ITypeParserRegistryProvider>().TryParse(field.FieldType, switchStream, out var obj))
                 {
                     int tokensUsed = remainingTokens.Count - switchStream.Count();
                     string failureToken = string.Join(", ", remainingTokens.Take(tokensUsed));
@@ -203,7 +210,7 @@ namespace DeveloperConsole
                 while (_tokenStream.HasMore())
                 {
                     List<string> remainingTokens = _tokenStream.Remaining().ToList();
-                    if (!TypeParserRegistry.TryParse(type, _tokenStream, out var obj))
+                    if (!Kernel.Instance.Get<ITypeParserRegistryProvider>().TryParse(type, _tokenStream, out var obj))
                     {
                         int tokensUsed = remainingTokens.Count - _tokenStream.Count();
                         string failureToken = string.Join(", ", remainingTokens.Take(tokensUsed));

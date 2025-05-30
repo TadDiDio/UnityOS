@@ -1,72 +1,47 @@
-#if UNITY_EDITOR
-using UnityEditor;
-#endif
-
+using System;
 using UnityEngine;
 using System.Collections.Generic;
 
 namespace DeveloperConsole
 {
-    public static class InputManager
+    public class InputManager : IInputManager
     {
-        public delegate void InputEventHandler(string input);
-        public static event InputEventHandler InputSubmitted;
+        public event Action<string> InputSubmitted;
+        public List<IInputSource> InputSources { get; } = new();
         
-        public static List<IConsoleInputSource> InputMethods { get; } = new();
-
-        public static void Initialize()
+        public InputManager()
         {
-            StaticResetRegistry.Register(Reset);
-            
-            ConsoleKernel.OnEventOccured += OnEventOccured;
-            
-#if UNITY_EDITOR
-            AssemblyReloadEvents.beforeAssemblyReload += OnBeforeAssemblyReload;
-#endif
+            // TODO: Have kernel call ONEvent not use this event
+            Kernel.OnEventOccured += OnEventOccured;
         }
 
-        private static void OnBeforeAssemblyReload()
+        public void RegisterInputSource(IInputSource inputSource)
         {
-            ConsoleKernel.OnEventOccured -= OnEventOccured;
-        }
-
-        private static void Reset()
-        {
-            ConsoleKernel.OnEventOccured -= OnEventOccured;
-            InputMethods.Clear();
-            InputSubmitted = null;
-        }
-        
-        public static void RegisterInputMethod(IConsoleInputSource inputSource)
-        {
-            if (InputMethods.Contains(inputSource))
+            if (InputSources.Contains(inputSource))
             {
                 // TODO: Warning to console
                 return;
             }
             
-            InputMethods.Add(inputSource);
+            InputSources.Add(inputSource);
         }
 
-        public static void UnregisterInputMethod(IConsoleInputSource inputSource)
+        public void UnregisterInputSource(IInputSource inputSource)
         {
-            if (!InputMethods.Contains(inputSource))
+            if (!InputSources.Contains(inputSource))
             {
                 // TODO: Warning to console
                 return;
             }
             
-            InputMethods.Remove(inputSource);
+            InputSources.Remove(inputSource);
         }
 
-        public static void UnregisterAllInputMethods()
-        {
-            InputMethods.Clear();
-        }
+        public void UnregisterAllInputSources() => InputSources.Clear();
 
-        private static void OnEventOccured(Event current)
+        public void OnEventOccured(Event current)
         {
-            foreach (IConsoleInputSource inputSource in InputMethods)
+            foreach (IInputSource inputSource in InputSources)
             {
                 if (inputSource.InputAvailable())
                 {

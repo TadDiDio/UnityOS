@@ -1,6 +1,6 @@
 namespace DeveloperConsole
 {
-    public interface IConsoleInputSource
+    public interface IInputSource
     {
         public bool InputAvailable();
         public string GetInput();

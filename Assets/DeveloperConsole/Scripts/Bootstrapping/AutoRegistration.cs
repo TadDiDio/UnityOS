@@ -6,9 +6,9 @@ using UnityEngine;
 
 namespace DeveloperConsole
 {
-    public static class AutoRegistration
+    public class AutoRegistration : IAutoRegistrationProvider
     {
-        public static Dictionary<string, Type> AllCommands(int maxDepth = 10)
+        public Dictionary<string, Type> AllCommands()
         {
             var baseCommandInfo = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => !assembly.FullName.StartsWith("Unity") &&
@@ -36,15 +36,16 @@ namespace DeveloperConsole
             {
                 results[CommandMetaProcessor.Name(commandAttribute.Name, type)] = type;
 
+                // TODO: 10 is max depth and should be a user set number
                 var visited = new HashSet<Type> { type }; // Prevent direct self-referencing
                 RecurseSubcommands(type, CommandMetaProcessor.Name(commandAttribute.Name, type), 
-                                   results, maxDepth, 1, visited);
+                                   results, 10, 1, visited);
             }
 
             return results;
         }
 
-        private static void RecurseSubcommands(Type parentType, string parentPath, Dictionary<string, Type> results,
+        private void RecurseSubcommands(Type parentType, string parentPath, Dictionary<string, Type> results,
                                                int maxDepth, int currentDepth, HashSet<Type> visited)
         {
             if (currentDepth > maxDepth)
@@ -52,7 +53,6 @@ namespace DeveloperConsole
                 string message = $"Subcommand recursion exceeded max depth at {parentPath}. " +
                                  $"Possible circular reference or too deep nesting.";
                 Debug.LogWarning(message);
-                OutputManager.SendOutput(MessageFormatter.Warning(message));
                 return;
             }
 
@@ -71,7 +71,6 @@ namespace DeveloperConsole
                     string message = $"Cyclical reference detected in command hierarchy at {parentPath} -> " +
                                      $"{subType.Name}";
                     Debug.LogWarning(message);
-                    OutputManager.SendOutput(MessageFormatter.Warning(message));
                     continue;
                 }
 
@@ -81,7 +80,6 @@ namespace DeveloperConsole
                     string message = $"Subcommand field '{field.Name}' on '{parentType.Name}' does not " +
                                      $"reference a type with CommandAttribute.";
                     Debug.LogWarning(message);
-                    OutputManager.SendOutput(MessageFormatter.Warning(message));
                     continue;
                 }
 

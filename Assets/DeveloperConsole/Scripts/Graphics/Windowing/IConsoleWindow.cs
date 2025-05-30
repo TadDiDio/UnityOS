@@ -7,8 +7,8 @@ namespace DeveloperConsole
         public abstract string Title { get; }
         public abstract Rect WindowRect { get; set; }
 
-        protected ConsoleWindow() => ConsoleKernel.RegisterTickable(this);
-        ~ConsoleWindow() => ConsoleKernel.UnregisterTickable(this);
+        protected ConsoleWindow() => Kernel.Instance.RegisterTickable(this);
+        ~ConsoleWindow() => Kernel.Instance.UnregisterTickable(this);
         
         public abstract void OnGUI(GUIContext context);
         public abstract void Tick();
