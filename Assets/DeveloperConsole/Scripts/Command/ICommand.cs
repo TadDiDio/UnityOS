@@ -1,15 +1,11 @@
-using System;
 using UnityEngine;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 namespace DeveloperConsole
 {
     public interface ICommand
     {
-        public string GetName();
-        public string GetDescription();
         public Task<CommandResult> ExecuteAsync(CommandArgsBase args);
         public void RegisterTypeParsers();
     }
@@ -17,9 +13,6 @@ namespace DeveloperConsole
     #region COMMAND BASES
     public abstract class CommandBase : ICommand
     {
-        protected abstract string Name();
-        protected abstract string Description();
-
         public virtual void RegisterTypeParsers() { }
 
         protected void Print(object obj)
@@ -27,40 +20,6 @@ namespace DeveloperConsole
             Debug.Log(obj.ToString());
         }
         
-        public string GetName()
-        {
-            string name = Name();
-            if (string.IsNullOrEmpty(name))
-            {
-                Debug.Log($"Name of {GetType()} was null or empty. This is not allowed.");
-                return "";
-            }
-
-            name = name.Trim().ToLower();
-            return Regex.Replace(name, @"[^a-zA-Z]+", "");
-        }
-        
-        public string GetDescription()
-        {
-            string description = Description();
-            if (string.IsNullOrEmpty(description))
-            {
-                Debug.Log($"Description of {GetType()} was null or empty. This is not allowed.");
-                return "";
-            }
-
-            description = description.Trim();
-            description = char.ToUpper(description[0]) + description.Substring(1);
-            
-            char last = description[^1];
-            if (last != '.' && last != '!' && last != '?')
-            {
-                description += ".";
-            }
-
-            return description;
-        }
-
         public abstract Task<CommandResult> ExecuteAsync(CommandArgsBase args);
     }
     public abstract class ConsoleCommand : CommandBase

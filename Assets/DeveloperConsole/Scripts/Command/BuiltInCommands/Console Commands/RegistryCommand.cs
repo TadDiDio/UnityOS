@@ -2,16 +2,14 @@ using System.Collections.Generic;
 
 namespace DeveloperConsole
 {
+    [Command("reg", "Shows a registry of all commands.")]
     public class RegistryCommand : ConsoleCommand
     {
-        protected override string Name() => "reg";
-        protected override string Description() => "Shows a registry of all commands.";
-
         protected override CommandResult Execute(ConsoleCommandArgs args)
         {
             List<string> lines = new();
 
-            foreach (var name in CommandRegistry.GetAllCommandNames())
+            foreach (var name in CommandRegistry.GetBaseCommandNames())
             {
                 lines.Add($"{MessageFormatter.AddColor(name, MessageFormatter.Blue)}: " +
                           $"{CommandRegistry.GetDescription(name)}");

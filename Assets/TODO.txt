@@ -1,0 +1,47 @@
+
+ROSLYN:
+Check attributes on bad types, i.e. Subcommand only allowed on ICommand objects
+Check that positional indexes are different
+UnlimitedArgsAttribute is only used on IEnumerable fields
+Only one UnlimitedArgsAttribute
+Required is only for switch, all positional are always required
+Making a switch with the same long or short name
+Missing Command attribute on command class
+preserve attribute for anything with Command on it
+
+THINGS TO TEST
+CommandRegistry & auto registration with recursive and cyclical references
+ConsoleAPI
+All Validated attributes via test commands
+
+NEXT UP:
+subcommands - maybe allow hierarichal help (help command subcommand)
+Precommand validators
+aysnc commands (minimal additional work, testing mostly) 
+input redirection (to current terminal application, possibly working but untested) 
+permissions system (hooked via precommand validator)
+windowing system for multiple terminals or custom windowed commands
+Maintain consistency per environment (editor, build), not across both
+Auto completion system with rich typed positional arg hints in CLI
+
+BUGS
+Weird error case: unexpected token appearing after positionals but before a switch on a command which accepts variadic 
+args may display a required validation error despite having the switch because the unexpected token started the 
+variadic processing. Technically this error is correct but its unclear.
+
+
+FEATURES TO GET TO
+Allow users to apply/override global command name and description processing for consistency
+Allow command groups for better output in reg command
+Allow users to register type parsers in a single spot if they prefer, something like GlobalTypeParserRegistration.
+Create auto test harness to allow users to quickly test their commands.
+Async command discovery process removes the need for manual registration which would be absolutely attrocious
+
+NOTES FOR DOCS
+Commands are stored in registry using their fully qualified name i.e. parent.sub.subsub so that multiple subcommands 
+can have the same root name without conflicts. Make sure to use the fully qualified name if doing a query (users will
+very rarely if ever need to query though)
+
+COMMAND IDEAS
+bind
+list (debugs helpful fields on all types in the scene maybe)

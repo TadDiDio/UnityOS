@@ -20,7 +20,7 @@ namespace DeveloperConsole
         
         public class ParserWrapper
         {
-            public bool TryParse<T>(Type type, TokenStream stream, out object obj) => ConsoleParser.TryParse(type, stream, out obj);
+            public bool TryParse<T>(Type type, TokenStream stream, out object obj) => TypeParserRegistry.TryParse(type, stream, out obj);
             public void RegisterTypeParser<T>(BaseTypeParser parser) => TypeParserRegistry.RegisterTypeParser<T>(parser);
         }
 

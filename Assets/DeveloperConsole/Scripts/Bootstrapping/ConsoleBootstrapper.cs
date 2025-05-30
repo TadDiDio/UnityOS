@@ -70,8 +70,8 @@ namespace DeveloperConsole
 
             if (!config) config = ConsoleConfiguration.Default();
             
-            CommandRegistry.Initialize(AutoRegistration.CommandTypes());
-            InitializeTypeParsers(config.AutoDetectSetup);
+            CommandRegistry.Initialize(AutoRegistration.AllCommands());
+            InitializeTypeParsers();
             
             // Load console state
             ConsoleState consoleState = JsonFileManager.Load();
@@ -91,8 +91,9 @@ namespace DeveloperConsole
             
             _commonElementsInitialized = true;
         }
-        private static void InitializeTypeParsers(bool autoDetect)
+        private static void InitializeTypeParsers()
         {
+            // Initialize all built in parsers. Users will provide their own via command class hook.
             TypeParserRegistry.RegisterTypeParser<int>(new IntParser());;
             TypeParserRegistry.RegisterTypeParser<float>(new FloatParser());
             TypeParserRegistry.RegisterTypeParser<string>(new StringParser());
@@ -101,26 +102,6 @@ namespace DeveloperConsole
             TypeParserRegistry.RegisterTypeParser<Vector3>(new Vector3Parser());
             TypeParserRegistry.RegisterTypeParser<Color>(new ColorParser());
             TypeParserRegistry.RegisterTypeParser<Color>(new AlphaColorParser());
-
-            if (!autoDetect) return;
-            
-            // Auto-detect and add parsers
-            foreach (var (parsedType, parserType) in AutoRegistration.TypeParsersTypes())
-            {
-                try
-                {
-                    var instance = Activator.CreateInstance(parserType);
-                    var registerMethod = typeof(TypeParserRegistry)
-                        .GetMethod("RegisterTypeParser")
-                        ?.MakeGenericMethod(parsedType);
-
-                    if (registerMethod != null) registerMethod.Invoke(null, new[] { instance });
-                }
-                catch (Exception e)
-                {
-                    Debug.LogWarning($"Failed to register parser {parserType.Name} for {parsedType.Name}: {e.Message}");
-                }
-            }
         }
     }
 }

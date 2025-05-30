@@ -7,28 +7,29 @@ namespace DeveloperConsole
 {
     public class ReflectionParser
     {
-        private static BindingFlags AllFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-
-        private Type _commandType;
+        private ICommand _command;
         private FieldInfo[] _fields;
+        private const BindingFlags AllFlags = BindingFlags.Instance | BindingFlags.Public |
+                                              BindingFlags.NonPublic | BindingFlags.Static;
 
-        public ReflectionParser(Type commandType)
+        public ReflectionParser(ICommand command)
         {
-            _commandType = commandType;
-            _fields = _commandType.GetFields(AllFlags);
+            _command = command;
+            _fields = command.GetType().GetFields(AllFlags);
         }
         
-        public IEnumerable<FieldInfo> GetFieldsWithAttribute<TAttribute>() where TAttribute : Attribute
+        public bool HasSubcommandWithSimpleName(string name)
         {
-            return _fields.Where(field => Attribute.IsDefined(field, typeof(TAttribute)));
-        }
-
-        public bool HasSubcommandWithName(string name)
-        {
+            name = name.Trim().ToLower();
             return _fields
-                .Select(field => field.GetCustomAttribute<SubcommandAttribute>())
-                .Where(attr => attr != null)
-                .Any(attr => attr.Name == name);
+                .Where(field =>
+                    field.GetCustomAttribute<SubcommandAttribute>() != null &&
+                    typeof(CommandBase).IsAssignableFrom(field.FieldType))
+                .Any(field =>
+                {
+                    var attribute = field.FieldType.GetCustomAttribute<CommandAttribute>();
+                    return attribute != null && attribute.Name == name && attribute.IsSubcommand;
+                });
         }
 
         public List<FieldInfo> GetPositionalArgFieldsInOrder()
@@ -43,12 +44,15 @@ namespace DeveloperConsole
         
         public (FieldInfo, SwitchArgAttribute)? GetSwitchField(string name)
         {
+            string switchName = name.TrimStart('-');
+            switchName = switchName.Length == 1 ? $"-{switchName}" : $"--{switchName}";
+            
             foreach (var field in _fields)
             {
                 var attr = field.GetCustomAttribute<SwitchArgAttribute>();
                 if (attr == null) continue;
                 
-                bool match = name.Length == 2 ? attr.ShortName == name : attr.Name == name;
+                bool match = switchName.Length == 2 ? attr.ShortName == switchName : attr.Name == switchName;
                 if (match) return (field, attr);
             }
             return null;

@@ -1,52 +1,51 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
+using System.Reflection;
 
 namespace DeveloperConsole
 {
     public static class CommandRegistry
     {
-        private static readonly Dictionary<string, ICommand> _commandPrefabs = new();
-
+        private static Dictionary<string, Type> _commands = new();
+        
         private static void ClearAllCommands()
         {
-            _commandPrefabs.Clear();
+            _commands.Clear();
         }
         
-        public static void Initialize(List<Type> commandTypes)
+        public static void Initialize(Dictionary<string, Type> allCommands)
         {
             StaticResetRegistry.Register(ClearAllCommands);
-
-            foreach (var type in commandTypes) 
-            {
-                ICommand instance = (ICommand)Activator.CreateInstance(type);
-                
-                instance.RegisterTypeParsers();
-                
-                string commandName = instance.GetName();
-                if (!_commandPrefabs.TryAdd(commandName, instance))
-                {
-                    Debug.LogWarning($"Two or more commands share the name {commandName}!");
-                }
-            }
+            _commands = allCommands;
         }
+
+        public static List<string> GetBaseCommandNames()
+        {
+            return _commands
+                .Where(kvp =>
+                {
+                    var attr = kvp.Value.GetCustomAttribute<CommandAttribute>();
+                    return attr != null && attr.IsSubcommand == false;
+                })
+                .Select(kvp => kvp.Key)
+                .ToList();
+        }  
         
-        public static List<string> GetAllCommandNames() => _commandPrefabs.Keys.ToList();
-        
-        public static bool TryGetCommand(string name, out ICommand command)
+        public static bool TryGetCommand(string fullyQualifiedName, out ICommand command)
         {
             command = null;
-            if (!_commandPrefabs.TryGetValue(name, out ICommand prefab)) return false;
+            if (!_commands.TryGetValue(fullyQualifiedName, out Type commandType)) return false;
             
-            command = (ICommand)Activator.CreateInstance(prefab.GetType());
+            command = (ICommand)Activator.CreateInstance(commandType);
             return true;
         }
         
-        public static string GetDescription(string name)
+        public static string GetDescription(string fullyQualifiedName)
         {
-            if (!_commandPrefabs.TryGetValue(name, out var prefab)) return "";
-            return prefab.GetDescription();
+            if (!_commands.TryGetValue(fullyQualifiedName, out var commandType)) return "";
+
+            return CommandMetaProcessor.Description(commandType);
         }
     }
 }

@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
 
 namespace DeveloperConsole
 {
     public static class AutoRegistration
     {
-        public static List<Type> CommandTypes()
+        public static Dictionary<string, Type> AllCommands(int maxDepth = 10)
         {
-            return AppDomain.CurrentDomain.GetAssemblies()
+            var baseCommandInfo = AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => !assembly.FullName.StartsWith("Unity") &&
                                    !assembly.FullName.StartsWith("System") &&
                                    !assembly.FullName.StartsWith("mscorlib") &&
@@ -18,49 +19,79 @@ namespace DeveloperConsole
                     try { return assembly.GetTypes(); }
                     catch (ReflectionTypeLoadException e) { return e.Types.Where(t => t != null); }
                 })
-                .Where(type =>
-                    type.Namespace != null &&
-                    type.Namespace.StartsWith("DeveloperConsole") &&
-                    typeof(ICommand).IsAssignableFrom(type) &&
-                    !type.IsAbstract &&
-                    !type.IsInterface &&
-                    type.GetCustomAttribute<ExcludeFromCmdRegistry>() == null)
+                .Select(type => (Type: type, CommandAttr: type.GetCustomAttribute<CommandAttribute>()))
+                .Where(t =>
+                    t.Type.Namespace != null &&
+                    t.Type.Namespace.StartsWith("DeveloperConsole") &&
+                    typeof(ICommand).IsAssignableFrom(t.Type) &&
+                    !t.Type.IsAbstract &&
+                    !t.Type.IsInterface &&
+                    t.Type.GetCustomAttribute<ExcludeFromCmdRegistry>() == null &&
+                    t.CommandAttr is { IsSubcommand: false })
                 .ToList();
-        }
 
-        public static List<(Type parsedType, Type parserType)> TypeParsersTypes()
-        {
-            var baseGenericType = typeof(BaseTypeParser);
-            var results = new List<(Type, Type)>();
+            Dictionary<string, Type> results = new();
 
-            var allTypes = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(asm =>
-                {
-                    try { return asm.GetTypes(); }
-                    catch (ReflectionTypeLoadException ex) { return ex.Types.Where(t => t != null); }
-                });
-
-            foreach (var type in allTypes)
+            foreach (var (type, commandAttribute) in baseCommandInfo)
             {
-                if (type.IsAbstract || type.IsInterface || type.IsGenericTypeDefinition)
-                    continue;
+                results[CommandMetaProcessor.Name(commandAttribute.Name, type)] = type;
 
-                var baseType = type.BaseType;
-
-                while (baseType != null)
-                {
-                    if (baseType.IsGenericType && baseType.GetGenericTypeDefinition() == baseGenericType)
-                    {
-                        var parsedType = baseType.GetGenericArguments()[0];
-                        results.Add((parsedType, type));
-                        break;
-                    }
-
-                    baseType = baseType.BaseType;
-                }
+                var visited = new HashSet<Type> { type }; // Prevent direct self-referencing
+                RecurseSubcommands(type, CommandMetaProcessor.Name(commandAttribute.Name, type), 
+                                   results, maxDepth, 1, visited);
             }
 
             return results;
+        }
+
+        private static void RecurseSubcommands(Type parentType, string parentPath, Dictionary<string, Type> results,
+                                               int maxDepth, int currentDepth, HashSet<Type> visited)
+        {
+            if (currentDepth > maxDepth)
+            {
+                string message = $"Subcommand recursion exceeded max depth at {parentPath}. " +
+                                 $"Possible circular reference or too deep nesting.";
+                Debug.LogWarning(message);
+                OutputManager.SendOutput(MessageFormatter.Warning(message));
+                return;
+            }
+
+            var fields = parentType.GetFields(BindingFlags.Instance | BindingFlags.Public |
+                                              BindingFlags.NonPublic | BindingFlags.Static);
+
+            foreach (var field in fields)
+            {
+                if (field.GetCustomAttribute<SubcommandAttribute>() == null) continue;
+
+                var subType = field.FieldType;
+                if (!typeof(ICommand).IsAssignableFrom(subType)) continue;
+
+                if (visited.Contains(subType))
+                {
+                    string message = $"Cyclical reference detected in command hierarchy at {parentPath} -> " +
+                                     $"{subType.Name}";
+                    Debug.LogWarning(message);
+                    OutputManager.SendOutput(MessageFormatter.Warning(message));
+                    continue;
+                }
+
+                var subAttr = subType.GetCustomAttribute<CommandAttribute>();
+                if (subAttr == null)
+                {
+                    string message = $"Subcommand field '{field.Name}' on '{parentType.Name}' does not " +
+                                     $"reference a type with CommandAttribute.";
+                    Debug.LogWarning(message);
+                    OutputManager.SendOutput(MessageFormatter.Warning(message));
+                    continue;
+                }
+
+                var fullPath = $"{parentPath}.{CommandMetaProcessor.Name(subAttr.Name, subType)}";
+                results[fullPath] = subType;
+
+                visited.Add(subType);
+                RecurseSubcommands(subType, fullPath, results, maxDepth, currentDepth + 1, visited);
+                visited.Remove(subType);
+            }
         }
     }
 }

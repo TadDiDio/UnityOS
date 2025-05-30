@@ -8,7 +8,6 @@ namespace DeveloperConsole
     public class ArgumentParser
     {
         private ICommand _command;
-        private Type _commandType;
 
         private TokenStream _tokenStream;
         private ReflectionParser _reflectionParser;
@@ -19,7 +18,6 @@ namespace DeveloperConsole
         public ArgumentParser(ICommand command, List<string> tokens, ReflectionParser reflectionParser)
         {
             _command = command;
-            _commandType = command.GetType();
             _tokenStream = new TokenStream(tokens.Skip(1).ToList()); // Skip command name
             _reflectionParser = reflectionParser;
         }
@@ -71,9 +69,9 @@ namespace DeveloperConsole
         {
             while (_tokenStream.HasMore())
             {
-                if (!_tokenStream.Peek().StartsWith("-")) return SetVariadicArgs();
-
-                if (_tokenStream.Peek().StartsWith("---"))
+                if (!IsSwitch(_tokenStream.Peek())) return SetVariadicArgs();
+        
+                if (IsMalformedSwitch(_tokenStream.Peek()))
                 {
                     return new ArgumentParseResult
                     {
@@ -81,17 +79,14 @@ namespace DeveloperConsole
                         ErroneousToken = _tokenStream.Peek()
                     };
                 }
-
+        
                 List<string> tokens = new() { _tokenStream.Next() };
                 
                 string switchName = tokens[0];
-                switchName = switchName.TrimStart('-');
-                switchName = switchName.Length == 1 ? $"-{switchName}" : $"--{switchName}";
-
+        
                 // Get the field associated with the switch
                 var result = _reflectionParser.GetSwitchField(switchName);
-
-                bool isBoolSwitch;
+        
                 if (!result.HasValue)
                 {
                     return new ArgumentParseResult
@@ -102,7 +97,20 @@ namespace DeveloperConsole
                 }
                 
                 var (field, attribute) = result.Value;
-                isBoolSwitch = field.FieldType == typeof(bool);
+                
+                if (!_switchAttributesPresent.Add(attribute))
+                {
+                    return new ArgumentParseResult
+                    {
+                        Error = ArgumentParseError.DuplicateSwitch,
+                        ErroneousField = field,
+                        ErroneousAttribute = attribute,
+                        ErroneousToken = switchName
+                    };
+                }
+                
+                
+                bool isBoolSwitch = field.FieldType == typeof(bool);
                     
                 while (_tokenStream.HasMore())
                 {
@@ -120,21 +128,10 @@ namespace DeveloperConsole
                     {
                         if (!float.TryParse(next, out float _)) break;
                     };
-
+        
                     tokens.Add(_tokenStream.Next());
                 }
-               
-                if (!_switchAttributesPresent.Add(attribute))
-                {
-                    return new ArgumentParseResult
-                    {
-                        Error = ArgumentParseError.DuplicateSwitch,
-                        ErroneousField = field,
-                        ErroneousAttribute = attribute,
-                        ErroneousToken = switchName
-                    };
-                }
-
+        
                 // Parse the value
                 TokenStream switchStream = new(tokens.Skip(1).ToList()); // Skip switch name
                 List<string> remainingTokens = switchStream.Remaining().ToList();
@@ -160,6 +157,11 @@ namespace DeveloperConsole
             
             return new ArgumentParseResult { Success = true };
         }
+
+        private bool IsSwitch(string token) => token.StartsWith("-");
+        private bool IsMalformedSwitch(string token) => token.StartsWith("---");
+        
+        
         private void SetEmptyVariadicListIfPresent()
         {
             var result = _reflectionParser.GetVariadicArgsField(out bool _);

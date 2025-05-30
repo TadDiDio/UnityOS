@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Collections.Generic;
 
@@ -6,23 +5,23 @@ namespace DeveloperConsole
 {
     public static class ConsoleParser
     {
-        public static bool TryParse(Type type, TokenStream stream, out object obj)
-        {
-            return TypeParserRegistry.TryParse(type, stream, out obj);
-        }
         public static ParseResult Parse(List<string> tokens)
         {
+            return Parse(tokens, "");
+        }
+
+        private static ParseResult Parse(List<string> tokens, string parentName)
+        {
             // Check registry for command
-            // TODO: Must be able to validate subcommand names here too. maybe flag included as arg in Parse() if is sub
-            if (!ValidateCommandName(tokens[0], out var result, out ICommand command)) return result;
+            string fullyQualifiedCommandName = parentName == "" ? tokens[0] : $"{parentName}.{tokens[0]}";
+            if (!ValidateCommandName(fullyQualifiedCommandName, out var result, out ICommand command)) return result;
             
-            ReflectionParser reflectionParser = new ReflectionParser(command.GetType());
+            ReflectionParser reflectionParser = new ReflectionParser(command);
             
-            // TODO: Untested
             // Recursive subcommand analysis
-            if (tokens.Count > 1 && reflectionParser.HasSubcommandWithName(tokens[1]))
+            if (tokens.Count > 1 && reflectionParser.HasSubcommandWithSimpleName(tokens[1]))
             {
-                return Parse(tokens.Skip(1).ToList());
+                return Parse(tokens.Skip(1).ToList(), fullyQualifiedCommandName);
             }
             
             // Parse args
@@ -39,7 +38,6 @@ namespace DeveloperConsole
             result.Command = command;
             return result;
         }
-
         private static bool ValidateCommandName(string name, out ParseResult result, out ICommand command)
         {
             result = new ParseResult

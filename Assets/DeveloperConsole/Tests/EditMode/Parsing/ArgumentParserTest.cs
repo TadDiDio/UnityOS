@@ -9,6 +9,7 @@ namespace DeveloperConsole.Tests
     {
         #region TEST TYPES
         [ExcludeFromCmdRegistry]
+        [Command("positionaltest", "")]
         private class PositionalTest : CommandBase
         {
             [PositionalArg(0)]
@@ -23,10 +24,6 @@ namespace DeveloperConsole.Tests
             [PositionalArg(2)]
             public bool boolean;
 
-            protected override string Name() => "positionaltest";
-
-            protected override string Description() => "positionaltest";
-
             public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
             {
                 throw new System.NotImplementedException();
@@ -34,6 +31,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
+        [Command("switchtest", "")]
         private class SwitchTest : CommandBase
         {
             [SwitchArg("option1", 'o')]
@@ -42,9 +40,21 @@ namespace DeveloperConsole.Tests
             [SwitchArg("message", 'm')]
             public string message;
             
-            protected override string Name() => "switchtest";
-            protected override string Description() => "switchtest";
-
+            public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+        [ExcludeFromCmdRegistry]
+        [Command("switchtestrequired", "")]
+        private class SwitchTestRequired : CommandBase
+        {
+            [SwitchArg("option", 'o')] [RequiredArg]
+            public float option;
+            
+            [SwitchArg("message", 'm')] [RequiredArg]
+            public string message;
+            
             public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
             {
                 throw new System.NotImplementedException();
@@ -52,6 +62,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
+        [Command("switchandpositionaltest", "")]
         private class SwitchAndPositionalTest : CommandBase
         {
             [PositionalArg(0)]
@@ -63,9 +74,6 @@ namespace DeveloperConsole.Tests
             [SwitchArg("message", 'm')]
             public string message = "default message";
             
-            protected override string Name() => "switchandpositionaltest";
-            protected override string Description() => "switchandpositionaltest";
-
             public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
             {
                 throw new System.NotImplementedException();
@@ -73,12 +81,10 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
+        [Command("variadictest", "")]
         private class VariadicTest : CommandBase
         {
             [VariadicArgs] public List<float> args;
-            protected override string Name() => "variadictest";
-            protected override string Description() => "variadictest";
-
             public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
             {
                 throw new System.NotImplementedException();
@@ -86,12 +92,10 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
+        [Command("variadicbadcontainertest", "")]
         private class VariadicBadContainerTest : CommandBase
         {
             [VariadicArgs] public float[] args;
-            protected override string Name() => "variadicbadcontainertest";
-            protected override string Description() => "variadicbadcontainertest";
-
             public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
             {
                 throw new System.NotImplementedException();
@@ -99,6 +103,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
+        [Command("switchandpositionalandvariadictest", "")]
         private class SwitchAndPositionalAndVariadicTest : CommandBase
         {
             [PositionalArg(0)] public float number;
@@ -111,9 +116,6 @@ namespace DeveloperConsole.Tests
 
             [VariadicArgs] 
             public List<Vector2> vectors;
-            protected override string Name() => "switchandpositionalandvariadictest";
-            protected override string Description() => "switchandpositionalandvariadictest";
-
             public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
             {
                 throw new System.NotImplementedException();
@@ -135,7 +137,7 @@ namespace DeveloperConsole.Tests
                 "stringy"
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
@@ -160,7 +162,7 @@ namespace DeveloperConsole.Tests
                 "true",
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
@@ -185,7 +187,7 @@ namespace DeveloperConsole.Tests
                 "uh oh"
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
@@ -205,12 +207,122 @@ namespace DeveloperConsole.Tests
                 "switchtest",
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
             
             Assert.True(result.Success);
+        }
+        
+        [Test]
+        public void ArgumentParserTest_SwitchesRequiredButNone()
+        {
+            SwitchTestRequired command = new();
+            
+            List<string> tokens = new()
+            {
+                "switchtestrequired",
+            };
+
+            ReflectionParser reflectionParser = new(command);
+            ArgumentParser parser = new(command, tokens, reflectionParser);
+            
+            var result = parser.Parse();
+            
+            Assert.False(result.Success);
+            Assert.AreEqual(result.Error, ArgumentParseError.AttributeValidationError);
+            Assert.AreEqual(result.ErroneousField.Name, "option");
+            Assert.AreEqual(result.ErroneousAttribute.GetType(), typeof(RequiredArgAttribute));
+        }
+        [Test]
+        public void ArgumentParserTest_SwitchesRequiredButMissingOne()
+        {
+            SwitchTestRequired command = new();
+            
+            List<string> tokens = new()
+            {
+                "switchtestrequired",
+                "-o",
+                "1.5",
+            };
+
+            ReflectionParser reflectionParser = new(command);
+            ArgumentParser parser = new(command, tokens, reflectionParser);
+            
+            var result = parser.Parse();
+            
+            Assert.False(result.Success);
+            Assert.AreEqual(result.Error, ArgumentParseError.AttributeValidationError);
+            Assert.AreEqual(result.ErroneousField.Name, "message");
+            Assert.AreEqual(result.ErroneousAttribute.GetType(), typeof(RequiredArgAttribute));
+        }
+        [Test]
+        public void ArgumentParserTest_SwitchesRequiredAndGiven()
+        {
+            SwitchTestRequired command = new();
+            
+            List<string> tokens = new()
+            {
+                "switchtestrequired",
+                "-o",
+                "1.5",
+                "-m",
+                "message"
+            };
+
+            ReflectionParser reflectionParser = new(command);
+            ArgumentParser parser = new(command, tokens, reflectionParser);
+            
+            var result = parser.Parse();
+            
+            Assert.True(result.Success);
+        }
+        
+        [Test]
+        public void ArgumentParserTest_UnrecognizedSwitch()
+        {
+            SwitchTest command = new();
+            
+            List<string> tokens = new()
+            {
+                "switchtest",
+                "-a",
+                "1.5",
+            };
+
+            ReflectionParser reflectionParser = new(command);
+            ArgumentParser parser = new(command, tokens, reflectionParser);
+            
+            var result = parser.Parse();
+            
+            Assert.False(result.Success);
+            Assert.AreEqual(result.ErroneousToken, "-a");
+        }
+        
+        [Test]
+        public void ArgumentParserTest_DuplicateSwitch()
+        {
+            SwitchTest command = new();
+            
+            List<string> tokens = new()
+            {
+                "switchtest",
+                "-o",
+                "1.5",
+                "-o",
+                "5"
+            };
+
+            ReflectionParser reflectionParser = new(command);
+            ArgumentParser parser = new(command, tokens, reflectionParser);
+            
+            var result = parser.Parse();
+            
+            Assert.False(result.Success);
+            Assert.AreEqual(result.ErroneousToken, "-o");
+            Assert.AreEqual(result.ErroneousField.Name, "floatingPoint");
+            Assert.AreEqual(result.ErroneousAttribute.GetType(), typeof(SwitchArgAttribute));
         }
         
         [Test]
@@ -225,7 +337,7 @@ namespace DeveloperConsole.Tests
                 "1.5",
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
@@ -248,7 +360,7 @@ namespace DeveloperConsole.Tests
                 "1.5",
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
@@ -272,7 +384,7 @@ namespace DeveloperConsole.Tests
                 "true",
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
@@ -297,7 +409,7 @@ namespace DeveloperConsole.Tests
                 "1.5"
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
@@ -323,7 +435,7 @@ namespace DeveloperConsole.Tests
                 "10"
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
@@ -348,7 +460,7 @@ namespace DeveloperConsole.Tests
                 "10"
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
@@ -375,7 +487,7 @@ namespace DeveloperConsole.Tests
                 "true"
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
@@ -401,7 +513,7 @@ namespace DeveloperConsole.Tests
                 "5"
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
@@ -429,7 +541,7 @@ namespace DeveloperConsole.Tests
                 "3"
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
@@ -462,7 +574,7 @@ namespace DeveloperConsole.Tests
                 "5"
             };
 
-            ReflectionParser reflectionParser = new(command.GetType());
+            ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, tokens, reflectionParser);
             
             var result = parser.Parse();
