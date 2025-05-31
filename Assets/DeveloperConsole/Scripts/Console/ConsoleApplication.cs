@@ -39,9 +39,9 @@ namespace DeveloperConsole
             _scrollPosition.y = float.MaxValue;
         }
 
-        protected override async Task OnInput(string rawInput, ConsoleState consoleState = null)
+        protected override async Task RunInput(string rawInput, ConsoleState consoleState = null)
         {
-            await base.OnInput(rawInput, _consoleState);
+            await base.RunInput(rawInput, _consoleState);
         }
 
         protected override void OnAfterInputProcessed(CommandResult result)

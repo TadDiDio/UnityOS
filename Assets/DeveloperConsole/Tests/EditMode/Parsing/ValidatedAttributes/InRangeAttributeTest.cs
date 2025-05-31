@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
+using UnityEngine;
 
 namespace DeveloperConsole.Tests.ValidatedAttributes
 {
@@ -13,7 +14,7 @@ namespace DeveloperConsole.Tests.ValidatedAttributes
         [Command("test", "test", false)]
         private class TestCommand : SimpleCommand
         {
-            [InRange(0, 10)] public int num;
+            [InRange(0, 10)] [PositionalArg(0)] public int num;
             protected override CommandResult Execute(CommandContext context)
             {
                 throw new System.NotImplementedException();
@@ -59,28 +60,12 @@ namespace DeveloperConsole.Tests.ValidatedAttributes
             tokens = new() { "test", "-1" };
             stream = new(tokens);
             result = parser.Parse(stream);
-            field = result.Command.GetType().GetField("num");
-            attribute = field.GetCustomAttribute<InRangeAttribute>();
-            Assert.NotNull(attribute);
-            data = new()
-            {
-                FieldInfo = field,
-                Object = result.Command
-            };
-            Assert.False(attribute.Validate(data));
+            Assert.Null(result.Command);
             
             tokens = new() { "test", "11" };
             stream = new(tokens);
             result = parser.Parse(stream);
-            field = result.Command.GetType().GetField("num");
-            attribute = field.GetCustomAttribute<InRangeAttribute>();
-            Assert.NotNull(attribute);
-            data = new()
-            {
-                FieldInfo = field,
-                Object = result.Command
-            };
-            Assert.False(attribute.Validate(data));
+            Assert.Null(result.Command);
         }
     }
 }

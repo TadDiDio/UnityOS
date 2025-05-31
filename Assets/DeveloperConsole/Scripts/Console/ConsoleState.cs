@@ -32,5 +32,16 @@ namespace DeveloperConsole
             
             OutputBuffer.Add(output);
         }
+
+        public static ConsoleState Default()
+        {
+            ConsoleState state = new()
+            {
+                OutputBuffer = new List<string>(),
+                CommandHistory = new List<string>()
+            };
+
+            return state;
+        }
     }
 }

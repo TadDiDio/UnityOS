@@ -13,7 +13,7 @@ namespace DeveloperConsole
         public static Color Red => Color.red;
         public static Color White => Color.white;
 
-        public static string Bar = "-------------------------------";
+        public static readonly string Bar = $"{Environment.NewLine}──────────────────────────────{Environment.NewLine}";
         
         private static string ColorToHex(Color color)
         {
@@ -37,6 +37,11 @@ namespace DeveloperConsole
             return $"{tag} {message}";
         }
 
+        public static string Bold(string message)
+        {
+            return $"<b>{message}</b>";
+        }
+        
         public static string Title(string title, Color color)
         {
             return $"{AddColor(title, color)}{Environment.NewLine}{Bar}{Environment.NewLine}";

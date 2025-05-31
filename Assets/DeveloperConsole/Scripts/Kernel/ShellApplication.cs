@@ -26,17 +26,18 @@ namespace DeveloperConsole
         {
             try
             {
-                await OnInput(input);
+                await RunInput(input);
             }
             catch (Exception)
             {
                 // Ignored
             }
         }
-        protected virtual async Task OnInput(string rawInput, ConsoleState consoleState = null)
+        protected virtual async Task RunInput(string rawInput, ConsoleState consoleState = null)
         {
             try
             {
+                OnBeforeInputProcessed(rawInput);
                 OnBeforeInputProcessed(rawInput);
                 // TODO: Use user config instead of > and maybe don't always put raw input
                 OutputManager.SendOutput($"> {rawInput}");
@@ -56,6 +57,7 @@ namespace DeveloperConsole
                 // TODO: PreCommandAttribute 
                 
                 // Run
+                if (consoleState == null) consoleState = ConsoleState.Default();
                 CommandContext context = new()
                 {
                     Tokens = tokenizationResult.Tokens,

@@ -1,13 +1,26 @@
+using System;
+
 namespace DeveloperConsole
 {
     public static class ConsoleAPI
     {
-        public static readonly ParserWrapper Parser = new();
+        public static void RegisterTypeParser<T>(BaseTypeParser parser) => Kernel.Instance.Get<ITypeParserRegistryProvider>().RegisterTypeParser<T>(parser);
 
-        // TODO: Put client facing API here
-        public class ParserWrapper
+        public static bool TryGetCommand(string fullyQualifiedName, out ICommand command)
         {
-            public void RegisterTypeParser<T>(BaseTypeParser parser) => Kernel.Instance.Get<ITypeParserRegistryProvider>().RegisterTypeParser<T>(parser);
+            command = null;
+            if (!Kernel.IsInitialized) return false;
+            
+            var registry = Kernel.Instance.Get<ICommandRegistryProvider>();
+
+            try
+            {
+                return registry.TryGetCommand(fullyQualifiedName, out command);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
     }
 }
