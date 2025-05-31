@@ -7,9 +7,27 @@ namespace DeveloperConsole
     /// </summary>
     public class PlayModeTicker : MonoBehaviour
     {
-        // TODO: May need to handle duplicates here since bootstrapper checks before scene load
+        // TODO: Need to handle duplicate playmode tickers here
 
-        private void Update() => Kernel.Instance.Tick();
-        private void OnGUI() => Kernel.Instance.OnGUI(Screen.width, Screen.height);
+        private void Update()
+        {
+            if (!Kernel.IsInitialized)
+            {
+                Debug.LogWarning("Kernel not initialized, yet play mode ticker is. This should not happen. Skipping tick.");
+                return;
+            }
+            
+            Kernel.Instance.Tick();
+        }
+        private void OnGUI()
+        { 
+            if (!Kernel.IsInitialized)
+            {
+                Debug.LogWarning("Kernel not initialized, yet play mode ticker is. This should not happen. Skipping OnGUI.");
+                return;
+            }
+            
+            Kernel.Instance.OnGUI(Screen.width, Screen.height);
+        }
     }
 }

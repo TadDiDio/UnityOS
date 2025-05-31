@@ -1,102 +1,63 @@
 using UnityEngine;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using JetBrains.Annotations;
 
 namespace DeveloperConsole
 {
+    /// <summary>
+    /// Command interface.
+    /// </summary>
     public interface ICommand
     {
-        public Task<CommandResult> ExecuteAsync(CommandArgsBase args);
+        public Task<CommandResult> ExecuteAsync(CommandContext context);
         public void RegisterTypeParsers();
     }
 
     #region COMMAND BASES
+    
+    /// <summary>
+    /// Base class for all commands.
+    /// </summary>
     public abstract class CommandBase : ICommand
     {
         public virtual void RegisterTypeParsers() { }
 
-        protected void Print(object obj)
+        protected void print(object obj)
         {
             Debug.Log(obj.ToString());
         }
         
-        public abstract Task<CommandResult> ExecuteAsync(CommandArgsBase args);
+        public abstract Task<CommandResult> ExecuteAsync(CommandContext context);
     }
-    public abstract class ConsoleCommand : CommandBase
-    {
-        public override async Task<CommandResult> ExecuteAsync(CommandArgsBase args)
-        {
-            if (args is ConsoleCommandArgs commandArgs) return await Task.FromResult(Execute(commandArgs));
-            
-            Debug.LogError($"Invalid casting from type {args.GetType()} to BuiltInCommandArgs. Ensure " +
-                           $"that this command inherits from {typeof(ConsoleCommand)} or use " +
-                           $"{typeof(SimpleCommand)} if you don't need to modify console state."); 
-            return null;
-        }
-        protected abstract CommandResult Execute(ConsoleCommandArgs args);
-    }
+    
+    /// <summary>
+    /// A simple command which exhibits one-shot behavior.
+    /// </summary>
     public abstract class SimpleCommand : CommandBase
     {
-        public override async Task<CommandResult> ExecuteAsync(CommandArgsBase args)
+        public override async Task<CommandResult> ExecuteAsync(CommandContext context)
         {
-            if (args is CommandArgs commandArgs) return await Task.FromResult(Execute(commandArgs));
-            
-            Debug.LogError($"Invalid casting from type {args.GetType()} to CommandArgs. Ensure " +
-                           $"that this command inherits from {typeof(SimpleCommand)} or use " +
-                           $"{typeof(ConsoleCommand)} if you wish to modify console state."); 
-            return null;
+            return await Task.FromResult(Execute(context));
         }
-        protected abstract CommandResult Execute(CommandArgs args);
+        protected abstract CommandResult Execute(CommandContext context);
     }
-    public abstract class AsyncCommand : CommandBase
-    {
-        public override async Task<CommandResult> ExecuteAsync(CommandArgsBase args)
-        {
-            if (args is CommandArgs commandArgs) return await ExecuteAsync(commandArgs);
-            
-            Debug.LogError($"Invalid casting from type {args.GetType()} to CommandArgs. Ensure " +
-                           $"that this command inherits from {typeof(SimpleCommand)} or use " +
-                           $"{typeof(ConsoleCommand)} if you wish to modify console state."); 
-            return null;
-        }
-        public abstract Task<CommandResult> ExecuteAsync(CommandArgs args);
-    }
-    public abstract class TerminalCommand : SimpleCommand, ITerminalApplication
-    {
-        public abstract void OnInputRecieved(string input);
-        public abstract void ReceiveOutput(string message);
-        public abstract void OnGUI(GUIContext context);
-    }
-    public abstract class WindowedCommand : SimpleCommand, IGraphical
-    {
-        // TODO: Need to register with window command
-        
-        public abstract void OnGUI(GUIContext context);
-    }
+    
+    /// <summary>
+    /// Simply a more ergonomic name for an async command.
+    /// </summary>
+    public abstract class AsyncCommand : CommandBase { }
     #endregion
 
-    public abstract class CommandArgsBase
+    public class CommandContext
     {
         public List<string> Tokens;
-
-    }
-    public class CommandArgs : CommandArgsBase { }
-    public class ConsoleCommandArgs : CommandArgsBase
-    {
-        public ConsoleState ConsoleState;
+        [CanBeNull] public ConsoleState ConsoleState;
     }
     public class CommandResult
     {
-        public string Message;
-
-        public CommandResult()
-        {
-            Message = "";
-        }
-
-        public CommandResult(string message)
-        {
-            Message = message;
-        }
+        public readonly string Message;
+        public CommandResult() => Message = ""; 
+        public CommandResult(string message) => Message = message;
     }
 }

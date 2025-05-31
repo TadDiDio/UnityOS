@@ -2,10 +2,10 @@ using System.Collections.Generic;
 
 namespace DeveloperConsole
 {
-    [Command("reg", "Shows a registry of all commands.")]
-    public class RegistryCommand : ConsoleCommand
+    [Command("reg", "Shows a registry of all commands.", false)]
+    public class RegistryCommand : SimpleCommand
     {
-        protected override CommandResult Execute(ConsoleCommandArgs args)
+        protected override CommandResult Execute(CommandContext args)
         {
             List<string> lines = new();
 

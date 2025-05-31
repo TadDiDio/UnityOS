@@ -8,11 +8,11 @@ namespace DeveloperConsole.Tests
     {
         #region TEST TYPES
         [ExcludeFromCmdRegistry]
-        [Command("test1", "Test command 1")]
+        [Command("test1", "Test command 1", false)]
         private class TestCommand1 : SimpleCommand
         {
             [Subcommand] private Subcommand subcommand;
-            protected override CommandResult Execute(CommandArgs args)
+            protected override CommandResult Execute(CommandContext context)
             {
                 throw new NotImplementedException();
             }
@@ -23,7 +23,7 @@ namespace DeveloperConsole.Tests
         private class Subcommand : SimpleCommand
         {
             [Subcommand] private SubSubcommand subcommand = new();
-            protected override CommandResult Execute(CommandArgs args)
+            protected override CommandResult Execute(CommandContext context)
             {
                 throw new NotImplementedException();
             }
@@ -33,7 +33,7 @@ namespace DeveloperConsole.Tests
         [Command("subsub", "Subcommand of subcommand", true)]
         private class SubSubcommand : SimpleCommand
         {
-            protected override CommandResult Execute(CommandArgs args)
+            protected override CommandResult Execute(CommandContext context)
             {
                 throw new NotImplementedException();
             }

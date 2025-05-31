@@ -5,6 +5,6 @@ namespace DeveloperConsole
 {
     public interface IAutoRegistrationProvider
     {
-        public Dictionary<string, Type> AllCommands();
+        public Dictionary<string, Type> AllCommands(IAutoRegistrationStrategy strategy, int maxParseDepth = 10);
     }
 }

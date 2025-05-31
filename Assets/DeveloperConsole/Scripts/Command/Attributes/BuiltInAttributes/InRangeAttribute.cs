@@ -3,13 +3,13 @@ using System;
 namespace DeveloperConsole
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public class InRange : ValidatedAttribute
+    public class InRangeAttribute : ValidatedAttribute
     {
         private float Min;
         private float Max;
 
         private float testedValue;
-        public InRange(float min, float max)
+        public InRangeAttribute(float min, float max)
         {
             Min = min;
             Max = max;

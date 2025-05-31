@@ -2,20 +2,15 @@ using UnityEngine;
 
 namespace DeveloperConsole
 {
-    public class TerminalGUI : IInputSource
+    public class ConsoleInput : IInputSource
     {
         private bool _inputAvailable;
         private string _inputBuffer = "";
         
-        public void Draw(GUIContext context, ITerminalApplication terminalApplication)
+        public void OnGUI()
         {
-            // BUG: THIS IS CAUSE ARTIFACT
-            GUILayout.BeginArea(context.AreaRect);
-            
-            terminalApplication.OnGUI(context);
-            
             GUI.SetNextControlName("ConsoleInput");
-            _inputBuffer = GUILayout.TextField(_inputBuffer, context.Style);
+            _inputBuffer = GUILayout.TextField(_inputBuffer);
             GUI.FocusControl("ConsoleInput");
             
             var e = Event.current;
@@ -24,8 +19,6 @@ namespace DeveloperConsole
                 _inputAvailable = true;
                 e.Use();
             }
-            
-            GUILayout.EndArea();
         }
 
         public bool InputAvailable() => _inputAvailable;

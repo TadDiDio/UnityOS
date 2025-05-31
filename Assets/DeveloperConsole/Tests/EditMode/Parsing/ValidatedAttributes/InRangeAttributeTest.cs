@@ -1,0 +1,86 @@
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using NUnit.Framework;
+
+namespace DeveloperConsole.Tests.ValidatedAttributes
+{
+    public class InRangeAttributeTest
+    {
+        #region TEST TYPES
+
+        [ExcludeFromCmdRegistry]
+        [Command("test", "test", false)]
+        private class TestCommand : SimpleCommand
+        {
+            [InRange(0, 10)] public int num;
+            protected override CommandResult Execute(CommandContext context)
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+        
+        #endregion
+        
+        [Test]
+        public void InRangeAttribute_Test()
+        {
+            var map = new Dictionary<string, Type> { { "test", typeof(TestCommand) } };
+            CommandRegistry registry = new CommandRegistry(map);
+            ConsoleParser parser = new ConsoleParser(registry);
+            
+            List<string> tokens = new() { "test", "10" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.Parse(stream);
+            var field = result.Command.GetType().GetField("num");
+            var attribute = field.GetCustomAttribute<InRangeAttribute>();
+            Assert.NotNull(attribute);
+            AttributeValidationData data = new()
+            {
+                FieldInfo = field,
+                Object = result.Command
+            };
+            Assert.True(attribute.Validate(data));
+            
+            tokens = new() { "test", "0" };
+            stream = new(tokens);
+            result = parser.Parse(stream);
+            field = result.Command.GetType().GetField("num");
+            attribute = field.GetCustomAttribute<InRangeAttribute>();
+            Assert.NotNull(attribute);
+            data = new()
+            {
+                FieldInfo = field,
+                Object = result.Command
+            };
+            Assert.True(attribute.Validate(data));
+            
+            tokens = new() { "test", "-1" };
+            stream = new(tokens);
+            result = parser.Parse(stream);
+            field = result.Command.GetType().GetField("num");
+            attribute = field.GetCustomAttribute<InRangeAttribute>();
+            Assert.NotNull(attribute);
+            data = new()
+            {
+                FieldInfo = field,
+                Object = result.Command
+            };
+            Assert.False(attribute.Validate(data));
+            
+            tokens = new() { "test", "11" };
+            stream = new(tokens);
+            result = parser.Parse(stream);
+            field = result.Command.GetType().GetField("num");
+            attribute = field.GetCustomAttribute<InRangeAttribute>();
+            Assert.NotNull(attribute);
+            data = new()
+            {
+                FieldInfo = field,
+                Object = result.Command
+            };
+            Assert.False(attribute.Validate(data));
+        }
+    }
+}

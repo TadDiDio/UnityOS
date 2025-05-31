@@ -10,7 +10,7 @@ namespace DeveloperConsole
         Multiply,
         Divide
     }
-    [Command("math", "Performs math operations.")]
+    [Command("math", "Performs math operations.", false)]
     public class MathCommand : SimpleCommand
     {
         [InRange(-5, 5)]
@@ -31,14 +31,14 @@ namespace DeveloperConsole
         private bool Flag;
         
         [VariadicArgs]
-        private List<Vector2> variadicArgs;
+        private List<string> variadicArgs;
         
         public override void RegisterTypeParsers()
         {
             ConsoleAPI.Parser.RegisterTypeParser<MathCommandOperation>(new EnumParser<MathCommandOperation>());
         }
 
-        protected override CommandResult Execute(CommandArgs args)
+        protected override CommandResult Execute(CommandContext context)
         {
             string result = operation switch
             {

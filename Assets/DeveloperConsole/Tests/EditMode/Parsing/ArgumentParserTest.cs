@@ -9,7 +9,7 @@ namespace DeveloperConsole.Tests
     {
         #region TEST TYPES
         [ExcludeFromCmdRegistry]
-        [Command("positionaltest", "")]
+        [Command("positionaltest", "", false)]
         private class PositionalTest : CommandBase
         {
             [PositionalArg(0)]
@@ -24,14 +24,14 @@ namespace DeveloperConsole.Tests
             [PositionalArg(2)]
             public bool boolean;
 
-            public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
+            public override Task<CommandResult> ExecuteAsync(CommandContext context)
             {
                 throw new System.NotImplementedException();
             }
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("switchtest", "")]
+        [Command("switchtest", "", false)]
         private class SwitchTest : CommandBase
         {
             [SwitchArg("option1", 'o')]
@@ -40,13 +40,13 @@ namespace DeveloperConsole.Tests
             [SwitchArg("message", 'm')]
             public string message;
             
-            public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
+            public override Task<CommandResult> ExecuteAsync(CommandContext context)
             {
                 throw new System.NotImplementedException();
             }
         }
         [ExcludeFromCmdRegistry]
-        [Command("switchtestrequired", "")]
+        [Command("switchtestrequired", "", false)]
         private class SwitchTestRequired : CommandBase
         {
             [SwitchArg("option", 'o')] [RequiredArg]
@@ -55,14 +55,14 @@ namespace DeveloperConsole.Tests
             [SwitchArg("message", 'm')] [RequiredArg]
             public string message;
             
-            public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
+            public override Task<CommandResult> ExecuteAsync(CommandContext context)
             {
                 throw new System.NotImplementedException();
             }
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("switchandpositionaltest", "")]
+        [Command("switchandpositionaltest", "", false)]
         private class SwitchAndPositionalTest : CommandBase
         {
             [PositionalArg(0)]
@@ -74,36 +74,36 @@ namespace DeveloperConsole.Tests
             [SwitchArg("message", 'm')]
             public string message = "default message";
             
-            public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
+            public override Task<CommandResult> ExecuteAsync(CommandContext context)
             {
                 throw new System.NotImplementedException();
             }
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("variadictest", "")]
+        [Command("variadictest", "", false)]
         private class VariadicTest : CommandBase
         {
             [VariadicArgs] public List<float> args;
-            public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
+            public override Task<CommandResult> ExecuteAsync(CommandContext context)
             {
                 throw new System.NotImplementedException();
             }
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("variadicbadcontainertest", "")]
+        [Command("variadicbadcontainertest", "", false)]
         private class VariadicBadContainerTest : CommandBase
         {
             [VariadicArgs] public float[] args;
-            public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
+            public override Task<CommandResult> ExecuteAsync(CommandContext context)
             {
                 throw new System.NotImplementedException();
             }
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("switchandpositionalandvariadictest", "")]
+        [Command("switchandpositionalandvariadictest", "", false)]
         private class SwitchAndPositionalAndVariadicTest : CommandBase
         {
             [PositionalArg(0)] public float number;
@@ -116,7 +116,7 @@ namespace DeveloperConsole.Tests
 
             [VariadicArgs] 
             public List<Vector2> vectors;
-            public override Task<CommandResult> ExecuteAsync(CommandArgsBase args)
+            public override Task<CommandResult> ExecuteAsync(CommandContext context)
             {
                 throw new System.NotImplementedException();
             }
@@ -140,8 +140,6 @@ namespace DeveloperConsole.Tests
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
 
             var result = parser.Parse();
-            
-            Debug.Log(result.Error);
             
             Assert.True(result.Success);
             Assert.That(command.floatingPoint, Is.EqualTo(1.5f).Within(0.0001f));

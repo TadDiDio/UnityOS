@@ -8,22 +8,22 @@ namespace DeveloperConsole.Tests
     {
         #region TEST TYPES
         [ExcludeFromCmdRegistry]
-        [Command("variadicargsbadcontainer", "")]
+        [Command("variadicargsbadcontainer", "", false)]
         private class VariadicArgsBadContainerCommand : SimpleCommand
         {
             [VariadicArgs] private int[] variadic;
-            protected override CommandResult Execute(CommandArgs args)
+            protected override CommandResult Execute(CommandContext context)
             {
                 throw new System.NotImplementedException();
             }
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("variadicargs", "")]
+        [Command("variadicargs", "", false)]
         private class VariadicArgsCommand : SimpleCommand
         {
             [VariadicArgs] private List<int> variadic;
-            protected override CommandResult Execute(CommandArgs args)
+            protected override CommandResult Execute(CommandContext context)
             {
                 throw new System.NotImplementedException();
             }
@@ -33,14 +33,14 @@ namespace DeveloperConsole.Tests
         [Command("subtest", "sub test command for recursion", true)]
         private class TestSubcommand : SimpleCommand
         {
-            protected override CommandResult Execute(CommandArgs args)
+            protected override CommandResult Execute(CommandContext context)
             {
                 return new CommandResult("Ran the sub command");
             }
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("basetest", "base test command for recursion")]
+        [Command("basetest", "base test command for recursion", false)]
         private class TestCommand : SimpleCommand
         {
             [PositionalArg(1)] private int one;
@@ -51,7 +51,7 @@ namespace DeveloperConsole.Tests
             
             [Subcommand]
             private TestSubcommand subcommand;
-            protected override CommandResult Execute(CommandArgs args)
+            protected override CommandResult Execute(CommandContext context)
             {
                 return new CommandResult("Ran the base command");
             }

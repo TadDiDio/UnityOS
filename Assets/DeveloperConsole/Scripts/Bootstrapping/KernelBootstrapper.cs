@@ -12,7 +12,7 @@ namespace DeveloperConsole
     #if UNITY_EDITOR
     [InitializeOnLoad]
     #endif
-    public static class ConsoleBootstrapper
+    public static class KernelBootstrapper
     {
         private static bool _commonElementsInitialized;
         private static ConsoleConfiguration _configurationOverride;
@@ -32,24 +32,37 @@ namespace DeveloperConsole
 #endif
             }
         }
-        public static void ResetConsole()
+        public static void KillSystem()
         {
             _configurationOverride = null;
             _commonElementsInitialized = false;
-
-            Kernel.Instance.Dispose();
-            Kernel.Reset();
             
             // Unload runners
-            PlayModeTickerSpawner.Instance.DestroySceneConsole();
-            EditModeTicker.Reset();
-            PlayModeTickerSpawner.Reset();
+            if (PlayModeTickerSpawner.IsInitialized)
+            {
+                PlayModeTickerSpawner.Instance.DestroySceneConsole();
+                PlayModeTickerSpawner.Reset();
+            }
+
+            if (EditModeTicker.IsInitialized)
+            {
+                EditModeTicker.Instance.Clear();
+                EditModeTicker.Reset();
+            }
+
+            // Unload kernel last so that nothing is referencing it
+            if (Kernel.IsInitialized)
+            {
+                Kernel.Instance.Dispose();
+                Kernel.Reset();
+            }
         }
         
 #if UNITY_EDITOR
-        static ConsoleBootstrapper() => EditorBootstrap();
+        static KernelBootstrapper() => EditorBootstrap();
         private static void EditorBootstrap()
         {
+            KillSystem();
             CommonBootstrap();
             EditModeTicker.Initialize(() => new EditModeTicker());
         }
@@ -61,6 +74,7 @@ namespace DeveloperConsole
         {
             // TODO: Only do this if the user wants and if it is URP
             //DebugManager.instance.enableRuntimeUI = false;
+            KillSystem();
             CommonBootstrap();
             PlayModeTickerSpawner.Initialize(() => new PlayModeTickerSpawner());
         }
@@ -76,10 +90,7 @@ namespace DeveloperConsole
             if (_commonElementsInitialized) return;
             
             ConsoleConfiguration config = GetConfiguration();
-            
-            ConsoleState consoleState = JsonFileManager.Load();
-            
-            Kernel.Initialize(() => new Kernel(config, consoleState));
+            Kernel.Initialize(() => new Kernel(config));
             
             _commonElementsInitialized = true;
         }

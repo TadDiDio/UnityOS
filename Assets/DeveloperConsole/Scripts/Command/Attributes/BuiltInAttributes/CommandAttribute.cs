@@ -8,7 +8,7 @@ namespace DeveloperConsole
         public string Description { get; }
         public bool IsSubcommand { get; }
 
-        public CommandAttribute(string name, string description, bool isSubcommand = false)
+        public CommandAttribute(string name, string description, bool isSubcommand)
         {
             Name = name;
             Description = description;

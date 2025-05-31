@@ -18,7 +18,7 @@ namespace DeveloperConsole
             }
     
             string name = rawName.Trim().ToLower();
-            return Regex.Replace(name, @"[^a-zA-Z]+", "");
+            return Regex.Replace(name, @"[^a-zA-Z0-9]+", "");
         }
         
         public static string Name(Type commandType)

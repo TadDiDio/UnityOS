@@ -8,13 +8,14 @@ namespace DeveloperConsole
         {
             _commandRegistry = commandRegistry;
         }
-        
-        public ParseResult Parse(TokenStream tokenStream)
-        {
-            return Parse(tokenStream, "");
-        }
 
-        private ParseResult Parse(TokenStream tokenStream, string parentName)
+        /// <summary>
+        /// Parses a token stream into a command.
+        /// </summary>
+        /// <param name="tokenStream">The full token stream including that command name.</param>
+        /// <param name="parentName">The name of the parent command which was invoked before this one.</param>
+        /// <returns>The result of the parsing.</returns>
+        public ParseResult Parse(TokenStream tokenStream, string parentName = "")
         {
             // Check registry for command
             string fullyQualifiedCommandName = parentName == "" ? tokenStream.Peek() : $"{parentName}.{tokenStream.Peek()}";

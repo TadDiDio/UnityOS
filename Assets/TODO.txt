@@ -10,18 +10,16 @@ Missing Command attribute on command class
 preserve attribute for anything with Command on it
 
 THINGS TO TEST
-auto registration with recursive and cyclical references
-Holding onto stale reference from kernel should throw. also Get<invalid> should do something 
-All Validated attributes via test commands
 
 NEXT UP:
-subcommands - maybe allow hierarichal help (help command subcommand)
+hierarichal help command (help command subcommand)
 Precommand validators
 aysnc commands (minimal additional work, testing mostly) 
 input redirection (to current terminal application, possibly working but untested) 
 permissions system (hooked via precommand validator)
 windowing system for multiple terminals or custom windowed commands
 Maintain consistency per environment (editor, build), not across both
+multi console state tracking via files
 Auto completion system with rich typed positional arg hints in CLI
 
 BUGS
@@ -37,6 +35,8 @@ Allow users to register type parsers in a single spot if they prefer, something 
 Create auto test harness to allow users to quickly test their commands.
 Async command discovery process removes the need for manual registration which would be absolutely attrocious
 Pipe unity log to console
+unified vs per shell log
+reset terminal command which resets console state to default if a user fucks it
 
 NOTES FOR DOCS
 Commands are stored in registry using their fully qualified name i.e. parent.sub.subsub so that multiple subcommands 

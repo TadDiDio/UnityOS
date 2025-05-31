@@ -1,9 +1,11 @@
+using UnityEngine;
+
 namespace DeveloperConsole
 {
     public interface IWindowManager
     {
-        public void Register(IGraphical window);
-        public void Unregister(IGraphical window);
-        public void OnGUI(GUIContext context);
+        public void RegisterWindow(IWindow window);
+        public void UnregisterWindow(IWindow window);
+        public void OnGUI(Rect fullScreen);
     }
 }

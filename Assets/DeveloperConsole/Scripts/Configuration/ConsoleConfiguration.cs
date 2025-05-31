@@ -28,7 +28,7 @@ namespace DeveloperConsole
 
             // Compose dependent ones after the basics exist
             deps.TypeParserRegistry = TypeParserRegistryFactory?.Invoke() ?? new TypeParserRegistry(deps.OutputManager);
-            deps.CommandRegistry = CommandRegistryFactory?.Invoke() ?? new CommandRegistry(deps.AutoRegistration.AllCommands());
+            deps.CommandRegistry = CommandRegistryFactory?.Invoke() ?? new CommandRegistry(deps.AutoRegistration.AllCommands(new ReflectionAutoRegistration()));
             deps.ConsoleParser = ConsoleParserFactory?.Invoke() ?? new ConsoleParser(deps.CommandRegistry);
 
             // Register type parsers

@@ -9,12 +9,6 @@ namespace DeveloperConsole
         public event Action<string> InputSubmitted;
         public List<IInputSource> InputSources { get; } = new();
         
-        public InputManager()
-        {
-            // TODO: Have kernel call ONEvent not use this event
-            Kernel.OnEventOccured += OnEventOccured;
-        }
-
         public void RegisterInputSource(IInputSource inputSource)
         {
             if (InputSources.Contains(inputSource))
