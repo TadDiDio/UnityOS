@@ -8,7 +8,7 @@ namespace DeveloperConsole.Tests
     {
         #region TEST TYPES
         [ExcludeFromCmdRegistry]
-        [Command("variadicargsbadcontainer", "", false)]
+        [Command("variadicargsbadcontainer", "", true)]
         private class VariadicArgsBadContainerCommand : SimpleCommand
         {
             [VariadicArgs] private int[] variadic;
@@ -19,7 +19,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("variadicargs", "", false)]
+        [Command("variadicargs", "", true)]
         private class VariadicArgsCommand : SimpleCommand
         {
             [VariadicArgs] private List<int> variadic;
@@ -30,7 +30,7 @@ namespace DeveloperConsole.Tests
         }
 
         [ExcludeFromCmdRegistry]
-        [Command("subtest", "sub test command for recursion", true)]
+        [Command("subtest", "sub test command for recursion", false)]
         private class TestSubcommand : SimpleCommand
         {
             protected override CommandResult Execute(CommandContext context)
@@ -40,7 +40,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("basetest", "base test command for recursion", false)]
+        [Command("basetest", "base test command for recursion", true)]
         private class TestCommand : SimpleCommand
         {
             [PositionalArg(1)] private int one;

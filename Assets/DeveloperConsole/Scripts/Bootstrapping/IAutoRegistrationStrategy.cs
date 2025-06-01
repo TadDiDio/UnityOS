@@ -31,7 +31,7 @@ namespace DeveloperConsole
                     !t.Type.IsAbstract &&
                     !t.Type.IsInterface &&
                     t.Type.GetCustomAttribute<ExcludeFromCmdRegistry>() == null &&
-                    t.CommandAttr is { IsSubcommand: false })
+                    t.CommandAttr is { IsRoot: true })
                 .ToList();
         }
     }

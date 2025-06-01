@@ -52,6 +52,7 @@ namespace DeveloperConsole
     public class CommandContext
     {
         public List<string> Tokens;
+        public ShellApplication Shell;
         [CanBeNull] public ConsoleState ConsoleState;
     }
     public class CommandResult

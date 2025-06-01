@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using NUnit.Framework;
-using UnityEngine;
 
 namespace DeveloperConsole.Tests.ValidatedAttributes
 {
@@ -11,7 +10,7 @@ namespace DeveloperConsole.Tests.ValidatedAttributes
         #region TEST TYPES
 
         [ExcludeFromCmdRegistry]
-        [Command("test", "test", false)]
+        [Command("test", "test", true)]
         private class TestCommand : SimpleCommand
         {
             [InRange(0, 10)] [PositionalArg(0)] public int num;
@@ -28,7 +27,7 @@ namespace DeveloperConsole.Tests.ValidatedAttributes
         {
             var map = new Dictionary<string, Type> { { "test", typeof(TestCommand) } };
             CommandRegistry registry = new CommandRegistry(map);
-            ConsoleParser parser = new ConsoleParser(registry);
+            CommandParser parser = new CommandParser(registry);
             
             List<string> tokens = new() { "test", "10" };
             TokenStream stream = new(tokens);

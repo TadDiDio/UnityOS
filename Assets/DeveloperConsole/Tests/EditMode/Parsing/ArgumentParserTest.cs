@@ -9,7 +9,7 @@ namespace DeveloperConsole.Tests
     {
         #region TEST TYPES
         [ExcludeFromCmdRegistry]
-        [Command("positionaltest", "", false)]
+        [Command("positionaltest", "", true)]
         private class PositionalTest : CommandBase
         {
             [PositionalArg(0)]
@@ -31,7 +31,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("switchtest", "", false)]
+        [Command("switchtest", "", true)]
         private class SwitchTest : CommandBase
         {
             [SwitchArg("option1", 'o')]
@@ -46,7 +46,7 @@ namespace DeveloperConsole.Tests
             }
         }
         [ExcludeFromCmdRegistry]
-        [Command("switchtestrequired", "", false)]
+        [Command("switchtestrequired", "", true)]
         private class SwitchTestRequired : CommandBase
         {
             [SwitchArg("option", 'o')] [RequiredArg]
@@ -62,7 +62,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("switchandpositionaltest", "", false)]
+        [Command("switchandpositionaltest", "", true)]
         private class SwitchAndPositionalTest : CommandBase
         {
             [PositionalArg(0)]
@@ -81,7 +81,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("variadictest", "", false)]
+        [Command("variadictest", "", true)]
         private class VariadicTest : CommandBase
         {
             [VariadicArgs] public List<float> args;
@@ -92,7 +92,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("variadicbadcontainertest", "", false)]
+        [Command("variadicbadcontainertest", "", true)]
         private class VariadicBadContainerTest : CommandBase
         {
             [VariadicArgs] public float[] args;
@@ -103,7 +103,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("switchandpositionalandvariadictest", "", false)]
+        [Command("switchandpositionalandvariadictest", "", true)]
         private class SwitchAndPositionalAndVariadicTest : CommandBase
         {
             [PositionalArg(0)] public float number;
@@ -116,6 +116,24 @@ namespace DeveloperConsole.Tests
 
             [VariadicArgs] 
             public List<Vector2> vectors;
+            public override Task<CommandResult> ExecuteAsync(CommandContext context)
+            {
+                throw new System.NotImplementedException();
+            }
+        }
+        
+        [ExcludeFromCmdRegistry]
+        [Command("boolcoalescing", "", true)]
+        private class BoolCoalescing : CommandBase
+        {
+            [SwitchArg("option", 'o')]
+            public bool option;
+            
+            [SwitchArg("flag", 'f')]
+            public bool flag;
+
+            [SwitchArg("number", 'n')]
+            public float number;
             public override Task<CommandResult> ExecuteAsync(CommandContext context)
             {
                 throw new System.NotImplementedException();
@@ -562,6 +580,124 @@ namespace DeveloperConsole.Tests
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.TypeParseFailed);
             Assert.AreEqual(result.ErroneousToken, "5");
+        }
+        
+        [Test]
+        public void ArgumentParserTest_BoolCoalescingOnly()
+        {
+            BoolCoalescing command = new();
+            
+            List<string> tokens = new()
+            {
+                "-of",
+            };
+
+            ReflectionParser reflectionParser = new(command);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
+            
+            var result = parser.Parse();
+            Assert.True(result.Success);
+            Assert.True(command.option);
+            Assert.True(command.flag);
+        }
+        
+        [Test]
+        public void ArgumentParserTest_BoolCoalescingWithBefore()
+        {
+            BoolCoalescing command = new();
+            
+            List<string> tokens = new()
+            {
+                "-n",
+                "1",
+                "-of",
+            };
+
+            ReflectionParser reflectionParser = new(command);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
+            
+            var result = parser.Parse();
+            
+            Assert.True(result.Success);    
+            Assert.True(command.option);
+            Assert.True(command.flag);
+            Assert.That(command.number, Is.EqualTo(1).Within(0.0001f));
+        }
+        
+        [Test]
+        public void ArgumentParserTest_BoolCoalescingWithAfter()
+        {
+            BoolCoalescing command = new();
+            
+            List<string> tokens = new()
+            {
+                "-of",
+                "-n",
+                "1",
+            };
+
+            ReflectionParser reflectionParser = new(command);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
+            
+            var result = parser.Parse();
+            Assert.True(result.Success);
+            Assert.True(command.option);
+            Assert.True(command.flag);
+            Assert.That(command.number, Is.EqualTo(1).Within(0.0001f));
+        }
+        
+        [Test]
+        public void ArgumentParserTest_BoolCoalescingNonBool()
+        {
+            BoolCoalescing command = new();
+            
+            List<string> tokens = new()
+            {
+                "-on",
+            };
+
+            ReflectionParser reflectionParser = new(command);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
+            
+            var result = parser.Parse();
+            Assert.False(result.Success);
+            Assert.AreEqual(result.Error, ArgumentParseError.NonBoolCoalescing);
+        }
+        
+        [Test]
+        public void ArgumentParserTest_BoolCoalescingNonBoolWithBool()
+        {
+            BoolCoalescing command = new();
+            
+            List<string> tokens = new()
+            {
+                "-ofn",
+            };
+
+            ReflectionParser reflectionParser = new(command);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
+            
+            var result = parser.Parse();
+            Assert.False(result.Success);
+            Assert.AreEqual(result.Error, ArgumentParseError.NonBoolCoalescing);
+        }
+        
+        [Test]
+        public void ArgumentParserTest_BoolCoalescingUnrecognized()
+        {
+            BoolCoalescing command = new();
+            
+            List<string> tokens = new()
+            {
+                "-oa",
+            };
+
+            ReflectionParser reflectionParser = new(command);
+            ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
+            
+            var result = parser.Parse();
+            Assert.False(result.Success);
+            Assert.AreEqual(result.Error, ArgumentParseError.UnrecognizedSwitch);
         }
     }
 }

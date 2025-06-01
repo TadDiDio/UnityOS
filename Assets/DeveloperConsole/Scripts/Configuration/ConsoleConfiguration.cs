@@ -13,7 +13,7 @@ namespace DeveloperConsole
         public Func<ITokenizationManager> TokenizationManagerFactory;
         public Func<ITypeParserRegistryProvider> TypeParserRegistryFactory;
         public Func<ICommandRegistryProvider> CommandRegistryFactory;
-        public Func<IConsoleParser> ConsoleParserFactory;
+        public Func<ICommandParser> ConsoleParserFactory;
 
         public ConsoleRuntimeDependencies Create()
         {
@@ -29,7 +29,7 @@ namespace DeveloperConsole
             // Compose dependent ones after the basics exist
             deps.TypeParserRegistry = TypeParserRegistryFactory?.Invoke() ?? new TypeParserRegistry(deps.OutputManager);
             deps.CommandRegistry = CommandRegistryFactory?.Invoke() ?? new CommandRegistry(deps.AutoRegistration.AllCommands(new ReflectionAutoRegistration()));
-            deps.ConsoleParser = ConsoleParserFactory?.Invoke() ?? new ConsoleParser(deps.CommandRegistry);
+            deps.CommandParser = ConsoleParserFactory?.Invoke() ?? new CommandParser(deps.CommandRegistry);
 
             // Register type parsers
             deps.TypeParserRegistry.RegisterTypeParser<int>(new IntParser());;
@@ -54,6 +54,6 @@ namespace DeveloperConsole
         public ITokenizationManager TokenizationManager;
         public ITypeParserRegistryProvider TypeParserRegistry;
         public ICommandRegistryProvider CommandRegistry;
-        public IConsoleParser ConsoleParser;
+        public ICommandParser CommandParser;
     }
 }

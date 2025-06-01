@@ -1,36 +1,25 @@
+using System;
 using UnityEngine;
 
 namespace DeveloperConsole
 {
     public class ConsoleInput : IInputSource
     {
-        private bool _inputAvailable;
+        public event Action<string> InputSubmitted;
+
         private string _inputBuffer = "";
         
-        public void OnGUI()
+        public void Update(Event current)
         {
             GUI.SetNextControlName("ConsoleInput");
             _inputBuffer = GUILayout.TextField(_inputBuffer);
             GUI.FocusControl("ConsoleInput");
-            
-            var e = Event.current;
-            if (e.type == EventType.KeyDown && e.character is '\n' or '\r')
-            {
-                _inputAvailable = true;
-                e.Use();
-            }
-        }
 
-        public bool InputAvailable() => _inputAvailable;
-
-        public string GetInput()
-        {
-            string result = _inputBuffer;
+            if (current.type != EventType.KeyDown || current.character is not ('\n' or '\r')) return;
             
+            current.Use();
+            InputSubmitted?.Invoke(_inputBuffer);
             _inputBuffer = "";
-            _inputAvailable = false;
-            
-            return result;
         }
     }
 }

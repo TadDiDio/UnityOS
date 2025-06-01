@@ -15,12 +15,17 @@ namespace DeveloperConsole
             Dictionary<string, Type> results = new();
             foreach (var (type, commandAttribute) in baseCommandInfo)
             {
-                results[CommandMetaProcessor.Name(commandAttribute.Name, type)] = type;
+                if (string.IsNullOrEmpty(commandAttribute.Name))
+                {
+                    Debug.LogError($"Command name for {type.Name} is null or empty. This is not allowed " +
+                                   $"and the command will not be available.");
+                    continue;
+                }
+                
+                results[commandAttribute.Name] = type;
 
                 var visited = new HashSet<Type> { type }; // Prevent direct self-referencing
-
-                RecurseSubcommands(type, CommandMetaProcessor.Name(commandAttribute.Name, type), 
-                                   results, maxParseDepth, 1, visited);
+                RecurseSubcommands(type, commandAttribute.Name, results, maxParseDepth, 1, visited);
             }
 
             return results;
@@ -56,8 +61,14 @@ namespace DeveloperConsole
                     Debug.LogWarning(message);
                     continue;
                 }
-                
-                var fullPath = $"{parentPath}.{CommandMetaProcessor.Name(subAttr.Name, subType)}";
+
+                if (string.IsNullOrEmpty(subAttr.Name))
+                {
+                    Debug.LogError($"Command name for {subType.Name} is null or empty. This is not allowed " +
+                                   $"and the command will not be available.");
+                    continue;
+                }
+                var fullPath = $"{parentPath}.{subAttr.Name}";
                 
                 if (depthExceeded)
                 {

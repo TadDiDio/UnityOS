@@ -7,7 +7,7 @@ namespace DeveloperConsole
         public static string ParserError(ParseResult result)
         {
             string validationError = "";
-            if (result.ArgumentParseResult.ErroneousAttribute is ValidatedAttribute validated)
+            if (result.ArgumentParseResult.ErroneousAttribute is ArgumentValidator validated)
             {
                 validationError = $": {validated.ErrorMessage()}";
             }
@@ -32,6 +32,7 @@ namespace DeveloperConsole
                     ArgumentParseError.UnexpectedToken =>      $"Unexpected token \'{result.ArgumentParseResult.ErroneousToken}\'.",
                     ArgumentParseError.BadVariadicContainer => "No proper variadic args container field found. This must be a List<T> where T is the type" +
                         "of the remaining args. Use string if you want to perform your own casting.",
+                    ArgumentParseError.NonBoolCoalescing => $"Cannot coalesce non-bool argument '{result.ArgumentParseResult.ErroneousToken}'.",
                     _ => "Argument parsing error."
                 },
                 _ => "Parser Error",

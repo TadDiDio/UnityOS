@@ -72,80 +72,162 @@ namespace DeveloperConsole
             
             return new ArgumentParseResult { Success = true };
         }
+
         private ArgumentParseResult ParseRemaining()
         {
             while (_tokenStream.HasMore())
             {
-                if (!IsSwitch(_tokenStream.Peek())) return SetVariadicArgs();
-        
-                if (IsMalformedSwitch(_tokenStream.Peek()))
+                string token = _tokenStream.Peek();
+
+                if (!IsSwitch(token))
+                    return SetVariadicArgs();
+
+                if (IsMalformedSwitch(token))
+                    return MalformedSwitchResult(token);
+
+                // Collect tokens representing this switch and its values
+                var tokens = new List<string> { _tokenStream.Next() };
+                var switchName = tokens[0];
+
+                var switchFields = new List<FieldInfo>();
+
+                if (IsMultipleShortSwitches(switchName, out var switches))
                 {
-                    return new ArgumentParseResult
-                    {
-                        Error = ArgumentParseError.MalformedSwitchName,
-                        ErroneousToken = _tokenStream.Peek()
-                    };
+                    var result = ParseMultipleShortSwitches(switchName, switches);
+                    if (!result.Success)
+                        return result.ErrorResult;
+
+                    switchFields.AddRange(result.Fields);
                 }
-        
-                List<string> tokens = new() { _tokenStream.Next() };
-                
-                string switchName = tokens[0];
-        
-                // Get the field associated with the switch
-                var result = _reflectionParser.GetSwitchField(switchName);
-        
-                if (!result.HasValue)
+                else
                 {
-                    return new ArgumentParseResult
+                    var result = ParseSingleSwitch(switchName, tokens);
+                    if (!result.Success)
+                        return result.ErrorResult;
+
+                    switchFields.Add(result.Field);
+                }
+
+                var parseResult = ParseSwitchFieldValues(switchFields, tokens);
+                if (!parseResult.Success)
+                    return parseResult;
+            }
+
+            SetEmptyVariadicListIfPresent();
+
+            return new ArgumentParseResult { Success = true };
+        }
+        
+        private ArgumentParseResult MalformedSwitchResult(string token)
+        {
+            return new ArgumentParseResult
+            {
+                Error = ArgumentParseError.MalformedSwitchName,
+                ErroneousToken = token
+            };
+        }
+        
+        private (bool Success, ArgumentParseResult ErrorResult, List<FieldInfo> Fields) ParseMultipleShortSwitches(string switchName, string switches)
+        {
+            var fields = new List<FieldInfo>();
+
+            foreach (var option in switches)
+            {
+                var info = _reflectionParser.GetSwitchField(option.ToString());
+                if (!info.HasValue)
+                {
+                    return (false, new ArgumentParseResult
                     {
-                        ErroneousToken = tokens[0],
+                        ErroneousToken = option.ToString(),
                         Error = ArgumentParseError.UnrecognizedSwitch,
-                    };
+                    }, null);
                 }
-                
-                var (field, attribute) = result.Value;
-                
+
+                var (field, attribute) = info.Value;
+
                 if (!_switchAttributesPresent.Add(attribute))
                 {
-                    return new ArgumentParseResult
+                    return (false, new ArgumentParseResult
                     {
                         Error = ArgumentParseError.DuplicateSwitch,
                         ErroneousField = field,
                         ErroneousAttribute = attribute,
                         ErroneousToken = switchName
-                    };
+                    }, null);
                 }
-                
-                
-                bool isBoolSwitch = field.FieldType == typeof(bool);
-                    
-                while (_tokenStream.HasMore())
+
+                if (field.FieldType != typeof(bool))
                 {
-                    string next = _tokenStream.Peek();
-                    
-                    // Only attempt to grab a single token if its a bool switch,
-                    // and if its not true or false, don't consume it
-                    if (isBoolSwitch)
+                    return (false, new ArgumentParseResult
                     {
-                        if (!bool.TryParse(next, out bool _)) break;
-                    }
-                    
-                    // Don't consider negative numbers to be switches
-                    if (next.StartsWith("-"))
-                    {
-                        if (!float.TryParse(next, out float _)) break;
-                    };
-        
-                    tokens.Add(_tokenStream.Next());
+                        ErroneousToken = option.ToString(),
+                        Error = ArgumentParseError.NonBoolCoalescing,
+                    }, null);
                 }
+
+                fields.Add(field);
+            }
+
+            return (true, new ArgumentParseResult {Success = true}, fields);
+        }
         
-                // Parse the value
-                TokenStream switchStream = new(tokens.Skip(1).ToList()); // Skip switch name
-                List<string> remainingTokens = switchStream.Remaining().ToList();
+        private (bool Success, ArgumentParseResult ErrorResult, FieldInfo Field) ParseSingleSwitch(string switchName, List<string> tokens)
+        {
+            var result = _reflectionParser.GetSwitchField(switchName);
+            if (!result.HasValue)
+            {
+                return (false, new ArgumentParseResult
+                {
+                    ErroneousToken = switchName,
+                    Error = ArgumentParseError.UnrecognizedSwitch,
+                }, null);
+            }
+
+            var (field, attribute) = result.Value;
+
+            if (!_switchAttributesPresent.Add(attribute))
+            {
+                return (false, new ArgumentParseResult
+                {
+                    Error = ArgumentParseError.DuplicateSwitch,
+                    ErroneousField = field,
+                    ErroneousAttribute = attribute,
+                    ErroneousToken = switchName
+                }, null);
+            }
+
+            bool isBoolSwitch = field.FieldType == typeof(bool);
+
+            while (_tokenStream.HasMore())
+            {
+                string next = _tokenStream.Peek();
+
+                if (isBoolSwitch)
+                {
+                    if (!bool.TryParse(next, out _)) break;
+                }
+
+                if (next.StartsWith("-") && !float.TryParse(next, out _))
+                    break;
+
+                tokens.Add(_tokenStream.Next());
+            }
+
+            return (true, new ArgumentParseResult {Success = true}, field);
+        }
+        
+        private ArgumentParseResult ParseSwitchFieldValues(List<FieldInfo> switchFields, List<string> tokens)
+        {
+            foreach (var field in switchFields)
+            {
+                var switchStream = new TokenStream(tokens.Skip(1).ToList()); // skip switch name
+                var remainingTokens = switchStream.Remaining().ToList();
+
                 if (!Kernel.Instance.Get<ITypeParserRegistryProvider>().TryParse(field.FieldType, switchStream, out var obj))
                 {
                     int tokensUsed = remainingTokens.Count - switchStream.Count();
                     string failureToken = string.Join(", ", remainingTokens.Take(tokensUsed));
+
                     return new ArgumentParseResult
                     {
                         Error = ArgumentParseError.TypeParseFailed,
@@ -153,19 +235,29 @@ namespace DeveloperConsole
                         ErroneousToken = failureToken
                     };
                 }
-                
+
                 PrependRemainingArgs(switchStream);
-                
+
                 field.SetValue(_command, obj);
                 _fieldsSet.Add(field);
             }
-            
-            SetEmptyVariadicListIfPresent();
-            
+
             return new ArgumentParseResult { Success = true };
         }
-
+        
         private bool IsSwitch(string token) => token.StartsWith("-");
+
+        private bool IsMultipleShortSwitches(string token, out string switches)
+        {
+            switches = null;
+            if (!IsSwitch(token)) return false;
+            if (token.StartsWith("--")) return false;
+            
+            switches = token.TrimStart('-');
+            
+            return switches.Length > 1;
+        }
+            
         private bool IsMalformedSwitch(string token) => token.StartsWith("---");
         
         
@@ -247,7 +339,7 @@ namespace DeveloperConsole
 
             foreach (var field in fields)
             {
-                var attributes = field.GetCustomAttributes<ValidatedAttribute>();
+                var attributes = field.GetCustomAttributes<ArgumentValidator>();
                 foreach (var attribute in attributes)
                 {
                     AttributeValidationData data = new()
@@ -281,7 +373,8 @@ namespace DeveloperConsole
         MalformedSwitchName,
         DuplicateSwitch,
         UnexpectedToken,
-        BadVariadicContainer
+        BadVariadicContainer,
+        NonBoolCoalescing
     }
     public struct ArgumentParseResult
     {

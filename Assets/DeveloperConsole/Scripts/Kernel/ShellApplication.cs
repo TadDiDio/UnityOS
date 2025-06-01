@@ -1,4 +1,5 @@
 using System;
+using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -9,13 +10,15 @@ namespace DeveloperConsole
         protected IInputManager InputManager { get; } = new InputManager();
         protected IOutputManager OutputManager { get; } = new OutputManager();
         
-        private IConsoleParser _consoleParser;
+        private ICommandParser _commandParser;
         private ITokenizationManager _tokenizationManager;
 
-        protected ShellApplication(ITokenizationManager tokenizationManager, IConsoleParser consoleParser)
+        private bool _inputLocked;
+        
+        protected ShellApplication(ITokenizationManager tokenizationManager, ICommandParser commandParser)
         {
             _tokenizationManager = tokenizationManager;
-            _consoleParser = consoleParser;
+            _commandParser = commandParser;
             InputManager.InputSubmitted += SubmitInput;
         }
 
@@ -24,55 +27,90 @@ namespace DeveloperConsole
 
         private async void SubmitInput(string input)
         {
+            if (_inputLocked) return;
+            
             try
             {
                 await RunInput(input);
             }
             catch (Exception)
             {
-                // Ignored
+                Debug.LogError("A shell had an unexpected error, most likely while running a command.");
             }
         }
-        protected virtual async Task RunInput(string rawInput, ConsoleState consoleState = null)
+
+        protected abstract CommandContext GetSpecificContext();
+        private async Task RunInput(string rawInput)
         {
             try
             {
+                _inputLocked = true;
                 OnBeforeInputProcessed(rawInput);
-                OnBeforeInputProcessed(rawInput);
-                // TODO: Use user config instead of > and maybe don't always put raw input
+                
+                // TODO: Use user config instead of >
                 OutputManager.SendOutput($"> {rawInput}");
                 
                 // Tokenize
                 var tokenizationResult = _tokenizationManager.Tokenize(rawInput);
                 if (!tokenizationResult.Success || !tokenizationResult.TokenStream.HasMore()) return;
-
+                
                 // Parse
-                var parseResult = _consoleParser.Parse(tokenizationResult.TokenStream);
+                var parseResult = _commandParser.Parse(tokenizationResult.TokenStream);
                 if (parseResult.Error is not ParseError.None)
                 {
-                    OutputManager.SendOutput(ErrorLogging.ParserError(parseResult)); 
+                    OutputManager.SendOutput(ErrorLogging.ParserError(parseResult));
                     return;
                 }
                 
-                // TODO: PreCommandAttribute 
+                // Build context
+                CommandContext context = GetSpecificContext();
+                context.Shell = this;
+                context.Tokens = tokenizationResult.Tokens;
                 
-                // Run
-                if (consoleState == null) consoleState = ConsoleState.Default();
-                CommandContext context = new()
+                // Pre-execution validation 
+                foreach (var validator in parseResult.Command.GetType().GetCustomAttributes<PreExecutionValidatorAttribute>())
                 {
-                    Tokens = tokenizationResult.Tokens,
-                    ConsoleState = consoleState
-                };
-                
+                    bool result = await validator.Validate(context);
+
+                    if (result) OutputManager.SendOutput(validator.OnValidationSucceededMessage());
+                    else
+                    {
+                        OutputManager.SendOutput(validator.OnValidationFailedMessage());
+                        return;
+                    }
+                }
+
+                // Run 
                 var commandResult = await parseResult.Command.ExecuteAsync(context);
+                OnAfterInputProcessed(commandResult);
                 
                 OutputManager.SendOutput(commandResult.Message);
-                OnAfterInputProcessed(commandResult);
             }
-            catch (Exception e)
+            finally
             {
-                Debug.LogError($"The console had an unexpected error, most likely while running a command: {e.Message}{Environment.NewLine}{e.StackTrace}");
+                _inputLocked = false;
             }
+        }
+        
+        public async Task<string> WaitForInput(string message)
+        {
+            var source = new TaskCompletionSource<string>();
+
+            OutputManager.SendOutput(message);
+            InputManager.InputSubmitted += Handler;
+            
+            return await source.Task;
+
+            void Handler(string input)
+            {
+                InputManager.InputSubmitted -= Handler;
+                source.TrySetResult(input);
+            }
+        }
+        
+        public void SendOutput(string message)
+        {
+            OutputManager.SendOutput(message);
         }
         
         public void Tick()
@@ -85,7 +123,7 @@ namespace DeveloperConsole
             InputManager.InputSubmitted -= SubmitInput;
             InputManager.UnregisterAllInputSources();
             
-            // TODO: Dispose any commands which need it
+            // TODO: Dispose any async commands which need it
         }
     }
 }

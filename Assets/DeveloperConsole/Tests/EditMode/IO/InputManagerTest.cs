@@ -1,3 +1,4 @@
+using System;
 using NUnit.Framework;
 
 namespace DeveloperConsole.Tests
@@ -8,16 +9,21 @@ namespace DeveloperConsole.Tests
 
         private class TestInputSource1 : IInputSource
         {
-            public bool InputAvailable() => false;
+            public event Action<string> InputSubmitted;
 
-            public string GetInput() => "";
+            void RemoveWarning()
+            {
+                InputSubmitted?.Invoke("");
+            }
         }
 
         private class TestInputSource2 : IInputSource
         {
-            public bool InputAvailable() => false;
-
-            public string GetInput() => "";
+            public event Action<string> InputSubmitted;
+            void RemoveWarning()
+            {
+                InputSubmitted?.Invoke("");
+            }
         }
 
         #endregion

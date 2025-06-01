@@ -20,7 +20,7 @@ namespace DeveloperConsole
                 .Where(kvp =>
                 {
                     var attr = kvp.Value.GetCustomAttribute<CommandAttribute>();
-                    return attr != null && attr.IsSubcommand == false;
+                    return attr != null && attr.IsRoot;
                 })
                 .Select(kvp => kvp.Key)
                 .ToList();
@@ -38,8 +38,8 @@ namespace DeveloperConsole
         public string GetDescription(string fullyQualifiedName)
         {
             if (!_commands.TryGetValue(fullyQualifiedName, out var commandType)) return "";
-
-            return CommandMetaProcessor.Description(commandType);
+            var attribute = commandType.GetCustomAttribute<CommandAttribute>();
+            return attribute == null ? "" : attribute.Description;
         }
     }
 }

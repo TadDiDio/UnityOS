@@ -1,6 +1,6 @@
 namespace DeveloperConsole
 {
-    public interface IConsoleParser
+    public interface ICommandParser
     {
         public ParseResult Parse(TokenStream stream, string parentName = "");
     }

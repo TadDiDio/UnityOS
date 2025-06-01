@@ -9,8 +9,8 @@ namespace DeveloperConsole
         Multiply,
         Divide
     }
-    [Command("math", "Performs math operations.", false)]
-    public class MathCommand : SimpleCommand
+    [Command("test", "Performs math operations.", true)]
+    public class TestCommand : SimpleCommand
     {
         [InRange(-5, 5)]
         [PositionalArg(0)]
@@ -41,6 +41,8 @@ namespace DeveloperConsole
         [Subcommand]
         private HelloCommand helloCommand;
         
+        [Subcommand]
+        private TimeCommand timeCommand;
         public override void RegisterTypeParsers()
         {
             ConsoleAPI.RegisterTypeParser<MathCommandOperation>(new EnumParser<MathCommandOperation>());
@@ -64,13 +66,31 @@ namespace DeveloperConsole
         }
     }
     
-    [Command("hello", "Says hello to the world.", true)]
+    [Command("hello", "Says hello to the world.", false)]
     public class HelloCommand : SimpleCommand
+    {
+        [Subcommand] HelloSubCommand subCommand;
+        protected override CommandResult Execute(CommandContext context)
+        {
+            return new CommandResult("Hello, world!");
+        }
+    }
+    
+    [Command("subhello", "Says hello to the world with a message.", false)]
+    public class HelloSubCommand : SimpleCommand
     {
         [VariadicArgs] private List<string> message;
         protected override CommandResult Execute(CommandContext context)
         {
-            return new CommandResult("Hello, world!\n" + string.Join(" ", message));
+            return new CommandResult("Hello, world: " + string.Join(" ", message));
+        }
+    }
+    [Command("time", "Gets the current time.", false)]
+    public class TimeCommand : SimpleCommand
+    {
+        protected override CommandResult Execute(CommandContext context)
+        {
+            return new CommandResult(System.DateTime.Now.ToString());
         }
     }
 }

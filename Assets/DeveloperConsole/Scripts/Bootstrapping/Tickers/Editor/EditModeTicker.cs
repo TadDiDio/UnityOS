@@ -37,6 +37,9 @@ namespace DeveloperConsole
                 Debug.LogWarning("Kernel not initialized, yet edit mode ticker is. This should not happen. Skipping tick.");
                 return;
             }
+            
+            // Need to call this to repaint every frame rather than waiting for an event to update async output
+            SceneView.RepaintAll();
             Kernel.Instance.Tick();
         }
             

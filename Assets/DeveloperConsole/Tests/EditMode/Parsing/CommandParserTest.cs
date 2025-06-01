@@ -4,11 +4,11 @@ using NUnit.Framework;
 
 namespace DeveloperConsole.Tests
 {
-    public class ConsoleParserTest
+    public class CommandParserTest
     {
         #region TEST TYPES
         [ExcludeFromCmdRegistry]
-        [Command("test1", "Test command 1", false)]
+        [Command("test1", "Test command 1", true)]
         private class TestCommand1 : SimpleCommand
         {
             [Subcommand] private Subcommand subcommand;
@@ -19,7 +19,7 @@ namespace DeveloperConsole.Tests
         }
 
         [ExcludeFromCmdRegistry]
-        [Command("sub", "Subcommand of test1", true)]
+        [Command("sub", "Subcommand of test1", false)]
         private class Subcommand : SimpleCommand
         {
             [Subcommand] private SubSubcommand subcommand = new();
@@ -30,7 +30,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("subsub", "Subcommand of subcommand", true)]
+        [Command("subsub", "Subcommand of subcommand", false)]
         private class SubSubcommand : SimpleCommand
         {
             protected override CommandResult Execute(CommandContext context)
@@ -40,7 +40,7 @@ namespace DeveloperConsole.Tests
         }
         #endregion
 
-        private IConsoleParser _consoleParser;
+        private ICommandParser _commandParser;
         private ICommandRegistryProvider _commandRegistry;
         
         [SetUp]
@@ -54,28 +54,28 @@ namespace DeveloperConsole.Tests
             };
 
             _commandRegistry = new CommandRegistry(commands);
-            _consoleParser = new ConsoleParser(_commandRegistry);
+            _commandParser = new CommandParser(_commandRegistry);
         }
 
         [Test]
         public void ConsoleParser_Passes()
         {
             List<string> tokens = new() { "test1" };
-            var result = _consoleParser.Parse(new TokenStream(tokens));
+            var result = _commandParser.Parse(new TokenStream(tokens));
             
             Assert.AreEqual(result.Error, ParseError.None);
             Assert.AreEqual(result.Command.GetType(), typeof(TestCommand1));
             Assert.AreEqual(result.CommandName, "test1");
             
             tokens = new() { "test1", "sub" };
-            result = _consoleParser.Parse(new TokenStream(tokens));
+            result = _commandParser.Parse(new TokenStream(tokens));
             
             Assert.AreEqual(result.Error, ParseError.None);
             Assert.AreEqual(result.Command.GetType(), typeof(Subcommand));
             Assert.AreEqual(result.CommandName, "test1.sub");
             
             tokens = new() { "test1", "sub", "subsub"};
-            result = _consoleParser.Parse(new TokenStream(tokens));
+            result = _commandParser.Parse(new TokenStream(tokens));
             
             Assert.AreEqual(result.Error, ParseError.None);
             Assert.AreEqual(result.Command.GetType(), typeof(SubSubcommand));
@@ -86,7 +86,7 @@ namespace DeveloperConsole.Tests
         public void ConsoleParser_InvalidCommandName()
         {
             List<string> tokens = new() { "test2" };
-            var result = _consoleParser.Parse(new TokenStream(tokens));
+            var result = _commandParser.Parse(new TokenStream(tokens));
             
             Assert.AreEqual(result.Error, ParseError.InvalidCommandName);
         }
@@ -95,7 +95,7 @@ namespace DeveloperConsole.Tests
         public void ConsoleParser_ArgumentError()
         {
             List<string> tokens = new() { "test1", "test2" };
-            var result = _consoleParser.Parse(new TokenStream(tokens));
+            var result = _commandParser.Parse(new TokenStream(tokens));
             
             Assert.AreEqual(result.Error, ParseError.ArgumentError);
         }

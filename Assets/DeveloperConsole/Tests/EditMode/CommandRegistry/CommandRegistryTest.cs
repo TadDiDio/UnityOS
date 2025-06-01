@@ -8,7 +8,7 @@ namespace DeveloperConsole.Tests
     {
         #region TEST TYPES
         [ExcludeFromCmdRegistry]
-        [Command("test1", "Test command 1", false)]
+        [Command("test1", "Test command 1", true)]
         private class TestCommand1 : SimpleCommand
         {
             [Subcommand] private Subcommand subcommand;
@@ -19,7 +19,7 @@ namespace DeveloperConsole.Tests
         }
 
         [ExcludeFromCmdRegistry]
-        [Command("sub", "Subcommand of test1", true)]
+        [Command("sub", "Subcommand of test1", false)]
         private class Subcommand : SimpleCommand
         {
             [Subcommand] private SubSubcommand subcommand = new();
@@ -30,7 +30,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("subsub", "subcommand of subcommand", true)]
+        [Command("subsub", "subcommand of subcommand", false)]
         private class SubSubcommand : SimpleCommand
         {
             protected override CommandResult Execute(CommandContext context)
@@ -106,13 +106,13 @@ namespace DeveloperConsole.Tests
         public void CommandRegistry_GetDescription()
         {
             string description = _commandRegistry.GetDescription("test1");
-            Assert.AreEqual(description, CommandMetaProcessor.Description("Test command 1", typeof(Subcommand)));
+            Assert.AreEqual(description, CommandMetaProcessor.Description("Test command 1"));
             
             description = _commandRegistry.GetDescription("test1.sub");
-            Assert.AreEqual(description, CommandMetaProcessor.Description("Subcommand of test1", typeof(Subcommand)));
+            Assert.AreEqual(description, CommandMetaProcessor.Description("Subcommand of test1"));
             
             description = _commandRegistry.GetDescription("test1.sub.subsub");
-            Assert.AreEqual(description, CommandMetaProcessor.Description("subcommand of subcommand", typeof(SubSubcommand)));
+            Assert.AreEqual(description, CommandMetaProcessor.Description("subcommand of subcommand"));
             
             description = _commandRegistry.GetDescription("test2");
             Assert.AreEqual(description, "");

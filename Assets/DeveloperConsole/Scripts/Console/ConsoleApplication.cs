@@ -11,7 +11,7 @@ namespace DeveloperConsole
         
         private Vector2 _scrollPosition = Vector2.zero;
         
-        public ConsoleApplication(ITokenizationManager tokenizationManager, IConsoleParser parser) 
+        public ConsoleApplication(ITokenizationManager tokenizationManager, ICommandParser parser) 
             : base(tokenizationManager, parser)
         {
             // TODO: Move this or inject it or a factory.
@@ -25,23 +25,22 @@ namespace DeveloperConsole
         public void OnGUI(Rect areaRect)
         {
             GUILayout.BeginArea(areaRect);
-            
             _consoleOutput.OnGUI(ref _scrollPosition);
-            _consoleInput.OnGUI();
-            
+            _consoleInput.Update(Event.current);
             GUILayout.EndArea();
-            
-            InputManager.OnEventOccured(Event.current);
         }
 
         protected override void OnBeforeInputProcessed(string rawInput)
         {
             _scrollPosition.y = float.MaxValue;
         }
-
-        protected override async Task RunInput(string rawInput, ConsoleState consoleState = null)
+        
+        protected override CommandContext GetSpecificContext()
         {
-            await base.RunInput(rawInput, _consoleState);
+            return new CommandContext
+            {
+                ConsoleState = _consoleState
+            };
         }
 
         protected override void OnAfterInputProcessed(CommandResult result)

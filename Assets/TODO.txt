@@ -10,22 +10,24 @@ Missing Command attribute on command class
 preserve attribute for anything with Command on it
 
 THINGS TO TEST
+Command Meta processor
 
 NEXT UP:
-hierarichal help command (help command subcommand)
 Precommand validators
-aysnc commands (minimal additional work, testing mostly) 
+Object and GameObject bindings
 input redirection (to current terminal application, possibly working but untested) 
-permissions system (hooked via precommand validator)
 windowing system for multiple terminals or custom windowed commands
 Maintain consistency per environment (editor, build), not across both
 multi console state tracking via files
+permissions system (hooked via precommand validator)
 Auto completion system with rich typed positional arg hints in CLI
 
 BUGS
-Weird error case: unexpected token appearing after positionals but before a switch on a command which accepts variadic 
+-Weird error case: unexpected token appearing after positionals but before a switch on a command which accepts variadic 
 args may display a required validation error despite having the switch because the unexpected token started the 
 variadic processing. Technically this error is correct but its unclear.
+- Need to modify auto command search not to cull by namespace in case users dont do this
+
 
 
 FEATURES TO GET TO
@@ -37,6 +39,7 @@ Async command discovery process removes the need for manual registration which w
 Pipe unity log to console
 unified vs per shell log
 reset terminal command which resets console state to default if a user fucks it
+Command for runtime ui construction with possible save as editor window functionality for persistence :o
 
 NOTES FOR DOCS
 Commands are stored in registry using their fully qualified name i.e. parent.sub.subsub so that multiple subcommands 

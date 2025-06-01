@@ -19,9 +19,9 @@ namespace DeveloperConsole.Tests
             Assert.NotNull(Kernel.Instance);
             
             // Valid services - should always return proxy but throw during GetLiveInstance().
-            var handle1 = Kernel.Instance.Get<IConsoleParser>();
-            var handle2 = Kernel.Instance.Get<IConsoleParser>();
-            var handle3 = Kernel.Instance.Get<IConsoleParser>();
+            var handle1 = Kernel.Instance.Get<ICommandParser>();
+            var handle2 = Kernel.Instance.Get<ICommandParser>();
+            var handle3 = Kernel.Instance.Get<ICommandParser>();
 
             // Using proxies is okay because kernel is alive
             Assert.DoesNotThrow(() => handle1.Parse(new TokenStream(new List<string> {"test"})));
@@ -43,7 +43,7 @@ namespace DeveloperConsole.Tests
         public void KernelService_KernelKilled()
         {
             KernelBootstrapper.KillSystem();
-            Assert.Throws<InvalidOperationException>(() => Kernel.Instance.Get<IConsoleParser>());
+            Assert.Throws<InvalidOperationException>(() => Kernel.Instance.Get<ICommandParser>());
         }
         
         [Test]
@@ -51,7 +51,7 @@ namespace DeveloperConsole.Tests
         {
             KernelBootstrapper.Bootstrap();
             
-            var handle = Kernel.Instance.Get<IConsoleParser>();
+            var handle = Kernel.Instance.Get<ICommandParser>();
             Assert.NotNull(handle);
 
             KernelBootstrapper.KillSystem();

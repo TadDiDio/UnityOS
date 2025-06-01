@@ -1,8 +1,12 @@
+using System;
+
 namespace DeveloperConsole
 {
     public interface IInputSource
     {
-        public bool InputAvailable();
-        public string GetInput();
+        /// <summary>
+        /// This event must be raised when an input is submitted.
+        /// </summary>
+        public event Action<string> InputSubmitted;
     }
 }

@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using System.Collections.Generic;
 
 namespace DeveloperConsole
@@ -8,40 +7,27 @@ namespace DeveloperConsole
     {
         public event Action<string> InputSubmitted;
         public List<IInputSource> InputSources { get; } = new();
+
         
         public void RegisterInputSource(IInputSource inputSource)
         {
-            if (InputSources.Contains(inputSource))
-            {
-                // TODO: Warning to console
-                return;
-            }
-            
+            if (InputSources.Contains(inputSource)) return;
             InputSources.Add(inputSource);
+            inputSource.InputSubmitted += OnInputSubmittedFromSource;
         }
 
         public void UnregisterInputSource(IInputSource inputSource)
         {
-            if (!InputSources.Contains(inputSource))
-            {
-                // TODO: Warning to console
-                return;
-            }
-            
+            if (!InputSources.Contains(inputSource)) return;
             InputSources.Remove(inputSource);
+            inputSource.InputSubmitted -= OnInputSubmittedFromSource;
         }
 
         public void UnregisterAllInputSources() => InputSources.Clear();
 
-        public void OnEventOccured(Event current)
+        private void OnInputSubmittedFromSource(string input)
         {
-            foreach (IInputSource inputSource in InputSources)
-            {
-                if (inputSource.InputAvailable())
-                {
-                    InputSubmitted?.Invoke(inputSource.GetInput());
-                }
-            }
+            InputSubmitted?.Invoke(input);
         }
     }
 }

@@ -28,7 +28,7 @@ namespace DeveloperConsole
                 .Any(field =>
                 {
                     var attribute = field.FieldType.GetCustomAttribute<CommandAttribute>();
-                    return attribute != null && attribute.Name == name && attribute.IsSubcommand;
+                    return attribute != null && attribute.Name == name && !attribute.IsRoot;
                 });
         }
 

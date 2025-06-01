@@ -3,7 +3,7 @@ using System;
 namespace DeveloperConsole
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public class InRangeAttribute : ValidatedAttribute
+    public class InRangeAttribute : ArgumentValidator
     {
         private float Min;
         private float Max;

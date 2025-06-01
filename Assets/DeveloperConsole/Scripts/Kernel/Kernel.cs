@@ -23,13 +23,13 @@ namespace DeveloperConsole
                 !_serviceMap.TryAdd(typeof(ITokenizationManager), _dependencies.TokenizationManager) ||
                 !_serviceMap.TryAdd(typeof(ITypeParserRegistryProvider), _dependencies.TypeParserRegistry) ||
                 !_serviceMap.TryAdd(typeof(ICommandRegistryProvider), _dependencies.CommandRegistry) ||
-                !_serviceMap.TryAdd(typeof(IConsoleParser), _dependencies.ConsoleParser))
+                !_serviceMap.TryAdd(typeof(ICommandParser), _dependencies.CommandParser))
             {
                 Debug.LogWarning("Service already existed and will not be replaced.");
             }
 
             // Initialize default console process
-            IKernelApplication consoleApplication = new ConsoleApplication(_dependencies.TokenizationManager, _dependencies.ConsoleParser);
+            IKernelApplication consoleApplication = new ConsoleApplication(_dependencies.TokenizationManager, _dependencies.CommandParser);
             RegisterApplication(consoleApplication);
             _dependencies.WindowManager.RegisterWindow((IWindow)consoleApplication);
         }

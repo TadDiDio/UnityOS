@@ -10,7 +10,7 @@ namespace DeveloperConsole.Tests
     {
         #region TEST TYPES
         [ExcludeFromCmdRegistry]
-        [Command("base1", "Base command 1", false)]
+        [Command("base1", "Base command 1", true)]
         private class Base1 : SimpleCommand
         {
             [Subcommand] private Subcommand subcommand;
@@ -21,7 +21,7 @@ namespace DeveloperConsole.Tests
         }
 
         [ExcludeFromCmdRegistry]
-        [Command("base2", "Base command 2", false)]
+        [Command("base2", "Base command 2", true)]
         private class Base2 : SimpleCommand
         {
             [Subcommand] private SubSubcommand subsubcommand;
@@ -32,7 +32,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("sub", "Subcommand of base1", true)]
+        [Command("sub", "Subcommand of base1", false)]
         private class Subcommand : SimpleCommand
         {
             [Subcommand] private SubSubcommand subcommand = new();
@@ -43,7 +43,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("subsub", "subcommand of subcommand", true)]
+        [Command("subsub", "subcommand of subcommand", false)]
         private class SubSubcommand : SimpleCommand
         {
             protected override CommandResult Execute(CommandContext context)
@@ -53,7 +53,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("selfcircularbase", "self circular base command", false)]
+        [Command("selfcircularbase", "self circular base command", true)]
         private class SelfCircularBaseCommand : SimpleCommand
         {
             [Subcommand] private SelfCircularBaseCommand subcommand;
@@ -64,7 +64,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("seldcircularsub", "self circular sub command", true)]
+        [Command("seldcircularsub", "self circular sub command", false)]
         private class SelfCircularSubCommand : SimpleCommand
         {
             [Subcommand] private SelfCircularSubCommand subcommand;
@@ -75,7 +75,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("circularbase", "circular base command", false)]
+        [Command("circularbase", "circular base command", true)]
         private class CircularBaseCommand : SimpleCommand
         {
             [Subcommand] private CircularSubCommand subcommand;
@@ -86,7 +86,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("circularsub", "circular sub command", true)]
+        [Command("circularsub", "circular sub command", false)]
         private class CircularSubCommand : SimpleCommand
         {
             [Subcommand] private CircularBaseCommand subcommand;
@@ -97,7 +97,7 @@ namespace DeveloperConsole.Tests
         }
         
         [ExcludeFromCmdRegistry]
-        [Command("invalidsubcommandcommand", "Invalid command", false)]
+        [Command("invalidsubcommandcommand", "Invalid command", true)]
         private class InvalidSubcommandCommand : SimpleCommand
         {
             [Subcommand] private NonCommand test;
@@ -107,6 +107,37 @@ namespace DeveloperConsole.Tests
             }
         }
 
+        [ExcludeFromCmdRegistry]
+        [Command("", "No name command", true)]
+        private class NoNameCommand : SimpleCommand
+        {
+            protected override CommandResult Execute(CommandContext context)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        
+        [ExcludeFromCmdRegistry]
+        [Command("named", "named command with unnamed sub", true)]
+        private class NamedCommand : SimpleCommand
+        {
+            [Subcommand] NoNameSubCommand subcommand;
+            protected override CommandResult Execute(CommandContext context)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        
+        [ExcludeFromCmdRegistry]
+        [Command("", "No name sub command", false)]
+        private class NoNameSubCommand : SimpleCommand
+        {
+            protected override CommandResult Execute(CommandContext context)
+            {
+                throw new NotImplementedException();
+            }
+        }
+        
         private class NonCommand : SimpleCommand
         {
             protected override CommandResult Execute(CommandContext context)
@@ -216,6 +247,39 @@ namespace DeveloperConsole.Tests
             
             Assert.AreEqual(logCatcher.Count(LogType.Warning), 1);
             Assert.True(logCatcher.HasLog(LogType.Warning, "CircularSubCommand -> CircularBaseCommand"));
+        }
+        
+        [Test]
+        public void AutoRegistrationTest_NoNameCommand()
+        {
+            _baseCommands.Add((typeof(NoNameCommand), new CommandAttribute("", "no name command", false)));
+            
+            using var logCatcher = new SilentLogCapture();
+         
+            var result = _autoRegistration.AllCommands(new MockAutoRegistration(_baseCommands));
+            
+            Assert.AreEqual(result.Count, 0);
+            
+            Assert.AreEqual(logCatcher.Count(LogType.Error), 1);
+            Assert.True(logCatcher.HasLog(LogType.Error, $"Command name for NoNameCommand is null or empty. This is not allowed " +
+                                                           $"and the command will not be available."));
+        }
+        
+        [Test]
+        public void AutoRegistrationTest_NoNameSubCommand()
+        {
+            _baseCommands.Add((typeof(NamedCommand), new CommandAttribute("named", "no name sub command", false)));
+            
+            using var logCatcher = new SilentLogCapture();
+         
+            var result = _autoRegistration.AllCommands(new MockAutoRegistration(_baseCommands));
+            
+            Assert.AreEqual(result.Count, 1);
+            Assert.True(result.Any(kvp => kvp.Key == "named"));
+            
+            Assert.AreEqual(logCatcher.Count(LogType.Error), 1);
+            Assert.True(logCatcher.HasLog(LogType.Error, $"Command name for NoNameSubCommand is null or empty. This is not allowed " +
+                                                         $"and the command will not be available."));
         }
         
         [Test]

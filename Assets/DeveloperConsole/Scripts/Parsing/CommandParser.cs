@@ -1,10 +1,10 @@
 namespace DeveloperConsole
 {
-    public class ConsoleParser : IConsoleParser
+    public class CommandParser : ICommandParser
     {
         private ICommandRegistryProvider _commandRegistry;
 
-        public ConsoleParser(ICommandRegistryProvider commandRegistry)
+        public CommandParser(ICommandRegistryProvider commandRegistry)
         {
             _commandRegistry = commandRegistry;
         }
