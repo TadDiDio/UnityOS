@@ -8,6 +8,21 @@ namespace DeveloperConsole
         public static List<string> GetBaseCommandNames() => Kernel.Instance.Get<ICommandRegistryProvider>().GetBaseCommandNames();
         public static void RegisterTypeParser<T>(BaseTypeParser parser) => Kernel.Instance.Get<ITypeParserRegistryProvider>().RegisterTypeParser<T>(parser);
 
+        public static bool IsValidCommand(string fullyQualifiedName)
+        {
+            if (!Kernel.IsInitialized) return false;
+            
+            var registry = Kernel.Instance.Get<ICommandRegistryProvider>();
+            
+            try
+            {
+                return registry.TryGetCommand(fullyQualifiedName, out _);
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
         public static bool TryGetCommand(string fullyQualifiedName, out ICommand command)
         {
             command = null;

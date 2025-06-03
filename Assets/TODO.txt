@@ -15,6 +15,8 @@ preserve attribute for anything with Command on it
 
 THINGS TO TEST
 Command Meta processor
+Sending input to commands while a repl acts on top. it should be buffered and run when the repl exits i think.
+IsCommandPath variadic attribute
 
 NEXT UP:
 input redirection (via shell.waitforinput()) 

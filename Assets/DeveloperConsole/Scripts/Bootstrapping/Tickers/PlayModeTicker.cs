@@ -7,27 +7,15 @@ namespace DeveloperConsole
     /// </summary>
     public class PlayModeTicker : MonoBehaviour
     {
-        // TODO: Need to handle duplicate playmode tickers here
+        private KernelUpdater _updater;
+        
+        public void SetUpdater(KernelUpdater updater) => _updater = updater;    
+        private void Update() => _updater.Tick();
 
-        private void Update()
-        {
-            if (!Kernel.IsInitialized)
-            {
-                Debug.LogWarning("Kernel not initialized, yet play mode ticker is. This should not happen. Skipping tick.");
-                return;
-            }
-            
-            Kernel.Instance.Tick();
-        }
         private void OnGUI()
-        { 
-            if (!Kernel.IsInitialized)
-            {
-                Debug.LogWarning("Kernel not initialized, yet play mode ticker is. This should not happen. Skipping OnGUI.");
-                return;
-            }
-            
-            Kernel.Instance.OnGUI(Screen.width, Screen.height);
+        {
+            _updater.Input(Event.current);
+            _updater.Draw(Screen.width, Screen.height, false);
         }
     }
 }

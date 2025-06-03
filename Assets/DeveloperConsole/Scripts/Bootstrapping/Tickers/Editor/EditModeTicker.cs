@@ -10,10 +10,14 @@ namespace DeveloperConsole
     public class EditModeTicker : Singleton<EditModeTicker>
     {
         private const int ToolbarHeight = 25;
+
         private bool _disposed;
+        private KernelUpdater _updater;
         
-        public EditModeTicker()
+        public EditModeTicker(KernelUpdater updater)
         {
+            _updater = updater;
+            
             EditorApplication.update += OnTick;
             SceneView.duringSceneGui += OnGUI;
             AssemblyReloadEvents.beforeAssemblyReload += Clear;
@@ -32,15 +36,7 @@ namespace DeveloperConsole
             // is called where this can still be invoked. Fricken Unity man...
             if (_disposed) return;
             
-            if (!Kernel.IsInitialized)
-            {
-                Debug.LogWarning("Kernel not initialized, yet edit mode ticker is. This should not happen. Skipping tick.");
-                return;
-            }
-            
-            // Need to call this to repaint every frame rather than waiting for an event to update async output
-            SceneView.RepaintAll();
-            Kernel.Instance.Tick();
+            _updater.Tick();
         }
             
         
@@ -57,9 +53,8 @@ namespace DeveloperConsole
             int width = (int)sceneView.position.width;
             int height = (int)sceneView.position.height - ToolbarHeight;
             
-            Handles.BeginGUI();
-            Kernel.Instance.OnGUI(width, height);
-            Handles.EndGUI();
+            _updater.Input(Event.current);
+            _updater.Draw(width, height, true);
             sceneView.Repaint();
         }
     }

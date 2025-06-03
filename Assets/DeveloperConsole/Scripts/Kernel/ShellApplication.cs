@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace DeveloperConsole
         private ICommandParser _commandParser;
         private ITokenizationManager _tokenizationManager;
 
-        private Stack<REPLCommand> _repls = new();
+        private Stack<(ReplCommand repl, bool executingCommand)> _repls = new();
         
         private bool _commandExecuting;
         
@@ -24,7 +25,7 @@ namespace DeveloperConsole
             _commandParser = commandParser;
         }
 
-        protected abstract CommandContext GetSpecificContext();
+        protected abstract CommandContext GetSpecificCommandContext();
         protected virtual void OnBeforeInputProcessed(string rawInput) { }
         protected virtual void OnAfterInputProcessed(CommandRunResult result) { }
 
@@ -38,9 +39,10 @@ namespace DeveloperConsole
             return await InputManager.WaitForInput();
         }
         
-        public void SendOutput(string message)
+        public void SendOutput(string message, bool isUserInput)
         {
-            OutputManager.SendOutput(message);
+            string output = isUserInput ? GetPrompt() + message : message;
+            OutputManager.SendOutput(output);
         }
 
         public void Tick()
@@ -48,18 +50,22 @@ namespace DeveloperConsole
             // TODO: Tick any commands which need it
 
             // Only consume input if we can run it.
-            if (_commandExecuting) return;
-            if (InputManager.TryGetInput(out var input)) SubmitInput(input);
+            if (_commandExecuting && _repls.Count == 0) return;
+            if (InputManager.TryGetInput(out var input)) HandleNewInput(input);
         }
-        private async void SubmitInput(string input)
+        private async void HandleNewInput(string input)
         {
             try
             {
-                if (_commandExecuting) return;
-                
+                if (_repls.Count > 0)
+                {
+                    _repls.Peek().repl.OnInput(input);
+                    return;
+                }
+
                 // TODO: Use user config instead of >
                 OutputManager.SendOutput($"> {input}");
-
+                
                 OnBeforeInputProcessed(input);
                 var result = await RunInput(input);
                 OnAfterInputProcessed(result);
@@ -104,7 +110,7 @@ namespace DeveloperConsole
                 if (result.ParseResult.Error is not ParseError.None) return result;
 
                 // Build context
-                CommandContext context = GetSpecificContext();
+                CommandContext context = GetSpecificCommandContext();
                 context.Shell = this;
                 context.Tokens = result.TokenizationResult.Tokens;
 
@@ -117,14 +123,14 @@ namespace DeveloperConsole
                     return result;
                 }
 
-                if (result.ParseResult.Command is REPLCommand repl)
+                if (result.ParseResult.Command is ReplCommand repl)
                 {
-                    _repls.Push(repl);
+                    _repls.Push((repl, false));
                 }
                 
                 result.CommandResult = await result.ParseResult.Command.ExecuteAsync(context);
                 
-                if (result.ParseResult.Command is REPLCommand)
+                if (result.ParseResult.Command is ReplCommand)
                 {
                     _repls.Pop();
                 }
@@ -141,6 +147,15 @@ namespace DeveloperConsole
             {
                 _commandExecuting = false;
             }
+        }
+
+        protected string GetPrompt()
+        {
+            var prompts = _repls.Select(pair => pair.repl.GetPromptLabel()).ToList();
+
+            prompts.Reverse();
+            
+            return string.Join(".", prompts) + "> ";
         }
         
         public void Dispose()

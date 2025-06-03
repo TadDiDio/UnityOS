@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using System.Collections.Generic;
 
 namespace DeveloperConsole
@@ -9,23 +8,24 @@ namespace DeveloperConsole
     {
         public List<string> OutputBuffer = new();
         public List<string> CommandHistory = new();
-        
-        // TODO: split into fields to avoid GUI calls
-        public GUIStyle ConsoleStyle = new()
-        {
-            fontSize = 12,
-            richText = true,
-            wordWrap = true
-        };
 
-        public void AddHistory(string input)
+        public void AddCommandHistory(string input)
         {
             if (CommandHistory.Count > 0 && CommandHistory[^1] == input) return;
-
+        
             CommandHistory.Add(input);
             // TODO: Add max history check from preferences
         }
 
+        public bool TryGetHistory(int index, out string history)
+        {
+            history = "";
+            if (index <= 0 || index > CommandHistory.Count) return false;
+            
+            history = CommandHistory[^index];
+            return true;
+        }
+        
         public void AddOutput(string output)
         {
             // TODO: Check max output buffer

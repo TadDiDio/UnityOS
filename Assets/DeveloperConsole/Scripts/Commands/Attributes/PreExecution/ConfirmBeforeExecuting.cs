@@ -6,7 +6,7 @@ namespace DeveloperConsole
     {
         public override async Task<bool> Validate(CommandContext context)
         {
-            context.Shell.SendOutput("Are you sure you want to continue? (y/n)");
+            context.Shell.SendOutput("Are you sure you want to continue? (y/n)", false);
             var response = await context.Shell.WaitForInput();
 
             return response.Trim().ToLower() == "y";

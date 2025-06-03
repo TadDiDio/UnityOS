@@ -17,16 +17,40 @@ namespace DeveloperConsole
         private static bool _commonElementsInitialized;
         private static ConsoleConfiguration _configurationOverride;
         
+#if UNITY_EDITOR
+        static KernelBootstrapper() => Bootstrap();
+#endif
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+        public static void RuntimeBootstrap() => Bootstrap();
+#endif
+        
         public static void Bootstrap()
         {
+            KillSystem();
+            KernelUpdater updater = new KernelUpdater();
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-            if (Application.isPlaying) RuntimeBootstrap();
+            if (Application.isPlaying)
+            {
+                PlayModeTickerSpawner.Initialize(() => new PlayModeTickerSpawner(updater));
+            }
 #endif
-            
 #if UNITY_EDITOR
-            EditorBootstrap();
+            EditModeTicker.Initialize(() => new EditModeTicker(updater));
 #endif
+            CommonBootstrap();
         }
+        
+        private static void CommonBootstrap()
+        {
+            if (_commonElementsInitialized) return;
+            
+            ConsoleConfiguration config = GetConfiguration();
+            Kernel.Initialize(() => new Kernel(config));
+            
+            _commonElementsInitialized = true;
+        }
+        
         public static void KillSystem()
         {
             _configurationOverride = null;
@@ -53,47 +77,11 @@ namespace DeveloperConsole
             }
         }
         
-#if UNITY_EDITOR
-        static KernelBootstrapper() => EditorBootstrap();
-        private static void EditorBootstrap()
-        {
-            KillSystem();
-            CommonBootstrap();
-            EditModeTicker.Initialize(() => new EditModeTicker());
-        }
-#endif
-     
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
-        public static void RuntimeBootstrap()
-        {
-            // TODO: Only do this if the user wants and if it is URP
-            //DebugManager.instance.enableRuntimeUI = false;
-            KillSystem();
-#if UNITY_EDITOR
-            EditorBootstrap();
-#else
-            CommonBootstrap();
-#endif            
-            PlayModeTickerSpawner.Initialize(() => new PlayModeTickerSpawner());
-        }
-#endif
-
+        
         public static void SetConfigurationOverride(ConsoleConfiguration config)
         {
             _configurationOverride = config;
         }
-        
-        private static void CommonBootstrap()
-        {
-            if (_commonElementsInitialized) return;
-            
-            ConsoleConfiguration config = GetConfiguration();
-            Kernel.Initialize(() => new Kernel(config));
-            
-            _commonElementsInitialized = true;
-        }
-
         private static ConsoleConfiguration GetConfiguration()
         {
             if (_configurationOverride != null) return _configurationOverride;

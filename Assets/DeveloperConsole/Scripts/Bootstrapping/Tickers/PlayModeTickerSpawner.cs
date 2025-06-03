@@ -12,7 +12,7 @@ namespace DeveloperConsole
         private const string GameObjectName = "[Developer Console]";
         private GameObject _console;
 
-        public PlayModeTickerSpawner()
+        public PlayModeTickerSpawner(KernelUpdater kernelUpdater)
         {
             var existing = Object.FindObjectsByType<PlayModeTicker>(FindObjectsSortMode.None);
             
@@ -25,7 +25,7 @@ namespace DeveloperConsole
             }
             
             GameObject console = new GameObject(GameObjectName);
-            console.AddComponent<PlayModeTicker>();
+            console.AddComponent<PlayModeTicker>().SetUpdater(kernelUpdater);
             Object.DontDestroyOnLoad(console);
         }
 

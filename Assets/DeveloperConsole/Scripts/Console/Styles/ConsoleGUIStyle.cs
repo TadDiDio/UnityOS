@@ -25,7 +25,7 @@ namespace DeveloperConsole
                 },
                 padding = new RectOffset(4, 4, 2, 2),
                 margin = new RectOffset(0, 0, 0, 0),
-                wordWrap = false,
+                wordWrap = true,
                 alignment = TextAnchor.MiddleLeft,
             };
             

@@ -5,15 +5,14 @@ using System.Reflection;
 
 namespace DeveloperConsole
 {
+    // TODO: Make this not a singleton, inject it only where classes need it, everything else goes through the API.
     public class Kernel : Singleton<Kernel>, IDisposable
     {
         private ConsoleRuntimeDependencies _dependencies;
-        
         private List<IKernelApplication> _applications = new();
         private readonly Dictionary<Type, object> _proxies = new();
         private readonly Dictionary<Type, object> _serviceMap = new();
 
-        #region SETUP
         public Kernel(ConsoleConfiguration config)
         {
             _dependencies = config.Create();
@@ -51,7 +50,6 @@ namespace DeveloperConsole
             }
             _applications.Remove(kernelApplication);
         }
-        #endregion
 
         // Client-facing: wraps services in dynamically created interfaces to avoid reference caching problems.
         // This ensures that when the kernel dies, so do all its systems even if clients cache references.
@@ -84,13 +82,18 @@ namespace DeveloperConsole
 
             return null;
         }
-        
+
         public void Tick()
         {
             foreach (var application in _applications) application.Tick();
         }
-        
-        public void OnGUI(int screenWidth, int screenHeight)
+
+        public void OnInput(Event current)
+        {
+            // TODO: Send this only to input consumers
+            _dependencies.WindowManager.OnInput(current);
+        }
+        public void OnDraw(int screenWidth, int screenHeight, bool sceneView)
         {
             int padding = 10; // TODO: Move padding elsewhere
             Rect screenRect = new(padding, padding, screenWidth - 2 * padding, screenHeight - 2 * padding);
