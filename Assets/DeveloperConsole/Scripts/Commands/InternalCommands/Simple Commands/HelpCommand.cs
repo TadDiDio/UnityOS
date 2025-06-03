@@ -19,7 +19,7 @@ namespace DeveloperConsole.BuiltInCommands
         private bool Verbose;
         
         [SwitchArg("hierarchical", 'h')]
-        [Description("Provide a much richer help message")]
+        [Description("Show all levels of subcommands")]
         private bool Hierarchical;
         
         protected override CommandResult Execute(CommandContext context)

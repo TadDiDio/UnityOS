@@ -20,7 +20,7 @@ namespace DeveloperConsole
             var deps = new ConsoleRuntimeDependencies
             {
                 WindowManager = WindowManagerFactory?.Invoke() ?? new WindowManager(),
-                InputManager = InputManagerFactory?.Invoke() ?? new InputManager(),
+                InputManager = InputManagerFactory?.Invoke() ?? new BufferedInputManager(),
                 OutputManager = OutputManagerFactory?.Invoke() ?? new OutputManager(),
                 AutoRegistration = AutoRegistrationFactory?.Invoke() ?? new AutoRegistration(),
                 TokenizationManager = TokenizationManagerFactory?.Invoke() ?? new TokenizationManager()

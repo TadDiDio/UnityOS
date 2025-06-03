@@ -1,14 +1,17 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DeveloperConsole
 {
-    public class InputManager : IInputManager
+    public class BufferedInputManager : IInputManager
     {
-        public event Action<string> InputSubmitted;
         public List<IInputSource> InputSources { get; } = new();
 
-        
+        private Queue<string> _buffer = new();
+
+       
+
         public void RegisterInputSource(IInputSource inputSource)
         {
             if (InputSources.Contains(inputSource)) return;
@@ -25,9 +28,24 @@ namespace DeveloperConsole
 
         public void UnregisterAllInputSources() => InputSources.Clear();
 
-        private void OnInputSubmittedFromSource(string input)
+        private void OnInputSubmittedFromSource(string input) => _buffer.Enqueue(input);
+        public bool TryGetInput(out string input) => _buffer.TryDequeue(out input);
+        
+        public void ClearBuffer() => _buffer.Clear();
+        public async Task<string> WaitForInput()
         {
-            InputSubmitted?.Invoke(input);
+            try
+            {
+                while (true)
+                {
+                    if (TryGetInput(out var input)) return input;
+                    await Task.Yield();
+                }
+            }
+            catch (Exception)
+            {
+                return "";
+            }
         }
     }
 }

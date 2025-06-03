@@ -2,11 +2,12 @@ using System.Threading.Tasks;
 
 namespace DeveloperConsole
 {
-    public class ComfirmBeforeExecuting : PreExecutionValidatorAttribute
+    public class ConfirmBeforeExecuting : PreExecutionValidatorAttribute
     {
         public override async Task<bool> Validate(CommandContext context)
         {
-            var response = await context.Shell.WaitForInput("Are you sure you want to continue? (Y/n)");
+            context.Shell.SendOutput("Are you sure you want to continue? (y/n)");
+            var response = await context.Shell.WaitForInput();
 
             return response.Trim().ToLower() == "y";
         }

@@ -9,6 +9,5 @@ namespace DeveloperConsole
         public abstract Task<bool> Validate(CommandContext context);
 
         public virtual string OnValidationFailedMessage() => "";
-        public virtual string OnValidationSucceededMessage() => "";
     }
 }

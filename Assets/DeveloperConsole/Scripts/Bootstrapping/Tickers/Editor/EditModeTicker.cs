@@ -56,7 +56,11 @@ namespace DeveloperConsole
             
             int width = (int)sceneView.position.width;
             int height = (int)sceneView.position.height - ToolbarHeight;
+            
+            Handles.BeginGUI();
             Kernel.Instance.OnGUI(width, height);
+            Handles.EndGUI();
+            sceneView.Repaint();
         }
     }
 }

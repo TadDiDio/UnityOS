@@ -1,3 +1,7 @@
+IN THE MIDDLE OF:
+Shell should forawrd input to repls and repls only, then track a executing command var on the stack per repl
+for allowing input or not.
+
 
 ROSLYN:
 Check attributes on bad types, i.e. Subcommand only allowed on ICommand objects
@@ -13,9 +17,12 @@ THINGS TO TEST
 Command Meta processor
 
 NEXT UP:
-Precommand validators
+input redirection (via shell.waitforinput()) 
+'into' command which takes in command path and runs all commands in that context (i.e. subcommands)
+    ls gives options
+    .. or exit goes back
+   
 Object and GameObject bindings
-input redirection (to current terminal application, possibly working but untested) 
 windowing system for multiple terminals or custom windowed commands
 Maintain consistency per environment (editor, build), not across both
 multi console state tracking via files

@@ -19,18 +19,13 @@ namespace DeveloperConsole
         
         public static void Bootstrap()
         {
-            if (Application.isPlaying)
-            {
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
-                RuntimeBootstrap();
+            if (Application.isPlaying) RuntimeBootstrap();
 #endif
-            }
-            else
-            {
+            
 #if UNITY_EDITOR
-                EditorBootstrap();
+            EditorBootstrap();
 #endif
-            }
         }
         public static void KillSystem()
         {
@@ -75,7 +70,11 @@ namespace DeveloperConsole
             // TODO: Only do this if the user wants and if it is URP
             //DebugManager.instance.enableRuntimeUI = false;
             KillSystem();
+#if UNITY_EDITOR
+            EditorBootstrap();
+#else
             CommonBootstrap();
+#endif            
             PlayModeTickerSpawner.Initialize(() => new PlayModeTickerSpawner());
         }
 #endif

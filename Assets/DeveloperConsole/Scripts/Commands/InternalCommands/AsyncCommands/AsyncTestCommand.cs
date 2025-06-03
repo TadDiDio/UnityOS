@@ -2,14 +2,14 @@ using System.Threading.Tasks;
 
 namespace DeveloperConsole
 {
+    [ConfirmBeforeExecuting]
     [Command("async", "Test async command", true)]
-    [ComfirmBeforeExecuting]
     public class AsyncTestCommand : AsyncCommand
     {
         public override async Task<CommandResult> ExecuteAsync(CommandContext context)
         {
-            var message = await context.Shell.WaitForInput("Enter a message");
-            return new CommandResult("Received input: " + message);
+            await Task.Delay(3000);
+            return new CommandResult("Finished");
         }
     }
 }

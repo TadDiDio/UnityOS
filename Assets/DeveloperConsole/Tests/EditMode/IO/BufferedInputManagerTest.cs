@@ -3,7 +3,7 @@ using NUnit.Framework;
 
 namespace DeveloperConsole.Tests
 {
-    public class InputManagerTest
+    public class BufferedInputManagerTest
     {
         #region TEST TYPES
 
@@ -33,7 +33,7 @@ namespace DeveloperConsole.Tests
         [SetUp]
         public void SetUp()
         {
-            _inputManager = new InputManager();
+            _inputManager = new BufferedInputManager();
         }
 
         [Test]

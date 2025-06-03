@@ -14,8 +14,6 @@ namespace DeveloperConsole
         public void RegisterTypeParsers();
     }
 
-    #region COMMAND BASES
-    
     /// <summary>
     /// Base class for all commands.
     /// </summary>
@@ -30,24 +28,6 @@ namespace DeveloperConsole
         
         public abstract Task<CommandResult> ExecuteAsync(CommandContext context);
     }
-    
-    /// <summary>
-    /// A simple command which exhibits one-shot behavior.
-    /// </summary>
-    public abstract class SimpleCommand : CommandBase
-    {
-        public override async Task<CommandResult> ExecuteAsync(CommandContext context)
-        {
-            return await Task.FromResult(Execute(context));
-        }
-        protected abstract CommandResult Execute(CommandContext context);
-    }
-    
-    /// <summary>
-    /// Simply a more ergonomic name for an async command.
-    /// </summary>
-    public abstract class AsyncCommand : CommandBase { }
-    #endregion
 
     public class CommandContext
     {
