@@ -15,6 +15,7 @@ namespace DeveloperConsole
         private ICommandParser _commandParser;
         private ITokenizationManager _tokenizationManager;
 
+        private Dictionary<string, List<string>> _aliases = new();
         private Stack<(ReplCommand repl, bool executingCommand)> _repls = new();
         
         private bool _commandExecuting;
@@ -26,9 +27,21 @@ namespace DeveloperConsole
         }
 
         protected abstract CommandContext GetSpecificCommandContext();
-        protected virtual void OnBeforeInputProcessed(string rawInput) { }
         protected virtual void OnAfterInputProcessed(CommandRunResult result) { }
 
+        protected virtual Dictionary<string, string> LoadAliases() => new Dictionary<string, string>();
+
+        public void AddAlias(string alias, List<string> replacement)
+        {
+            _aliases[alias] = replacement;
+        }
+
+        public Dictionary<string, List<string>> GetAliases() => _aliases;
+        public void RemoveAlias(string alias)
+        {
+            _aliases.Remove(alias);
+        }
+        
         public async Task<string> WaitForInput()
         {
             if (InputManager is BufferedInputManager bufferedInputManager)
@@ -66,7 +79,6 @@ namespace DeveloperConsole
                 // TODO: Use user config instead of >
                 OutputManager.SendOutput($"> {input}");
                 
-                OnBeforeInputProcessed(input);
                 var result = await RunInput(input);
                 OnAfterInputProcessed(result);
 
@@ -107,6 +119,27 @@ namespace DeveloperConsole
 
                 if (!result.TokenizationResult.Success || !result.TokenizationResult.TokenStream.HasMore()) return result;
 
+                // Assign aliases
+                if (result.TokenizationResult.Tokens.Count < 2 ||
+                    !result.TokenizationResult.TokenStream.Remaining().Take(2).SequenceEqual(new List<string> { "alias", "remove" }))
+                {
+                    List<string> newTokens = new();
+                    foreach (var token in result.TokenizationResult.Tokens)
+                    {
+                        if (_aliases.TryGetValue(token, out var alias))
+                        {
+                            newTokens.AddRange(alias);
+                        }
+                        else
+                        {
+                            newTokens.Add(token);
+                        }
+                    }
+
+                    result.TokenizationResult.Tokens = newTokens;
+                    result.TokenizationResult.TokenStream = new TokenStream(newTokens);
+                }
+                
                 result.Empty = false;
                 
                 // Parse

@@ -5,7 +5,7 @@ namespace DeveloperConsole
     {
         protected override CommandResult Execute(CommandContext context)
         {
-            context.ConsoleState.OutputBuffer.Clear();
+            context.ConsoleState?.OutputBuffer.Clear();
             return new CommandResult();
         }
     }

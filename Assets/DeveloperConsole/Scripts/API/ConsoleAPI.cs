@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace DeveloperConsole
@@ -9,9 +9,56 @@ namespace DeveloperConsole
     // don't have to predict everything people might want
     public static class ConsoleAPI
     {
-        public static List<string> GetBaseCommandNames() => Kernel.Instance.Get<ICommandRegistryProvider>().GetBaseCommandNames();
-        public static void RegisterTypeParser<T>(BaseTypeParser parser) => Kernel.Instance.Get<ITypeParserRegistryProvider>().RegisterTypeParser<T>(parser);
+        public static List<string> GetBaseCommandNames()
+        {
+            if (!Kernel.IsInitialized) return null;
+            
+            var registry = Kernel.Instance.Get<ICommandRegistryProvider>();
 
+            try
+            {
+                return registry.GetBaseCommandNames();
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                return null;
+            }
+        }
+
+        public static void RegisterTypeParser<T>(BaseTypeParser parser)
+        {
+            if (!Kernel.IsInitialized) return;
+            
+            var registry = Kernel.Instance.Get<ITypeParserRegistryProvider>();
+
+            try
+            {
+                registry.RegisterTypeParser<T>(parser);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+        }
+
+        public static string GetCommandDescription(string name)
+        {
+            if (!Kernel.IsInitialized) return "";
+            
+            var registry = Kernel.Instance.Get<ICommandRegistryProvider>();
+            
+            try
+            {
+                return registry.GetDescription(name);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+                return "";
+            }
+        }
+        
         public static bool IsValidCommand(string fullyQualifiedName)
         {
             if (!Kernel.IsInitialized) return false;
@@ -22,8 +69,9 @@ namespace DeveloperConsole
             {
                 return registry.TryGetCommand(fullyQualifiedName, out _);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Debug.LogException(e);
                 return false;
             }
         }
@@ -39,8 +87,9 @@ namespace DeveloperConsole
             {
                 return registry.TryGetCommand(fullyQualifiedName, out command);
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Debug.LogException(e);
                 return false;
             }
         }
@@ -56,8 +105,9 @@ namespace DeveloperConsole
                 var result = bindingsProvider.TryGetBinding(type, name, tag, out obj);
                 return result;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Debug.LogException(e);
                 return false;
             }
         }
@@ -72,8 +122,9 @@ namespace DeveloperConsole
                 var result = bindingsProvider.ResolveBinding(objType, name, tag);
                 return result;
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Debug.LogException(e);
                 return null;
             }
         }
@@ -87,8 +138,9 @@ namespace DeveloperConsole
             {
                 return bindingsProvider.GetAllBindings();
             }
-            catch (Exception)
+            catch (Exception e)
             {
+                Debug.LogException(e);
                 return null;
             }
         }

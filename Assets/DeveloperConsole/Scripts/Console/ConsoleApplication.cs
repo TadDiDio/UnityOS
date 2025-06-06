@@ -10,7 +10,7 @@ namespace DeveloperConsole
         private ConsoleState _consoleState;
 
         private bool _shown;
-        private int _historyIndexFromEnd = 0;
+        private int _historyIndexFromEnd;
         private string _inputBuffer = "";
         private Vector2 _scrollPosition = Vector2.zero;
         
@@ -22,6 +22,12 @@ namespace DeveloperConsole
 
             InputManager.RegisterInputSource(this);
             OutputManager.RegisterOutputSink(this);
+            
+            // TODO: Allow users to choose this path
+            FileSource startUpSource = new FileSource("DeveloperConsole/Resources/console_start.txt");
+            InputManager.RegisterInputSource(startUpSource);
+            startUpSource.ReadLines();
+            InputManager.UnregisterInputSource(startUpSource);
         }
         
         public void Draw(Rect areaRect)
@@ -88,7 +94,7 @@ namespace DeveloperConsole
             else if (current.keyCode is KeyCode.Return or KeyCode.KeypadEnter) 
             {
                 InputSubmitted?.Invoke(_inputBuffer);
-                _consoleState.AddCommandHistory(_inputBuffer);
+                if (!string.IsNullOrEmpty(_inputBuffer)) _consoleState.AddCommandHistory(_inputBuffer);
                 _inputBuffer = "";
                 _historyIndexFromEnd = 0;
                 current.Use();
@@ -115,12 +121,14 @@ namespace DeveloperConsole
         {
             // TODO: Update to support file per console
             JsonFileManager.Save(_consoleState);
+            _scrollPosition.y = float.MaxValue;
         }
         
         public void ReceiveOutput(string message)
         {
             if (string.IsNullOrEmpty(message)) return;
             _consoleState.AddOutput(message);
+            JsonFileManager.Save(_consoleState);
         }
     }
 }

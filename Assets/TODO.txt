@@ -1,8 +1,3 @@
-IN THE MIDDLE OF:
-Shell should forawrd input to repls and repls only, then track a executing command var on the stack per repl
-for allowing input or not.
-
-
 ROSLYN:
 Check attributes on bad types, i.e. Subcommand only allowed on ICommand objects
 Check that positional indexes are different
@@ -17,13 +12,19 @@ THINGS TO TEST
 Command Meta processor
 Sending input to commands while a repl acts on top. it should be buffered and run when the repl exits i think.
 IsCommandPath variadic attribute
-All cases for bindingings
+All cases for binding system
 Type type parser
+file readers
+message formatter
+
 
 NEXT UP:
-Object and GameObject bindings, allow printing bindings and show mapping from type to obj so users can know name of keys (types)
-Add overrideable info message to beginning of all repl commands.
+Aliases and start up file
 Choice functionality in shell to help common input choices that are limited to range. Should support modal GUI later too.
+Actually limit history and output buffers
+Edit mode distinction
+Multiple command input via ;
+Add overrideable info message to beginning of all repl commands.
 windowing system for multiple terminals or custom windowed commands
 Maintain consistency per environment (editor, build), not across both
 multi console state tracking via files
@@ -31,14 +32,8 @@ permissions system (hooked via precommand validator)
 Auto completion system with rich typed positional arg hints in CLI
 
 BUGS
-- Empty lines adding to history
-- Need to scroll down automatically when input fills screen and new prompt appears.
-- Weird error case: unexpected token appearing after positionals but before a switch on a command which accepts variadic 
-args may display a required validation error despite having the switch because the unexpected token started the 
-variadic processing. Technically this error is correct but its unclear.
 - Need to modify auto command search not to cull by namespace in case users dont do this
 - Because of assembly, the dev console will not find types outside of scripts folder
-
 
 FEATURES TO GET TO
 Allow users to apply/override global command name and description processing for consistency
@@ -52,9 +47,17 @@ reset terminal command which resets console state to default if a user fucks it
 Command for runtime ui construction with possible save as editor window functionality for persistence :o
 
 NOTES FOR DOCS
-Commands are stored in registry using their fully qualified name i.e. parent.sub.subsub so that multiple subcommands 
-can have the same root name without conflicts. Make sure to use the fully qualified name if doing a query (users will
-very rarely if ever need to query though)
+- Commands are stored in registry using their fully qualified name i.e. parent.sub.subsub so that multiple subcommands 
+    can have the same root name without conflicts. Make sure to use the fully qualified name if doing a query (users will
+    very rarely if ever need to query though)
+- Need to fully document binding behaviors
+- Command declaration and attributes
+- Mention that if you have a hard time formatting command with built in options, consider making a sub command or two for it.
+- Weird error case: unexpected token appearing after positionals but before a switch on a command which accepts variadic 
+    args may display a required validation error despite having the switch because the unexpected token started the 
+    variadic processing. Technically this error is correct but its unclear.
+- don't need to add new() for subcommands and its better if you dont because the needed ones will be automatically instantiated.
+- Message formatter exists :)
 
 COMMAND IDEAS
 bind

@@ -15,19 +15,14 @@ namespace DeveloperConsole
         public bool TryGetBinding(Type type, string name, string tag, out Object obj)
         {
             var success = _bindings.TryGetValue(type, out obj);
-            if (obj)
-            {
-                Debug.Log("Found object");
-                return true;
-            }
+            if (obj) return true;
             
             if (success) _bindings.Remove(type);
 
             obj = ResolveBinding(type, name, tag);
             return obj;
         }
-            
-        // TODO BUG: Also tags being null messes something up, try bind Player -n Player in console.
+        
         public Object ResolveBinding(Type objType, string name, string tag)
         {
             bool found = _bindings.TryGetValue(objType, out Object current);
@@ -37,6 +32,8 @@ namespace DeveloperConsole
             {
                 _bindings.Remove(objType);
             }
+            
+            if (!typeof(Object).IsAssignableFrom(objType)) return null;
             
             // TODO: I think this only searches active scene, add support for all open scenes.
             var allObjects = Object.FindObjectsByType(objType, FindObjectsInactive.Exclude, FindObjectsSortMode.None);

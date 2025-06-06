@@ -48,31 +48,51 @@ namespace DeveloperConsole
         }
         public static string PadFirstWordRight(IEnumerable<string> lines)
         {
-            StringBuilder sb = new StringBuilder();
+            var splitLines = new List<(string First, string Remaining
+                )>();
 
+            int maxFirstWordLength = 0;
+
+            // First pass: split lines and find max first word length
             foreach (var line in lines)
             {
                 if (string.IsNullOrWhiteSpace(line))
                 {
-                    sb.AppendLine();
+                    splitLines.Add((string.Empty, string.Empty));
                     continue;
                 }
 
                 int firstSpace = line.IndexOf(' ');
                 if (firstSpace == -1)
                 {
-                    // No space found – treat the whole line as the first word
-                    sb.AppendLine(line);
-                    continue;
+                    splitLines.Add((line, string.Empty));
+                    maxFirstWordLength = Math.Max(maxFirstWordLength, line.Length);
                 }
+                else
+                {
+                    string first = line.Substring(0, firstSpace);
+                    string rest = line.Substring(firstSpace + 1).TrimStart();
+                    splitLines.Add((first, rest));
+                    maxFirstWordLength = Math.Max(maxFirstWordLength, first.Length);
+                }
+            }
 
-                string firstWord = line.Substring(0, firstSpace);
-                string rest = line.Substring(firstSpace + 1).TrimStart();
-
-                sb.AppendLine($"{firstWord}\t\t{rest}");
+            // Second pass: align
+            StringBuilder sb = new StringBuilder();
+            foreach (var (first, rest) in splitLines)
+            {
+                if (string.IsNullOrEmpty(first) && string.IsNullOrEmpty(rest))
+                {
+                    sb.AppendLine();
+                }
+                else
+                {
+                    sb.AppendLine($"{first.PadRight(maxFirstWordLength + 2)}{rest}");
+                }
             }
 
             return sb.ToString();
         }
+
     }
 }

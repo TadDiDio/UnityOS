@@ -19,7 +19,7 @@ namespace DeveloperConsole
                 {
                     ArgumentParseError.TypeParseFailed => $"Failed to parse '{result.ArgumentParseResult.ErroneousToken}' " +
                                                           $"({result.ArgumentParseResult.ErroneousField.Name}) " +
-                                                          $"as a {TypeFriendlyName(result.ArgumentParseResult.ErroneousField.FieldType)}",
+                                                          $"as a {TypeFriendlyNames.TypeToName(result.ArgumentParseResult.ErroneousField.FieldType)}",
                     ArgumentParseError.AttributeValidationError =>
                                                           $"Validation for attribute [{result.ArgumentParseResult.ErroneousAttribute.GetType().Name}]" +
                                                           $" failed for field [{result.ArgumentParseResult.ErroneousField.Name}]{validationError}",
@@ -39,24 +39,6 @@ namespace DeveloperConsole
             };
             
             return MessageFormatter.Error(message);
-        }
-
-        private static string TypeFriendlyName(Type type)
-        {
-            return type switch
-            {
-                null => "null",
-                not null when type == typeof(int) => "int",
-                not null when type == typeof(float) => "float",
-                not null when type == typeof(bool) => "bool",
-                not null when type == typeof(string) => "string",
-                not null when type == typeof(double) => "double",
-                not null when type == typeof(long) => "long",
-                not null when type == typeof(short) => "short",
-                not null when type == typeof(byte) => "byte",
-                not null when type == typeof(char) => "char",
-                _ => type.Name
-            };
         }
     }
 }

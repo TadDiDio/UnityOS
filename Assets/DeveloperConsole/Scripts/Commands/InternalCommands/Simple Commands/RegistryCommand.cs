@@ -9,10 +9,13 @@ namespace DeveloperConsole
         {
             List<string> lines = new();
 
-            foreach (var name in ConsoleAPI.GetBaseCommandNames())
+            var sorted = ConsoleAPI.GetBaseCommandNames();
+            sorted.Sort();
+            
+            foreach (var name in sorted)
             {
                 lines.Add($"{MessageFormatter.AddColor(name, MessageFormatter.Blue)}: " +
-                          $"{Kernel.Instance.Get<ICommandRegistryProvider>().GetDescription(name)}");
+                          $"{ConsoleAPI.GetCommandDescription(name)}");
             }
             
             string title = MessageFormatter.Title("Commands", MessageFormatter.Green);

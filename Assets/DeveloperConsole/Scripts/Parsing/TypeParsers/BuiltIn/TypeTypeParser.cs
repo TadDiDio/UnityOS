@@ -1,6 +1,3 @@
-using System;
-using System.Linq;
-
 namespace DeveloperConsole
 {
     public class TypeTypeParser : BaseTypeParser
@@ -11,9 +8,8 @@ namespace DeveloperConsole
         {
             obj = null;
             string typeName = tokenSubSteam.Next();
-            
-            // Test without namespace
-            obj = Type.GetType(typeName);
+
+            obj = TypeFriendlyNames.NameToType(typeName);
 
             return obj != null;
         }
