@@ -7,7 +7,7 @@ namespace DeveloperConsole
         public static string ParserError(ParseResult result)
         {
             string validationError = "";
-            if (result.ArgumentParseResult.ErroneousAttribute is ArgumentValidator validated)
+            if (result.ArgumentParseResult.ErroneousAttribute is ValidatedArgument validated)
             {
                 validationError = $": {validated.ErrorMessage()}";
             }

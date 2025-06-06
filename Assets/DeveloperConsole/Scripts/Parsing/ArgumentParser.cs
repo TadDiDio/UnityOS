@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace DeveloperConsole
 {
@@ -29,7 +30,7 @@ namespace DeveloperConsole
             _command.RegisterTypeParsers();
         }
 
-        public ArgumentParseResult Parse()
+        public async Task<ArgumentParseResult> ParseAsync()
         {
             var errorResult = ParsePositionals();
             if (!errorResult.Success) return errorResult;
@@ -37,7 +38,7 @@ namespace DeveloperConsole
             errorResult = ParseRemaining();
             if (!errorResult.Success) return errorResult;
             
-            errorResult = ValidateAttributes();
+            errorResult = await ValidateAttributes();
             return !errorResult.Success ? errorResult : new ArgumentParseResult { Success = true };
         }
         private ArgumentParseResult ParsePositionals()
@@ -333,13 +334,13 @@ namespace DeveloperConsole
             tokens.AddRange(_tokenStream.Remaining());
             _tokenStream = new TokenStream(tokens);
         }
-        private ArgumentParseResult ValidateAttributes()
+        private async Task<ArgumentParseResult> ValidateAttributes()
         {
             var fields = _reflectionParser.GetAllFields();
 
             foreach (var field in fields)
             {
-                var attributes = field.GetCustomAttributes<ArgumentValidator>();
+                var attributes = field.GetCustomAttributes<ValidatedArgumentAsync>();
                 foreach (var attribute in attributes)
                 {
                     AttributeValidationData data = new()
@@ -348,7 +349,8 @@ namespace DeveloperConsole
                         Object = _command,
                         WasSet = _fieldsSet.Contains(field)
                     };
-                    if (!attribute.Validate(data))
+                    
+                    if (!await attribute.ValidateAsync(data))
                     {
                         return new ArgumentParseResult
                         {

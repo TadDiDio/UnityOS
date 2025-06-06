@@ -22,7 +22,8 @@ namespace DeveloperConsole
                 !_serviceMap.TryAdd(typeof(ITokenizationManager), _dependencies.TokenizationManager) ||
                 !_serviceMap.TryAdd(typeof(ITypeParserRegistryProvider), _dependencies.TypeParserRegistry) ||
                 !_serviceMap.TryAdd(typeof(ICommandRegistryProvider), _dependencies.CommandRegistry) ||
-                !_serviceMap.TryAdd(typeof(ICommandParser), _dependencies.CommandParser))
+                !_serviceMap.TryAdd(typeof(ICommandParser), _dependencies.CommandParser) ||
+                !_serviceMap.TryAdd(typeof(IObjectBindingsProvider), _dependencies.ObjectBindingsManager))
             {
                 Debug.LogWarning("Service already existed and will not be replaced.");
             }

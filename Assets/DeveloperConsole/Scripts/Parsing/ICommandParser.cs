@@ -1,7 +1,9 @@
+using System.Threading.Tasks;
+
 namespace DeveloperConsole
 {
     public interface ICommandParser
     {
-        public ParseResult Parse(TokenStream stream, string parentName = "");
+        public Task<ParseResult> Parse(TokenStream stream, string parentName = "");
     }
 }

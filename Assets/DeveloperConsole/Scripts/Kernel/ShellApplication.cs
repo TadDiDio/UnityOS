@@ -89,8 +89,8 @@ namespace DeveloperConsole
             {
                 return result.PreValidationError;
             }
-            
-            return result.CommandResult.Message;
+
+            return result.Empty ? "" : result.CommandResult.Message;
         }
         
         public async Task<CommandRunResult> RunInput(string rawInput)
@@ -99,14 +99,18 @@ namespace DeveloperConsole
             {
                 _commandExecuting = true;
 
-                CommandRunResult result = new();
-                
-                // Tokenize
-                result.TokenizationResult = _tokenizationManager.Tokenize(rawInput);
+                CommandRunResult result = new()
+                {
+                    TokenizationResult = _tokenizationManager.Tokenize(rawInput),
+                    Empty = true
+                };
+
                 if (!result.TokenizationResult.Success || !result.TokenizationResult.TokenStream.HasMore()) return result;
 
+                result.Empty = false;
+                
                 // Parse
-                result.ParseResult = _commandParser.Parse(result.TokenizationResult.TokenStream);
+                result.ParseResult = await _commandParser.Parse(result.TokenizationResult.TokenStream);
                 if (result.ParseResult.Error is not ParseError.None) return result;
 
                 // Build context
@@ -168,6 +172,7 @@ namespace DeveloperConsole
         public struct CommandRunResult
         {
             public bool Success;
+            public bool Empty;
             public string PreValidationError;
             public TokenizationResult TokenizationResult;
             public ParseResult ParseResult;

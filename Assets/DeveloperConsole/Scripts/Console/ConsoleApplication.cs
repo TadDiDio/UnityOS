@@ -9,6 +9,7 @@ namespace DeveloperConsole
         
         private ConsoleState _consoleState;
 
+        private bool _shown;
         private int _historyIndexFromEnd = 0;
         private string _inputBuffer = "";
         private Vector2 _scrollPosition = Vector2.zero;
@@ -59,6 +60,7 @@ namespace DeveloperConsole
 
         public void OnInput(Event current)
         {
+            if (!_shown) return;
             if (current.type is not EventType.KeyDown) return;
             
             _scrollPosition.y = float.MaxValue;
@@ -93,10 +95,11 @@ namespace DeveloperConsole
             }
         }
 
-        public void OnShow() { }
+        public void OnShow() => _shown = true;
 
         public void OnHide()
         {
+            _shown = false;
             _inputBuffer = "";
         }
 

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace DeveloperConsole.Tests.ValidatedAttributes
@@ -23,7 +24,7 @@ namespace DeveloperConsole.Tests.ValidatedAttributes
         #endregion
         
         [Test]
-        public void InRangeAttribute_Test()
+        public async Task InRangeAttribute_Test()
         {
             var map = new Dictionary<string, Type> { { "test", typeof(TestCommand) } };
             CommandRegistry registry = new CommandRegistry(map);
@@ -32,7 +33,7 @@ namespace DeveloperConsole.Tests.ValidatedAttributes
             List<string> tokens = new() { "test", "10" };
             TokenStream stream = new(tokens);
 
-            var result = parser.Parse(stream);
+            var result = await parser.Parse(stream);
             var field = result.Command.GetType().GetField("num");
             var attribute = field.GetCustomAttribute<InRangeAttribute>();
             Assert.NotNull(attribute);
@@ -45,7 +46,7 @@ namespace DeveloperConsole.Tests.ValidatedAttributes
             
             tokens = new() { "test", "0" };
             stream = new(tokens);
-            result = parser.Parse(stream);
+            result = await parser.Parse(stream);
             field = result.Command.GetType().GetField("num");
             attribute = field.GetCustomAttribute<InRangeAttribute>();
             Assert.NotNull(attribute);
@@ -58,12 +59,12 @@ namespace DeveloperConsole.Tests.ValidatedAttributes
             
             tokens = new() { "test", "-1" };
             stream = new(tokens);
-            result = parser.Parse(stream);
+            result = await parser.Parse(stream);
             Assert.Null(result.Command);
             
             tokens = new() { "test", "11" };
             stream = new(tokens);
-            result = parser.Parse(stream);
+            result = await parser.Parse(stream);
             Assert.Null(result.Command);
         }
     }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NUnit.Framework;
 
 namespace DeveloperConsole.Tests
@@ -58,24 +59,24 @@ namespace DeveloperConsole.Tests
         }
 
         [Test]
-        public void ConsoleParser_Passes()
+        public async Task ConsoleParser_Passes()
         {
             List<string> tokens = new() { "test1" };
-            var result = _commandParser.Parse(new TokenStream(tokens));
+            var result = await _commandParser.Parse(new TokenStream(tokens));
             
             Assert.AreEqual(result.Error, ParseError.None);
             Assert.AreEqual(result.Command.GetType(), typeof(TestCommand1));
             Assert.AreEqual(result.CommandName, "test1");
             
             tokens = new() { "test1", "sub" };
-            result = _commandParser.Parse(new TokenStream(tokens));
+            result = await _commandParser.Parse(new TokenStream(tokens));
             
             Assert.AreEqual(result.Error, ParseError.None);
             Assert.AreEqual(result.Command.GetType(), typeof(Subcommand));
             Assert.AreEqual(result.CommandName, "test1.sub");
             
             tokens = new() { "test1", "sub", "subsub"};
-            result = _commandParser.Parse(new TokenStream(tokens));
+            result = await _commandParser.Parse(new TokenStream(tokens));
             
             Assert.AreEqual(result.Error, ParseError.None);
             Assert.AreEqual(result.Command.GetType(), typeof(SubSubcommand));
@@ -83,19 +84,19 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ConsoleParser_InvalidCommandName()
+        public async Task ConsoleParser_InvalidCommandName()
         {
             List<string> tokens = new() { "test2" };
-            var result = _commandParser.Parse(new TokenStream(tokens));
+            var result = await _commandParser.Parse(new TokenStream(tokens));
             
             Assert.AreEqual(result.Error, ParseError.InvalidCommandName);
         }
         
         [Test]
-        public void ConsoleParser_ArgumentError()
+        public async Task ConsoleParser_ArgumentError()
         {
             List<string> tokens = new() { "test1", "test2" };
-            var result = _commandParser.Parse(new TokenStream(tokens));
+            var result = await _commandParser.Parse(new TokenStream(tokens));
             
             Assert.AreEqual(result.Error, ParseError.ArgumentError);
         }

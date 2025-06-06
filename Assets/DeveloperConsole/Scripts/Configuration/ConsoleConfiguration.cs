@@ -14,11 +14,13 @@ namespace DeveloperConsole
         public Func<ITypeParserRegistryProvider> TypeParserRegistryFactory;
         public Func<ICommandRegistryProvider> CommandRegistryFactory;
         public Func<ICommandParser> ConsoleParserFactory;
+        public Func<IObjectBindingsProvider> ObjectBindingsFactory;
 
         public ConsoleRuntimeDependencies Create()
         {
             var deps = new ConsoleRuntimeDependencies
             {
+                ObjectBindingsManager = ObjectBindingsFactory?.Invoke() ?? new ObjectBindingsManager(),
                 WindowManager = WindowManagerFactory?.Invoke() ?? new WindowManager(),
                 InputManager = InputManagerFactory?.Invoke() ?? new BufferedInputManager(),
                 OutputManager = OutputManagerFactory?.Invoke() ?? new OutputManager(),
@@ -33,13 +35,13 @@ namespace DeveloperConsole
 
             // Register type parsers
             deps.TypeParserRegistry.RegisterTypeParser<int>(new IntParser());;
-            deps.TypeParserRegistry.RegisterTypeParser<float>(new FloatParser());
-            deps.TypeParserRegistry.RegisterTypeParser<string>(new StringParser());
             deps.TypeParserRegistry.RegisterTypeParser<bool>(new BoolParser());
+            deps.TypeParserRegistry.RegisterTypeParser<float>(new FloatParser());
+            deps.TypeParserRegistry.RegisterTypeParser<Color>(new ColorParser());
+            deps.TypeParserRegistry.RegisterTypeParser<string>(new StringParser());
+            deps.TypeParserRegistry.RegisterTypeParser<Type>(new TypeTypeParser());
             deps.TypeParserRegistry.RegisterTypeParser<Vector2>(new Vector2Parser());
             deps.TypeParserRegistry.RegisterTypeParser<Vector3>(new Vector3Parser());
-            deps.TypeParserRegistry.RegisterTypeParser<Color>(new ColorParser());
-            deps.TypeParserRegistry.RegisterTypeParser<Color>(new AlphaColorParser());
      
             return deps;
         }
@@ -47,6 +49,7 @@ namespace DeveloperConsole
 
     public class ConsoleRuntimeDependencies
     {
+        public IObjectBindingsProvider ObjectBindingsManager;
         public IWindowManager WindowManager;
         public IInputManager InputManager;
         public IOutputManager OutputManager;

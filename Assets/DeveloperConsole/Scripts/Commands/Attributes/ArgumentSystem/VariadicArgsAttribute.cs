@@ -5,7 +5,7 @@ using NUnit.Framework;
 namespace DeveloperConsole
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public class VariadicArgsAttribute : ArgumentValidator
+    public class VariadicArgsAttribute : ValidatedArgument
     {
         public bool IsCommandPath;
      

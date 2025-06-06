@@ -9,6 +9,16 @@ namespace DeveloperConsole
         
         public TokenizationResult Tokenize(string input)
         {
+            if (string.IsNullOrEmpty(input))
+            {
+                return new TokenizationResult
+                {
+                    Success = false,
+                    Tokens = null,
+                    TokenStream = null
+                };
+            }
+            
             var matches = _tokenizer.Matches(input);
             var tokens  = new List<string>(matches.Count);
             

@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace DeveloperConsole
 {
     public class CommandParser : ICommandParser
@@ -15,7 +17,7 @@ namespace DeveloperConsole
         /// <param name="tokenStream">The full token stream including that command name.</param>
         /// <param name="parentName">The name of the parent command which was invoked before this one.</param>
         /// <returns>The result of the parsing.</returns>
-        public ParseResult Parse(TokenStream tokenStream, string parentName = "")
+        public async Task<ParseResult> Parse(TokenStream tokenStream, string parentName = "")
         {
             // Check registry for command
             string fullyQualifiedCommandName = parentName == "" ? tokenStream.Peek() : $"{parentName}.{tokenStream.Peek()}";
@@ -27,12 +29,12 @@ namespace DeveloperConsole
             tokenStream.Next();
             if (tokenStream.HasMore() && reflectionParser.HasSubcommandWithSimpleName(tokenStream.Peek()))
             {
-                return Parse(tokenStream, fullyQualifiedCommandName);
+                return await Parse(tokenStream, fullyQualifiedCommandName);
             }
             
             // Parse args
             ArgumentParser argParser = new(command, tokenStream, reflectionParser);
-            var argumentParseResult = argParser.Parse();
+            var argumentParseResult = await argParser.ParseAsync();
             if (!argumentParseResult.Success)
             {
                 result.ArgumentParseResult = argumentParseResult;

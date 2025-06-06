@@ -17,14 +17,13 @@ THINGS TO TEST
 Command Meta processor
 Sending input to commands while a repl acts on top. it should be buffered and run when the repl exits i think.
 IsCommandPath variadic attribute
+All cases for bindingings
+Type type parser
 
 NEXT UP:
-input redirection (via shell.waitforinput()) 
-'into' command which takes in command path and runs all commands in that context (i.e. subcommands)
-    ls gives options
-    .. or exit goes back
-   
-Object and GameObject bindings
+Object and GameObject bindings, allow printing bindings and show mapping from type to obj so users can know name of keys (types)
+Add overrideable info message to beginning of all repl commands.
+Choice functionality in shell to help common input choices that are limited to range. Should support modal GUI later too.
 windowing system for multiple terminals or custom windowed commands
 Maintain consistency per environment (editor, build), not across both
 multi console state tracking via files
@@ -32,11 +31,13 @@ permissions system (hooked via precommand validator)
 Auto completion system with rich typed positional arg hints in CLI
 
 BUGS
--Weird error case: unexpected token appearing after positionals but before a switch on a command which accepts variadic 
+- Empty lines adding to history
+- Need to scroll down automatically when input fills screen and new prompt appears.
+- Weird error case: unexpected token appearing after positionals but before a switch on a command which accepts variadic 
 args may display a required validation error despite having the switch because the unexpected token started the 
 variadic processing. Technically this error is correct but its unclear.
 - Need to modify auto command search not to cull by namespace in case users dont do this
-
+- Because of assembly, the dev console will not find types outside of scripts folder
 
 
 FEATURES TO GET TO

@@ -3,7 +3,7 @@ using System;
 namespace DeveloperConsole
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public class RequiredArgAttribute : ArgumentValidator
+    public class RequiredArgAttribute : ValidatedArgument
     {
         public override bool Validate(AttributeValidationData data)
         {

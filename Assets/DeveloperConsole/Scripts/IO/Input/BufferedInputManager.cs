@@ -7,9 +7,8 @@ namespace DeveloperConsole
     public class BufferedInputManager : IInputManager
     {
         public List<IInputSource> InputSources { get; } = new();
-
         private Queue<string> _buffer = new();
-
+        private bool _waiting;
        
 
         public void RegisterInputSource(IInputSource inputSource)
@@ -29,22 +28,36 @@ namespace DeveloperConsole
         public void UnregisterAllInputSources() => InputSources.Clear();
 
         private void OnInputSubmittedFromSource(string input) => _buffer.Enqueue(input);
-        public bool TryGetInput(out string input) => _buffer.TryDequeue(out input);
+
+        public bool TryGetInput(out string input)
+        {
+            input = null;
+            if (_waiting) return false;
+            return _buffer.TryDequeue(out input);
+        }
         
         public void ClearBuffer() => _buffer.Clear();
         public async Task<string> WaitForInput()
         {
             try
             {
+                _waiting = true;
                 while (true)
                 {
-                    if (TryGetInput(out var input)) return input;
+                    if (_buffer.TryDequeue(out string input))
+                    {
+                        return input;
+                    }
                     await Task.Yield();
                 }
             }
             catch (Exception)
             {
                 return "";
+            }
+            finally
+            {
+                _waiting = false;
             }
         }
     }

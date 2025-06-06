@@ -40,8 +40,8 @@ namespace DeveloperConsole
         {
             if (_visible != _wasVisiable)
             {
-                if (_visible) foreach (var window in _windows) window.OnHide();
-                else foreach (var window in _windows) window.OnShow();
+                if (_visible) foreach (var window in _windows) window.OnShow();
+                else foreach (var window in _windows) window.OnHide();
             }
             
             _wasVisiable = _visible;

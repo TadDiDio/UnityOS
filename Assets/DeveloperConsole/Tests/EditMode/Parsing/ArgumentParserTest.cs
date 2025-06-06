@@ -142,7 +142,7 @@ namespace DeveloperConsole.Tests
         #endregion
         
         [Test]
-        public void ArgumentParserTest_PositionalArgsPassing()
+        public async Task ArgumentParserTest_PositionalArgsPassing()
         {
             PositionalTest command = new();
             
@@ -157,7 +157,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
 
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.True(result.Success);
             Assert.That(command.floatingPoint, Is.EqualTo(1.5f).Within(0.0001f));
@@ -167,7 +167,7 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ArgumentParserTest_PositionalArgsMissing()
+        public async Task ArgumentParserTest_PositionalArgsMissing()
         {
             PositionalTest command = new();
             
@@ -181,7 +181,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
 
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.MissingPositionalArg);
@@ -189,7 +189,7 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ArgumentParserTest_PositionalArgsTooMany()
+        public async Task ArgumentParserTest_PositionalArgsTooMany()
         {
             PositionalTest command = new();
             
@@ -205,7 +205,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.UnexpectedToken);
@@ -213,7 +213,7 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ArgumentParserTest_SwitchesPassingNoSwitchesAdded()
+        public async Task ArgumentParserTest_SwitchesPassingNoSwitchesAdded()
         {
             SwitchTest command = new();
             
@@ -224,13 +224,13 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.True(result.Success);
         }
         
         [Test]
-        public void ArgumentParserTest_SwitchesRequiredButNone()
+        public async Task ArgumentParserTest_SwitchesRequiredButNone()
         {
             SwitchTestRequired command = new();
             
@@ -241,7 +241,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.AttributeValidationError);
@@ -249,7 +249,7 @@ namespace DeveloperConsole.Tests
             Assert.AreEqual(result.ErroneousAttribute.GetType(), typeof(RequiredArgAttribute));
         }
         [Test]
-        public void ArgumentParserTest_SwitchesRequiredButMissingOne()
+        public async Task ArgumentParserTest_SwitchesRequiredButMissingOne()
         {
             SwitchTestRequired command = new();
             
@@ -262,7 +262,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.AttributeValidationError);
@@ -270,7 +270,7 @@ namespace DeveloperConsole.Tests
             Assert.AreEqual(result.ErroneousAttribute.GetType(), typeof(RequiredArgAttribute));
         }
         [Test]
-        public void ArgumentParserTest_SwitchesRequiredAndGiven()
+        public async Task ArgumentParserTest_SwitchesRequiredAndGiven()
         {
             SwitchTestRequired command = new();
             
@@ -285,13 +285,13 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.True(result.Success);
         }
         
         [Test]
-        public void ArgumentParserTest_UnrecognizedSwitch()
+        public async Task ArgumentParserTest_UnrecognizedSwitch()
         {
             SwitchTest command = new();
             
@@ -304,14 +304,14 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.False(result.Success);
             Assert.AreEqual(result.ErroneousToken, "-a");
         }
         
         [Test]
-        public void ArgumentParserTest_DuplicateSwitch()
+        public async Task ArgumentParserTest_DuplicateSwitch()
         {
             SwitchTest command = new();
             
@@ -326,7 +326,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.False(result.Success);
             Assert.AreEqual(result.ErroneousToken, "-o");
@@ -335,7 +335,7 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ArgumentParserTest_SwitchesPassingSomeSwitchesAdded()
+        public async Task ArgumentParserTest_SwitchesPassingSomeSwitchesAdded()
         {
             SwitchTest command = new();
             
@@ -348,14 +348,14 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.True(result.Success);
             Assert.That(command.floatingPoint, Is.EqualTo(1.5f).Within(0.0001f));
         }
         
         [Test]
-        public void ArgumentParserTest_SwitchesPassingAllSwitchesAdded()
+        public async Task ArgumentParserTest_SwitchesPassingAllSwitchesAdded()
         {
             SwitchTest command = new();
             
@@ -370,7 +370,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.True(result.Success);
             Assert.That(command.floatingPoint, Is.EqualTo(1.5f).Within(0.0001f));
@@ -378,7 +378,7 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ArgumentParserTest_SwitchesBadType()
+        public async Task ArgumentParserTest_SwitchesBadType()
         {
             SwitchTest command = new();
             
@@ -393,7 +393,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.TypeParseFailed);
@@ -401,7 +401,7 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ArgumentParserTest_SwitchesAndPositionals()
+        public async Task ArgumentParserTest_SwitchesAndPositionals()
         {
             SwitchAndPositionalTest command = new();
             
@@ -417,7 +417,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.True(result.Success);
             Assert.AreEqual(command.vector, new Vector3(-5, 1f, 10));
@@ -426,7 +426,7 @@ namespace DeveloperConsole.Tests
         }
 
         [Test]
-        public void ArgumentParserTest_SwitchesAndPositionalsBadOrder()
+        public async Task ArgumentParserTest_SwitchesAndPositionalsBadOrder()
         {
             SwitchAndPositionalTest command = new();
             
@@ -442,7 +442,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.TypeParseFailed);
@@ -451,7 +451,7 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ArgumentParserTest_VariadicPassing()
+        public async Task ArgumentParserTest_VariadicPassing()
         {
             VariadicTest command = new();
             
@@ -466,7 +466,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.True(result.Success);
             Assert.That(command.args[0], Is.EqualTo(1.5).Within(0.0001f));
@@ -476,7 +476,7 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ArgumentParserTest_VariadicBadType()
+        public async Task ArgumentParserTest_VariadicBadType()
         {
             VariadicTest command = new();
             
@@ -492,7 +492,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.TypeParseFailed);
@@ -501,7 +501,7 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ArgumentParserTest_VariadicBadContainer()
+        public async Task ArgumentParserTest_VariadicBadContainer()
         {
             VariadicBadContainerTest command = new();
             
@@ -517,14 +517,14 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.BadVariadicContainer);
         }
         
         [Test]
-        public void ArgumentParserTest_SwitchesAndPositionalsAndVariadicPassing()
+        public async Task ArgumentParserTest_SwitchesAndPositionalsAndVariadicPassing()
         {
             SwitchAndPositionalAndVariadicTest command = new();
             
@@ -544,7 +544,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             Assert.True(result.Success);
             Assert.That(command.number, Is.EqualTo(4.23).Within(0.0001f));
             Assert.AreEqual(command.option, -5);
@@ -555,7 +555,7 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ArgumentParserTest_SwitchesAndPositionalsAndVariadicBadParsing()
+        public async Task ArgumentParserTest_SwitchesAndPositionalsAndVariadicBadParsing()
         {
             SwitchAndPositionalAndVariadicTest command = new();
             
@@ -576,14 +576,14 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.TypeParseFailed);
             Assert.AreEqual(result.ErroneousToken, "5");
         }
         
         [Test]
-        public void ArgumentParserTest_BoolCoalescingOnly()
+        public async Task ArgumentParserTest_BoolCoalescingOnly()
         {
             BoolCoalescing command = new();
             
@@ -595,14 +595,14 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             Assert.True(result.Success);
             Assert.True(command.option);
             Assert.True(command.flag);
         }
         
         [Test]
-        public void ArgumentParserTest_BoolCoalescingWithBefore()
+        public async Task ArgumentParserTest_BoolCoalescingWithBefore()
         {
             BoolCoalescing command = new();
             
@@ -616,7 +616,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             
             Assert.True(result.Success);    
             Assert.True(command.option);
@@ -625,7 +625,7 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ArgumentParserTest_BoolCoalescingWithAfter()
+        public async Task ArgumentParserTest_BoolCoalescingWithAfter()
         {
             BoolCoalescing command = new();
             
@@ -639,7 +639,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             Assert.True(result.Success);
             Assert.True(command.option);
             Assert.True(command.flag);
@@ -647,7 +647,7 @@ namespace DeveloperConsole.Tests
         }
         
         [Test]
-        public void ArgumentParserTest_BoolCoalescingNonBool()
+        public async Task ArgumentParserTest_BoolCoalescingNonBool()
         {
             BoolCoalescing command = new();
             
@@ -659,13 +659,13 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.NonBoolCoalescing);
         }
         
         [Test]
-        public void ArgumentParserTest_BoolCoalescingNonBoolWithBool()
+        public async Task ArgumentParserTest_BoolCoalescingNonBoolWithBool()
         {
             BoolCoalescing command = new();
             
@@ -677,13 +677,13 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.NonBoolCoalescing);
         }
         
         [Test]
-        public void ArgumentParserTest_BoolCoalescingUnrecognized()
+        public async Task ArgumentParserTest_BoolCoalescingUnrecognized()
         {
             BoolCoalescing command = new();
             
@@ -695,7 +695,7 @@ namespace DeveloperConsole.Tests
             ReflectionParser reflectionParser = new(command);
             ArgumentParser parser = new(command, new TokenStream(tokens), reflectionParser);
             
-            var result = parser.Parse();
+            var result = await parser.ParseAsync();
             Assert.False(result.Success);
             Assert.AreEqual(result.Error, ArgumentParseError.UnrecognizedSwitch);
         }
