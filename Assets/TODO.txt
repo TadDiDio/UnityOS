@@ -19,16 +19,13 @@ message formatter
 
 
 NEXT UP:
-Aliases and start up file
-Choice functionality in shell to help common input choices that are limited to range. Should support modal GUI later too.
-Actually limit history and output buffers
-Edit mode distinction
 Multiple command input via ;
 Add overrideable info message to beginning of all repl commands.
 windowing system for multiple terminals or custom windowed commands
 Maintain consistency per environment (editor, build), not across both
 multi console state tracking via files
 permissions system (hooked via precommand validator)
+Choice functionality in shell to help common input choices that are limited to range. Should support modal GUI later too.
 Auto completion system with rich typed positional arg hints in CLI
 
 BUGS

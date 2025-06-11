@@ -27,21 +27,22 @@ namespace DeveloperConsole
         }
 
         protected abstract CommandContext GetSpecificCommandContext();
+        
         protected virtual void OnAfterInputProcessed(CommandRunResult result) { }
 
-        protected virtual Dictionary<string, string> LoadAliases() => new Dictionary<string, string>();
-
+        public Dictionary<string, List<string>> GetAliases() => _aliases;
+        
         public void AddAlias(string alias, List<string> replacement)
         {
             _aliases[alias] = replacement;
         }
-
-        public Dictionary<string, List<string>> GetAliases() => _aliases;
+        
         public void RemoveAlias(string alias)
         {
             _aliases.Remove(alias);
         }
         
+
         public async Task<string> WaitForInput()
         {
             if (InputManager is BufferedInputManager bufferedInputManager)
@@ -118,38 +119,16 @@ namespace DeveloperConsole
                 };
 
                 if (!result.TokenizationResult.Success || !result.TokenizationResult.TokenStream.HasMore()) return result;
+                result.Empty = false;
 
                 // Assign aliases
-                if (result.TokenizationResult.Tokens.Count < 2 ||
-                    !result.TokenizationResult.TokenStream.Remaining().Take(2).SequenceEqual(new List<string> { "alias", "remove" }))
-                {
-                    List<string> newTokens = new();
-                    foreach (var token in result.TokenizationResult.Tokens)
-                    {
-                        if (_aliases.TryGetValue(token, out var alias))
-                        {
-                            newTokens.AddRange(alias);
-                        }
-                        else
-                        {
-                            newTokens.Add(token);
-                        }
-                    }
-
-                    result.TokenizationResult.Tokens = newTokens;
-                    result.TokenizationResult.TokenStream = new TokenStream(newTokens);
-                }
-                
-                result.Empty = false;
+                InjectAliases(ref result);
                 
                 // Parse
                 result.ParseResult = await _commandParser.Parse(result.TokenizationResult.TokenStream);
                 if (result.ParseResult.Error is not ParseError.None) return result;
-
-                // Build context
-                CommandContext context = GetSpecificCommandContext();
-                context.Shell = this;
-                context.Tokens = result.TokenizationResult.Tokens;
+                
+                CommandContext context = BuildContext(result.TokenizationResult.Tokens); 
 
                 // Pre-execution validation 
                 foreach (var validator in result.ParseResult.Command.GetType().GetCustomAttributes<PreExecutionValidatorAttribute>())
@@ -160,6 +139,7 @@ namespace DeveloperConsole
                     return result;
                 }
 
+                // Run and push if repl
                 if (result.ParseResult.Command is ReplCommand repl)
                 {
                     _repls.Push((repl, false));
@@ -186,6 +166,46 @@ namespace DeveloperConsole
             }
         }
 
+        private CommandContext BuildContext(List<string> tokens)
+        {
+            CommandContext context = GetSpecificCommandContext();
+            context.Shell = this;
+            context.Tokens = tokens;
+
+#if !UNITY_EDITOR
+            context.Environment = UnityEnvironment.BuildMode;                        
+#else
+            context.Environment = Application.isPlaying ? UnityEnvironment.PlayMode : UnityEnvironment.EditMode;
+#endif
+            return context;
+        }
+
+        private void InjectAliases(ref CommandRunResult result)
+        {
+            if (result.TokenizationResult.Tokens.Count == 2 &&
+                result.TokenizationResult.TokenStream.Remaining().Take(2)
+                .SequenceEqual(new List<string> { "alias", "remove" }))
+            {
+                return;
+            }
+            
+            List<string> newTokens = new();
+            foreach (var token in result.TokenizationResult.Tokens)
+            {
+                if (_aliases.TryGetValue(token, out var alias))
+                {
+                    newTokens.AddRange(alias);
+                }
+                else
+                {
+                    newTokens.Add(token);
+                }
+            }
+
+            result.TokenizationResult.Tokens = newTokens;
+            result.TokenizationResult.TokenStream = new TokenStream(newTokens);
+        }
+        
         protected string GetPrompt()
         {
             var prompts = _repls.Select(pair => pair.repl.GetPromptLabel()).ToList();

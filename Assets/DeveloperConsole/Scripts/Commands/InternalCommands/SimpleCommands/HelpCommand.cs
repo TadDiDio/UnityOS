@@ -6,7 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using JetBrains.Annotations;
 
-namespace DeveloperConsole.BuiltInCommands
+namespace DeveloperConsole
 {
     [Command("help", "Gets a usage description of any other command", true)]
     public class HelpCommand : SimpleCommand

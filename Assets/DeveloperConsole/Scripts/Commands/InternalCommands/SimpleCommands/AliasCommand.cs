@@ -1,8 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
 
-namespace DeveloperConsole.Scripts.Commands.InternalCommands.Simple_Commands
+namespace DeveloperConsole
 {
     // TODO: make a store option to add this to a file automatically.
     [Command("alias", "Makes aliases.", true)]

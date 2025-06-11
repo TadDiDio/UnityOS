@@ -29,11 +29,18 @@ namespace DeveloperConsole
         public abstract Task<CommandResult> ExecuteAsync(CommandContext context);
     }
 
+    public enum UnityEnvironment
+    {
+        EditMode,
+        PlayMode,
+        BuildMode
+    }
     public class CommandContext
     {
         public List<string> Tokens;
         public ShellApplication Shell;
         [CanBeNull] public ConsoleState ConsoleState;
+        public UnityEnvironment Environment;
     }
     public class CommandResult
     {

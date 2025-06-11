@@ -7,7 +7,7 @@ namespace DeveloperConsole
 {
     public class FileSource : IInputSource
     {
-        public event Action<string?> InputSubmitted;
+        public event Action<string?> InputSubmitted = null!;
         private StreamReader _reader;
 
         public FileSource(string filePathInAssets)

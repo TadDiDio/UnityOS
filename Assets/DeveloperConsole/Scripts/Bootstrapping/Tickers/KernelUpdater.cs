@@ -1,7 +1,6 @@
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
-using Codice.Client.BaseCommands;
 using UnityEngine;
 
 namespace DeveloperConsole
