@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace DeveloperConsole
+namespace DeveloperConsole.Windowing
 {
     public interface IWindow
     {

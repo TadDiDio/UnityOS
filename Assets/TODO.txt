@@ -1,3 +1,6 @@
+IN THE MIDDLE OF:
+Documenting. Finished up to but not including the core directory.
+
 ROSLYN:
 Check attributes on bad types, i.e. Subcommand only allowed on ICommand objects
 Check that positional indexes are different
@@ -9,16 +12,32 @@ Missing Command attribute on command class
 preserve attribute for anything with Command on it
 
 THINGS TO TEST
+parse rules
+command parse target
+parser
+type type parser
+text command resolver
+object bindings manager
+Command argument attributes
+command attributes
+pre execution validators
+command executor
 Command Meta processor
-Sending input to commands while a repl acts on top. it should be buffered and run when the repl exits i think.
-IsCommandPath variadic attribute
-All cases for binding system
-Type type parser
-file readers
-message formatter
+command schema
+command command resolver
+shell application
+shell session (not complete)
+file source 
+input manager
+output manager
+API
+message formatter (if used, i would wait on this one)
+
 
 
 NEXT UP:
+Argument validators are not being used right now
+Resgister type parsers is not being called right now.
 Multiple command input via ;
 Add overrideable info message to beginning of all repl commands.
 windowing system for multiple terminals or custom windowed commands
@@ -29,10 +48,10 @@ Choice functionality in shell to help common input choices that are limited to r
 Auto completion system with rich typed positional arg hints in CLI
 
 BUGS
-- Need to modify auto command search not to cull by namespace in case users dont do this
-- Because of assembly, the dev console will not find types outside of scripts folder
+
 
 FEATURES TO GET TO
+Template script for making new commands
 Allow users to apply/override global command name and description processing for consistency
 Allow command groups for better output in reg command
 Allow users to register type parsers in a single spot if they prefer, something like GlobalTypeParserRegistration.
@@ -42,6 +61,8 @@ Pipe unity log to console
 unified vs per shell log
 reset terminal command which resets console state to default if a user fucks it
 Command for runtime ui construction with possible save as editor window functionality for persistence :o
+VOICE COMMAND SYSTEM?????
+DOMAIN SPECIFIC LLM??????
 
 NOTES FOR DOCS
 - Commands are stored in registry using their fully qualified name i.e. parent.sub.subsub so that multiple subcommands 
@@ -55,6 +76,9 @@ NOTES FOR DOCS
     variadic processing. Technically this error is correct but its unclear.
 - don't need to add new() for subcommands and its better if you dont because the needed ones will be automatically instantiated.
 - Message formatter exists :)
+- Parse rules and their priorities, lower = higher priority
+- When a session is waiting for input, it expects a text input and everything else will be ignored.
+- All inputs can be promoted to command requests.
 
 COMMAND IDEAS
 bind

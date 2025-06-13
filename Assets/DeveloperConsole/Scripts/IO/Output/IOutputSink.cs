@@ -1,7 +1,7 @@
-namespace DeveloperConsole
+namespace DeveloperConsole.IO
 {
     public interface IOutputSink
     {
-        public void ReceiveOutput(string message);
+        public void ReceiveOutput(IOutputMessage message);
     }
 }

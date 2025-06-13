@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace DeveloperConsole
+namespace DeveloperConsole.IO
 {
     public interface IOutputManager
     {
@@ -8,6 +8,6 @@ namespace DeveloperConsole
         public void RegisterOutputSink(IOutputSink sink);
         public void UnregisterOutputSink(IOutputSink sink);
         public void UnregisterAllOutputSinks();
-        public void SendOutput(string message);
+        public void Emit(IOutputMessage output);
     }
 }

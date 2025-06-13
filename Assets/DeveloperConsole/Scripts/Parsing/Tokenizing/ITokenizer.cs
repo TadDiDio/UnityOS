@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace DeveloperConsole
+namespace DeveloperConsole.Parsing.Tokenizing
 {
     public interface ITokenizer
     {
@@ -9,8 +9,31 @@ namespace DeveloperConsole
 
     public struct TokenizationResult
     {
-        public bool Success;
+        public TokenizationStatus Status;
         public List<string> Tokens;
-        public TokenStream TokenStream;
+
+        public static TokenizationResult Empty()
+        {
+            return new TokenizationResult
+            {
+                Tokens = null,
+                Status = TokenizationStatus.Empty
+            };
+        }
+        
+        public static TokenizationResult Success(List<string> tokens)
+        {
+            return new TokenizationResult
+            {
+                Tokens = tokens,
+                Status = TokenizationStatus.Success
+            };
+        }
+    }
+
+    public enum TokenizationStatus
+    {
+        Empty,
+        Success,
     }
 }

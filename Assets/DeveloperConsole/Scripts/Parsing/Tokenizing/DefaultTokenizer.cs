@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace DeveloperConsole
+namespace DeveloperConsole.Parsing.Tokenizing
 {
     public class DefaultTokenizer : ITokenizer
     {
@@ -9,15 +9,7 @@ namespace DeveloperConsole
         
         public TokenizationResult Tokenize(string input)
         {
-            if (string.IsNullOrEmpty(input))
-            {
-                return new TokenizationResult
-                {
-                    Success = false,
-                    Tokens = null,
-                    TokenStream = null
-                };
-            }
+            if (string.IsNullOrEmpty(input)) return TokenizationResult.Empty();
             
             var matches = _tokenizer.Matches(input);
             var tokens  = new List<string>(matches.Count);
@@ -35,12 +27,7 @@ namespace DeveloperConsole
                 tokens.Add(value);
             }
 
-            return new TokenizationResult
-            {
-                Success = true,
-                Tokens = tokens,
-                TokenStream = new TokenStream(tokens)
-            };
+            return TokenizationResult.Success(tokens);
         }
     }
 }

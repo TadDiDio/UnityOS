@@ -1,0 +1,48 @@
+using DeveloperConsole.Core;
+using DeveloperConsole.Parsing;
+using DeveloperConsole.Parsing.Tokenizing;
+
+namespace DeveloperConsole.Command
+{
+    /// <summary>
+    /// Resolves a text string to a command.
+    /// </summary>
+    public class TextCommandResolver : ICommandResolver
+    {
+        private string _rawInput;
+        
+        
+        /// <summary>
+        /// Creates a new text string resolver.
+        /// </summary>
+        /// <param name="rawInput">The raw text.</param>
+        public TextCommandResolver(string rawInput) => _rawInput = rawInput;
+        
+        public CommandResolutionResult Resolve(ShellSession session)
+        {
+            var tokenizeResult = ConsoleAPI.Parsing.Tokenize(_rawInput);
+            if (tokenizeResult.Status is not TokenizationStatus.Success)
+            {
+                // Only possible failure case is an empty input,
+                // so we will propagate an empty output.
+                return CommandResolutionResult.Failed("");
+            }
+            
+            if (!ConsoleAPI.Commands.TryResolveCommandSchema(tokenizeResult.Tokens, out var schema))
+            {
+                return CommandResolutionResult.Failed($"Could not find a command with name {tokenizeResult.Tokens[0]}.");
+            }
+            
+            TokenStream stream = new(tokenizeResult.Tokens);
+            CommandParseTarget parseTarget = new(schema);
+            
+            var parseResult = ConsoleAPI.Parsing.Parse(stream, parseTarget);
+            if (parseResult.Status is not Status.Success)
+            {
+                return CommandResolutionResult.Failed(parseResult.ErrorMessage);
+            }
+            
+            return CommandResolutionResult.Success(parseTarget.Command);
+        }
+    }
+}

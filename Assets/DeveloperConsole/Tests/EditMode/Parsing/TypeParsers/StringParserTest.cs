@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using DeveloperConsole.Parsing;
+using DeveloperConsole.Parsing.Tokenizing;
 using NUnit.Framework;
 
-namespace DeveloperConsole.Tests
+namespace DeveloperConsole.Tests.Parsing
 {
     public class StringParserTest
     {

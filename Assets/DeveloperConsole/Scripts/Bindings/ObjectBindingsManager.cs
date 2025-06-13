@@ -4,14 +4,15 @@ using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
-namespace DeveloperConsole
+namespace DeveloperConsole.Bindings
 {
-    public class ObjectBindingsManager : IObjectBindingsProvider
+    public class ObjectBindingsManager : IObjectBindingsManager
     {
         private Dictionary<Type, Object> _bindings = new();
 
         public Dictionary<Type, Object> GetAllBindings() => _bindings;
 
+        
         public bool TryGetBinding(Type type, string name, string tag, out Object obj)
         {
             var success = _bindings.TryGetValue(type, out obj);
@@ -22,6 +23,7 @@ namespace DeveloperConsole
             obj = ResolveBinding(type, name, tag);
             return obj;
         }
+        
         
         public Object ResolveBinding(Type objType, string name, string tag)
         {

@@ -29,6 +29,10 @@ namespace DeveloperConsole
             Object.DontDestroyOnLoad(console);
         }
 
+        
+        /// <summary>
+        /// Destroys the scene play mode ticker.
+        /// </summary>
         public void DestroySceneConsole()
         {
             if (_console) Object.Destroy(_console);

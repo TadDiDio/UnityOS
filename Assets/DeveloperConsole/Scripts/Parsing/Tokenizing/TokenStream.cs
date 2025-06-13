@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace DeveloperConsole
+namespace DeveloperConsole.Parsing.Tokenizing
 {
     public class TokenStream
     {

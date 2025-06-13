@@ -24,6 +24,10 @@ namespace DeveloperConsole
             AssemblyReloadEvents.beforeAssemblyReload += Clear;
         }
 
+        
+        /// <summary>
+        /// Clears the subscriptions to update hookes.
+        /// </summary>
         public void Clear()
         {
             _disposed = true;
@@ -31,6 +35,7 @@ namespace DeveloperConsole
             SceneView.duringSceneGui -= OnGUI;
         }
 
+        
         private void OnTick()
         {
             // Unity holds onto delegates until next update loop so there is a single frame AFTER clear
@@ -44,12 +49,6 @@ namespace DeveloperConsole
         private void OnGUI(SceneView sceneView)
         {
             if (_disposed) return;
-            
-            if (!Kernel.IsInitialized)
-            {
-                Debug.LogWarning("Kernel not initialized, yet edit mode ticker is. This should not happen. Skipping OnGUI.");
-                return;
-            }
             
             int width = (int)sceneView.position.width;
             int height = (int)sceneView.position.height - ToolbarHeight;

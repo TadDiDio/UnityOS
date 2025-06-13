@@ -1,11 +1,13 @@
 using System;
 using UnityEngine;
+using DeveloperConsole.IO;
+using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole
 {
-    public class ConsoleApplication : ShellApplication, IWindow, IInputSource, IOutputSink
+    public class ConsoleApplication : IWindow, IInputSource, IOutputSink
     {
-        public event Action<string> InputSubmitted;
+        public event Action<IInput> InputSubmitted;
         
         private ConsoleState _consoleState;
 
@@ -13,22 +15,6 @@ namespace DeveloperConsole
         private int _historyIndexFromEnd;
         private string _inputBuffer = "";
         private Vector2 _scrollPosition = Vector2.zero;
-        
-        public ConsoleApplication(ITokenizationManager tokenizationManager, ICommandParser parser) 
-            : base(tokenizationManager, parser)
-        {
-            // TODO: Move this or inject it or a factory.
-            _consoleState = JsonFileManager.Load();
-
-            InputManager.RegisterInputSource(this);
-            OutputManager.RegisterOutputSink(this);
-            
-            // TODO: Allow users to choose this path
-            FileSource startUpSource = new FileSource("DeveloperConsole/Resources/console_start.txt");
-            InputManager.RegisterInputSource(startUpSource);
-            startUpSource.ReadLines();
-            InputManager.UnregisterInputSource(startUpSource);
-        }
         
         public void Draw(Rect areaRect)
         {
@@ -51,7 +37,7 @@ namespace DeveloperConsole
             // Input field inline with output
             GUILayout.BeginHorizontal();
             
-            GUILayout.Label(GetPrompt(), ConsoleGUIStyle.Prompt(), GUILayout.ExpandWidth(false));
+            GUILayout.Label(">", ConsoleGUIStyle.Prompt(), GUILayout.ExpandWidth(false));
             GUI.SetNextControlName("TerminalInputField");
             _inputBuffer = GUILayout.TextField(_inputBuffer, ConsoleGUIStyle.InputField());
             
@@ -93,7 +79,7 @@ namespace DeveloperConsole
             }
             else if (current.keyCode is KeyCode.Return or KeyCode.KeypadEnter) 
             {
-                InputSubmitted?.Invoke(_inputBuffer);
+                InputSubmitted?.Invoke(new TextInput(default, _inputBuffer));
                 if (!string.IsNullOrEmpty(_inputBuffer)) _consoleState.AddCommandHistory(_inputBuffer);
                 _inputBuffer = "";
                 _historyIndexFromEnd = 0;
@@ -101,34 +87,19 @@ namespace DeveloperConsole
             }
         }
 
-        public void OnShow() => _shown = true;
+        public void OnShow()
+        {
+            throw new NotImplementedException();
+        }
 
         public void OnHide()
         {
-            _shown = false;
-            _inputBuffer = "";
+            throw new NotImplementedException();
         }
 
-        protected override CommandContext GetSpecificCommandContext()
+        public void ReceiveOutput(IOutputMessage message)
         {
-            return new CommandContext
-            {
-                ConsoleState = _consoleState
-            };
-        }
-
-        protected override void OnAfterInputProcessed(CommandRunResult result)
-        {
-            // TODO: Update to support file per console
-            JsonFileManager.Save(_consoleState);
-            _scrollPosition.y = float.MaxValue;
-        }
-        
-        public void ReceiveOutput(string message)
-        {
-            if (string.IsNullOrEmpty(message)) return;
-            _consoleState.AddOutput(message);
-            JsonFileManager.Save(_consoleState);
+            throw new NotImplementedException();
         }
     }
 }

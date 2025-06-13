@@ -3,20 +3,22 @@ using UnityEditor;
 #endif
 
 using UnityEngine;
+using DeveloperConsole.Core;
 
 namespace DeveloperConsole
 {
     /// <summary>
     /// Entry point of the entire console system in both edit and play mode.
     /// </summary>
-    #if UNITY_EDITOR
+#if UNITY_EDITOR
     [InitializeOnLoad]
-    #endif
+#endif
     public static class KernelBootstrapper
     {
         private static bool _commonElementsInitialized;
-        private static ConsoleConfiguration _configurationOverride;
+        private static RuntimeDependenciesFactory _configurationOverride;
         
+        #region AUTO BOOTSTRAP
 #if UNITY_EDITOR
         static KernelBootstrapper() => Bootstrap();
 #endif
@@ -24,7 +26,12 @@ namespace DeveloperConsole
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void RuntimeBootstrap() => Bootstrap();
 #endif
+        #endregion
         
+        
+        /// <summary>
+        /// Starts or restarts the developer console if it is already started.
+        /// </summary>
         public static void Bootstrap()
         {
             KillSystem();
@@ -41,16 +48,10 @@ namespace DeveloperConsole
             CommonBootstrap();
         }
         
-        private static void CommonBootstrap()
-        {
-            if (_commonElementsInitialized) return;
-            
-            ConsoleConfiguration config = GetConfiguration();
-            Kernel.Initialize(() => new Kernel(config));
-            
-            _commonElementsInitialized = true;
-        }
         
+        /// <summary>
+        /// Shuts down the developer console system.
+        /// </summary>
         public static void KillSystem()
         {
             _configurationOverride = null;
@@ -78,17 +79,28 @@ namespace DeveloperConsole
         }
         
         
-        public static void SetConfigurationOverride(ConsoleConfiguration config)
+        /// <summary>
+        /// Sets an override configuration to inject custom dependencies.
+        /// </summary>
+        /// <param name="config"></param>
+        public static void SetConfigurationOverride(RuntimeDependenciesFactory config)
         {
             _configurationOverride = config;
         }
-        private static ConsoleConfiguration GetConfiguration()
+        
+        private static void CommonBootstrap()
         {
-            if (_configurationOverride != null) return _configurationOverride;
+            if (_commonElementsInitialized) return;
             
-            ConsoleConfiguration config = ConsoleConfigLoader.GetConsoleConfigurationSelector().SelectedConfiguration;
-            if (config == null) config = new ConsoleConfiguration();
-            return config;
+            RuntimeDependenciesFactory config = GetConfiguration();
+            Kernel.Initialize(() => new Kernel(config));
+            
+            _commonElementsInitialized = true;
+        }
+        
+        private static RuntimeDependenciesFactory GetConfiguration()
+        {
+            return _configurationOverride ?? new RuntimeDependenciesFactory();
         }
     }
 }

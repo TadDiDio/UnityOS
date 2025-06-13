@@ -1,8 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using DeveloperConsole.Parsing;
+using DeveloperConsole.Parsing.Tokenizing;
 using NUnit.Framework;
 
-namespace DeveloperConsole.Tests
+namespace DeveloperConsole.Tests.Parsing
 {
     public class EnumParserTest
     {

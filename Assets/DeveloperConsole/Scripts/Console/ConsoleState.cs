@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using UnityEngine;
+using DeveloperConsole.Persistence;
 
 namespace DeveloperConsole
 {
@@ -20,7 +20,7 @@ namespace DeveloperConsole
 
             if (MaxCommandHistorySize < 0)
             {
-                Debug.LogWarning("The max command history limit can't be less than 0. Setting to 250.");
+                Log.Warning("The max command history limit can't be less than 0. Setting to 250.");
                 MaxCommandHistorySize = 250;
                 JsonFileManager.Save(this);
             }

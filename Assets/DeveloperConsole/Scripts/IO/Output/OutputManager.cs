@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace DeveloperConsole
+namespace DeveloperConsole.IO
 {
     public class OutputManager : IOutputManager
     {
@@ -19,12 +19,6 @@ namespace DeveloperConsole
 
         public void UnregisterOutputSink(IOutputSink outputSink)
         {
-            if (!OutputSinks.Contains(outputSink))
-            {
-                // TODO: Warning to console
-                return;
-            }
-            
             OutputSinks.Remove(outputSink);
         }
 
@@ -33,7 +27,7 @@ namespace DeveloperConsole
             OutputSinks.Clear();
         }
 
-        public void SendOutput(string message)
+        public void Emit(IOutputMessage message)
         {
             foreach (var output in OutputSinks) output.ReceiveOutput(message);
         }

@@ -1,7 +1,7 @@
 using System.IO;
 using UnityEngine;
 
-namespace DeveloperConsole
+namespace DeveloperConsole.Persistence
 {
     public static class JsonFileManager
     {
@@ -19,12 +19,12 @@ namespace DeveloperConsole
 
                 if (state != null) return state;
                 
-                Debug.LogError($"Can't load console state from {FilePath}");
+                Log.Error($"Can't load console state from {FilePath}");
                 return new ConsoleState();
             }
             catch (System.Exception e)
             {
-                Debug.LogWarning($"Failed to load console state: {e}");
+                Log.Warning($"Failed to load console state: {e}");
                 return new ConsoleState();
             }
         }
@@ -38,7 +38,7 @@ namespace DeveloperConsole
             }
             catch (System.Exception e)
             {
-                Debug.LogError($"Failed to save console state: {e}");
+                Log.Error($"Failed to save console state: {e}");
             }
         }
     }

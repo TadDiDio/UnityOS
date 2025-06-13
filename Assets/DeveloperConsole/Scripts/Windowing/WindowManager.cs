@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace DeveloperConsole
+namespace DeveloperConsole.Windowing
 {
     public class WindowManager : IWindowManager
     {

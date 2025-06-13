@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
+using DeveloperConsole.Parsing;
+using DeveloperConsole.Parsing.Tokenizing;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DeveloperConsole.Tests
+namespace DeveloperConsole.Tests.Parsing
 {
     public class AlphaColorParserTest
     {

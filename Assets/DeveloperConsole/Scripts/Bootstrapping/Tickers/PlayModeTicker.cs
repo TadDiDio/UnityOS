@@ -9,7 +9,12 @@ namespace DeveloperConsole
     {
         private KernelUpdater _updater;
         
+        /// <summary>
+        /// Sets the kernel updater.
+        /// </summary>
+        /// <param name="updater">The updater.</param>
         public void SetUpdater(KernelUpdater updater) => _updater = updater;    
+        
         private void Update() => _updater.Tick();
 
         private void OnGUI()
