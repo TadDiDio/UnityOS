@@ -6,7 +6,7 @@ namespace DeveloperConsole.Parsing.Rules
 {
     public class PositionalParseRule : IParseRule
     {
-        private const string PositionalIndexKey = "positional_index";
+        public static readonly string PositionalIndexKey = "positional_index";
         
         public int Priority() => 600;
 
@@ -33,7 +33,7 @@ namespace DeveloperConsole.Parsing.Rules
 
         public bool TryParse(TokenStream tokenStream, ArgumentSpecification argument, out ParseResult parseResult)
         {
-            if (!ConsoleAPI.Parsing.TryTypeParse(argument.FieldInfo.FieldType, tokenStream, out var parsedValue))
+            if (!ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream, out var parsedValue))
             {
                 parseResult = ParseResult.TypeParsingFailed();
                 return false;

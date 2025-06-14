@@ -12,8 +12,6 @@ namespace DeveloperConsole.Tests.Parsing
         {
             var parser = new IntParser();
 
-            Assert.AreEqual(parser.TokenCount(), 1);
-
             List<string> tokens = new() { null, "", "asd", "-123.0", "123.0", "10f", "1.5"};
             TokenStream stream = new(tokens);
 

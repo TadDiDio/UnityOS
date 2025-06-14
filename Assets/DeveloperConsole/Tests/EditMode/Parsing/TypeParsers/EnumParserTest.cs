@@ -19,8 +19,6 @@ namespace DeveloperConsole.Tests.Parsing
         {
             var parser = new EnumParser<TestEnum>();
             
-            Assert.AreEqual(parser.TokenCount(), 1);
-
             List<string> tokens = new() { "dog", "cat", " dog", " 1 ", "DOG", "CAT" };
             TokenStream stream = new(tokens);
 

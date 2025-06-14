@@ -164,7 +164,7 @@ namespace DeveloperConsole
             /// <param name="stream"></param>
             /// <param name="obj"></param>
             /// <returns></returns>
-            public static bool TryTypeParse(Type targetType, TokenStream stream, out object obj)
+            public static bool TryParseType(Type targetType, TokenStream stream, out object obj)
             {
                 object result = null;
                 bool success = WithService<ITypeParserRegistryProvider, bool>

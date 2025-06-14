@@ -11,7 +11,7 @@ namespace DeveloperConsole.Parsing.Rules
         public bool CanMatch(string token, ArgumentSpecification argument, ParseContext context)
         {
             SwitchAttribute attribute = argument.Attributes.OfType<SwitchAttribute>().FirstOrDefault();
-            
+
             return attribute != null &&
                    token.StartsWith("--") && 
                    token.Length > 2 &&
@@ -20,7 +20,7 @@ namespace DeveloperConsole.Parsing.Rules
 
         public bool TryParse(TokenStream tokenStream, ArgumentSpecification argument, out ParseResult parseResult)
         {
-            if (!ConsoleAPI.Parsing.TryTypeParse(argument.FieldInfo.FieldType, tokenStream, out var parsedValue))
+            if (!ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream, out var parsedValue))
             {
                 parseResult = ParseResult.TypeParsingFailed();
                 return false;

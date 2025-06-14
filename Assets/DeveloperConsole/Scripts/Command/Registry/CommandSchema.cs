@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace DeveloperConsole.Command
@@ -49,7 +50,7 @@ namespace DeveloperConsole.Command
         /// <summary>
         /// The name of the arg.
         /// </summary>
-        public string Name;
+        public readonly string Name;
         
         /// <summary>
         /// The description of the arg.
@@ -57,11 +58,26 @@ namespace DeveloperConsole.Command
         public string Description;
         
         // The field representing this arg.
-        public FieldInfo FieldInfo;
+        public readonly FieldInfo FieldInfo;
         
         /// <summary>
         /// A list of all attributes on this argument.
         /// </summary>
-        public IReadOnlyList<ArgumentAttribute> Attributes;
+        public readonly IReadOnlyList<ArgumentAttribute> Attributes;
+
+        /// <summary>
+        /// Creates a new argument specification based on a field. If the field does not
+        /// have an argument attribute it will not be initialized.
+        /// </summary>
+        /// <param name="fieldInfo">The field.</param>
+        public ArgumentSpecification(FieldInfo fieldInfo)
+        {
+            Attributes = fieldInfo.GetCustomAttributes<ArgumentAttribute>().ToList();
+            if (Attributes == null || Attributes.Count == 0) return;
+
+            FieldInfo = fieldInfo;
+            Name = Attributes[0].Name ?? fieldInfo.Name;
+            Description = Attributes[0].Description;
+        }
     }
 }

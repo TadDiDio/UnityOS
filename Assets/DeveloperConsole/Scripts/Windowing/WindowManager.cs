@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace DeveloperConsole.Windowing
 {
+    /// <summary>
+    /// Manages and updates windows.
+    /// </summary>
     public class WindowManager : IWindowManager
     {
         private List<IWindow> _windows = new();
@@ -16,11 +19,13 @@ namespace DeveloperConsole.Windowing
             _windows.Add(window);
         }
         
+        
         public void UnregisterWindow(IWindow window)
         {
             if (!_windows.Contains(window)) return;
             _windows.Remove(window);
         }
+        
 
         public void OnInput(Event current)
         {
@@ -36,6 +41,8 @@ namespace DeveloperConsole.Windowing
             
             foreach (var window in _windows) window.OnInput(Event.current);
         }
+        
+        
         public void OnGUI(Rect fullScreen)
         {
             if (_visible != _wasVisiable)

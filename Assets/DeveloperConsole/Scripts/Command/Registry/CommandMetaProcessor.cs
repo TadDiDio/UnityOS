@@ -23,7 +23,7 @@ namespace DeveloperConsole.Command
             }
     
             string name = rawName.Trim().ToLower();
-            return Regex.Replace(name, @"[^a-zA-Z0-9]+", "");
+            return Regex.Replace(name, @"[^a-zA-Z0-9_\-]+", "");
         }
         
         
@@ -34,6 +34,12 @@ namespace DeveloperConsole.Command
         /// <returns>The normalized description.</returns>
         public static string Description(string rawDescription)
         {
+            if (string.IsNullOrEmpty(rawDescription))
+            {
+                Log.Error("Description of a command or argument was null or empty. This is not allowed.");
+                return "";
+            }
+            
             string description = rawDescription.Trim();
             description = char.ToUpper(description[0]) + description[1..];
             

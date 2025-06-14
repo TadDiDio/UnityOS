@@ -12,8 +12,6 @@ namespace DeveloperConsole.Tests.Parsing
         {
             var parser = new StringParser();
 
-            Assert.AreEqual(parser.TokenCount(), 1);
-
             List<string> tokens = new() { null, "-1", "0", "1", "-123123", "8439278", "risaodj", ".323234\"\n//..<P{<#$#@_)"};
             TokenStream stream = new(tokens);
 

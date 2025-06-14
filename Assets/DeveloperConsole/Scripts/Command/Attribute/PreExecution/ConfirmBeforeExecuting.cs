@@ -10,7 +10,7 @@ namespace DeveloperConsole.Command
     {
         public override async Task<bool> Validate(CommandContext context)
         {
-            context.Output.Emit(new SimpleOutputMessage("Are you sure you want to continue? (y/n)"));
+            context.Output.Emit(new SimpleOutputMessage(context.Session, "Are you sure you want to continue? (y/n)"));
             
             var response = await context.Session.WaitForInput();
 

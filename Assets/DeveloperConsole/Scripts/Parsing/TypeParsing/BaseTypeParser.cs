@@ -1,29 +1,18 @@
-using System.Collections.Generic;
-using System.Linq;
 using DeveloperConsole.Parsing.Tokenizing;
 
 namespace DeveloperConsole.Parsing
 {
+    /// <summary>
+    /// Parses a particular type.
+    /// </summary>
     public abstract class BaseTypeParser
     {
-        public abstract int TokenCount();
-
-        public bool TryParse(TokenStream tokenStream, out object obj)
-        {
-            List<string> subtokens = tokenStream.Read(TokenCount()).ToList();
-            TokenStream subtokenStream = new(subtokens);
-
-            obj = default;
-            bool result = TryParseType(subtokenStream, out obj);
-
-            if (subtokenStream.HasMore())
-            {
-                // TODO: This should not happen and needs to be logged 
-                // Notify user their parser is fucked
-            }
-            
-            return result;
-        }
-        protected abstract bool TryParseType(TokenStream tokenSubSteam, out object obj);
+        /// <summary>
+        /// Parses a sub token stream into a type.
+        /// </summary>
+        /// <param name="tokenSubSteam">A token stream with only the number of requested tokens.</param>
+        /// <param name="obj">The resulting value.</param>
+        /// <returns>True if successful.</returns>
+        public abstract bool TryParse(TokenStream tokenSubSteam, out object obj);
     }
 }

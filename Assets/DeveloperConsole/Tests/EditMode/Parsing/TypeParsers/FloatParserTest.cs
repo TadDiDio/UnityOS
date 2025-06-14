@@ -11,7 +11,6 @@ namespace DeveloperConsole.Tests.Parsing
         public void FloatParser_NotParseable()
         {
             var parser = new FloatParser();
-            Assert.AreEqual(parser.TokenCount(), 1);
 
             List<string> tokens = new() { null, "", "asd", "-123d", "123f", "10d"};
             TokenStream stream = new(tokens);

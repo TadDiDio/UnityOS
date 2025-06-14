@@ -3,6 +3,9 @@ using System.Text.RegularExpressions;
 
 namespace DeveloperConsole.Parsing.Tokenizing
 {
+    /// <summary>
+    /// A tokenizer that splits on white space while respecting quotes.
+    /// </summary>
     public class DefaultTokenizer : ITokenizer
     {
         private readonly Regex _tokenizer = new(@"(?<=^|\s)""([^""]*)""(?=$|\s)|\S+", RegexOptions.Compiled);

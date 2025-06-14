@@ -7,6 +7,7 @@ using DeveloperConsole.Parsing;
 using DeveloperConsole.Windowing;
 using DeveloperConsole.Parsing.Tokenizing;
 
+// TODO: Instantiate all componentes
 namespace DeveloperConsole
 {
     /// <summary>
@@ -129,12 +130,10 @@ namespace DeveloperConsole
                 WindowManager = WindowManagerFactory?.Invoke() ?? new WindowManager(),
                 InputManager = InputManagerFactory?.Invoke() ?? new InputManager(),
                 OutputManager = OutputManagerFactory?.Invoke() ?? new OutputManager(),
+                TypeParserRegistry = TypeParserRegistryFactory?.Invoke() ?? new TypeParserRegistry(),
+                Parser = ConsoleParserFactory?.Invoke() ?? new Parser(new DefaultTokenizer()),
+                CommandRegistry = CommandRegistryFactory?.Invoke() ?? new CommandRegistry(new ReflectionCommandDiscovery())
             };
-
-            // Compose dependent components after the basics exist
-            container.TypeParserRegistry = TypeParserRegistryFactory?.Invoke() ?? new TypeParserRegistry(container.OutputManager);
-            container.CommandRegistry = CommandRegistryFactory?.Invoke() ?? new CommandRegistry(new ReflectionCommandDiscovery());
-            container.Parser = ConsoleParserFactory?.Invoke() ?? new Parser(new DefaultTokenizer());
 
             return container;
         }

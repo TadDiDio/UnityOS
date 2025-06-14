@@ -5,6 +5,9 @@ using DeveloperConsole.Core;
 
 namespace DeveloperConsole.IO
 {
+    /// <summary>
+    /// An input manager for coalescing inputs for the system.
+    /// </summary>
     public class InputManager : IInputManager
     {
         public List<IInputSource> InputSources { get; } = new();

@@ -149,15 +149,7 @@ namespace DeveloperConsole.Command
                     var attributes = field.GetCustomAttributes<ArgumentAttribute>().ToList();
                     if (attributes.Count == 0) continue;
 
-                    commandSchema.ArgumentSpecifications.Add(
-                        new ArgumentSpecification
-                        {
-                            Name = attributes[0].Name ?? field.Name,
-                            Description = attributes[0].Description,
-                            FieldInfo = field,
-                            Attributes = attributes
-                        }
-                    );
+                    commandSchema.ArgumentSpecifications.Add(new ArgumentSpecification(field));
                 }
             }
         }

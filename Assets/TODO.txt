@@ -1,6 +1,3 @@
-IN THE MIDDLE OF:
-Documenting. Finished up to but not including the core directory.
-
 ROSLYN:
 Check attributes on bad types, i.e. Subcommand only allowed on ICommand objects
 Check that positional indexes are different
@@ -12,7 +9,6 @@ Missing Command attribute on command class
 preserve attribute for anything with Command on it
 
 THINGS TO TEST
-parse rules
 command parse target
 parser
 type type parser
@@ -32,7 +28,7 @@ input manager
 output manager
 API
 message formatter (if used, i would wait on this one)
-
+MAKE SURE ALL TESTS INHERIT FROM CONSOLE TEST
 
 
 NEXT UP:
@@ -79,6 +75,9 @@ NOTES FOR DOCS
 - Parse rules and their priorities, lower = higher priority
 - When a session is waiting for input, it expects a text input and everything else will be ignored.
 - All inputs can be promoted to command requests.
+- To use the test system, you must make sure to register a custom attribute builder if you are testing it.
+- recommand inheriting test classes from ConsoleTest since it reboots the system before and after the test runs.
+- If adding more than one field to a test type, give them distinct names or they will all default to "test"
 
 COMMAND IDEAS
 bind

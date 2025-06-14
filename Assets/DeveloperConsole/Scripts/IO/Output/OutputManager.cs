@@ -2,6 +2,10 @@ using System.Collections.Generic;
 
 namespace DeveloperConsole.IO
 {
+    /// TODO: This doesn't happen yet lol
+    /// <summary>
+    /// An output manager that forwards messages to all subscribed sinks.
+    /// </summary>
     public class OutputManager : IOutputManager
     {
         public List<IOutputSink> OutputSinks { get;  } = new();

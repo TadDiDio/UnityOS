@@ -15,12 +15,12 @@ namespace DeveloperConsole.Parsing.Rules
             return attribute != null &&
                    token.StartsWith("-") && 
                    token.Length > 1 &&
-                   token[2..].Equals(argument.Name);
+                   token[1..].Equals(argument.Name);
         }
 
         public bool TryParse(TokenStream tokenStream, ArgumentSpecification argument, out ParseResult parseResult)
         {
-            if (!ConsoleAPI.Parsing.TryTypeParse(argument.FieldInfo.FieldType, tokenStream, out var parsedValue))
+            if (!ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream, out var parsedValue))
             {
                 parseResult = ParseResult.TypeParsingFailed();
                 return false;

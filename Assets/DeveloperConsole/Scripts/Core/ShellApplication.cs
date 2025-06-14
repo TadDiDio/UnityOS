@@ -4,13 +4,23 @@ using DeveloperConsole.Command;
 
 namespace DeveloperConsole.Core
 {
+    /// <summary>
+    /// Routes input to the command executor and execution results to the output manager.
+    /// </summary>
     public sealed class ShellApplication : IShellApplication
     {
         private ICommandExecutor _executor;
         private IInputManager _inputManager;
         private IOutputManager _outputManager;
         
-        protected ShellApplication(ICommandExecutor executor, IInputManager inputManager, IOutputManager outputManager)
+        
+        /// <summary>
+        /// Creates a new shell application.
+        /// </summary>
+        /// <param name="executor">The command executor.</param>
+        /// <param name="inputManager">The input maanger.</param>
+        /// <param name="outputManager">The output manager.</param>
+        public ShellApplication(ICommandExecutor executor, IInputManager inputManager, IOutputManager outputManager)
         {
             _executor = executor;
             _inputManager = inputManager;
@@ -18,11 +28,13 @@ namespace DeveloperConsole.Core
             _inputManager.OnCommandInput += HandleCommandRequestAsync;
         }
         
+        // TODO: 
         public ShellSession CreateSession()
         {
             return null;
         }
 
+        
         public async void HandleCommandRequestAsync(CommandRequest request)
         {
             try
@@ -40,16 +52,15 @@ namespace DeveloperConsole.Core
                 IOutputMessage output;
                 if (executionResult.Status is not Status.Success)
                 {
-                    output = new SimpleOutputMessage(executionResult.ErrorMessage);
+                    output = new SimpleOutputMessage(request.ShellSession, executionResult.ErrorMessage);
                 }
                 else
                 {
                     output = new ShellOutputMessage
-                    {
-                        CommandOutput = executionResult.CommandOutput,
-                        Session = request.ShellSession,
-                        // TODO: Add channel info.
-                    };
+                    (
+                        request.ShellSession,
+                        executionResult.CommandOutput
+                    );
                 }
                 
                 _outputManager.Emit(output);

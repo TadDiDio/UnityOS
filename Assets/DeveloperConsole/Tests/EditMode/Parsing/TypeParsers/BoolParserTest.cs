@@ -12,14 +12,12 @@ namespace DeveloperConsole.Tests.Parsing
         public void BoolParser_NotParseable()
         {
             var parser = new BoolParser();
-            Assert.AreEqual(parser.TokenCount(), 1);
 
             List<string> tokens = new() { null, "", "asd", "-123d", "asdw", "10d", "t", "f", "T", "F"};
-            TokenStream stream = new(tokens);
 
-            while (stream.HasMore())
+            foreach (var token in tokens)
             {
-                Assert.False(parser.TryParse(stream, out object x));
+                Assert.False(parser.TryParse(new TokenStream(new List<string> {token}), out object x));
             }
         }
     

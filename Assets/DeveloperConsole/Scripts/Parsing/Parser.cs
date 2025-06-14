@@ -9,6 +9,12 @@ namespace DeveloperConsole.Parsing
     {
         private readonly List<IParseRule> _rules;
         private readonly ITokenizer _tokenizer;
+       
+        
+        /// <summary>
+        /// Creates a new parser.
+        /// </summary>
+        /// <param name="tokenizer">The tokenizer to use.</param>
         public Parser(ITokenizer tokenizer)
         {
             _tokenizer = tokenizer;

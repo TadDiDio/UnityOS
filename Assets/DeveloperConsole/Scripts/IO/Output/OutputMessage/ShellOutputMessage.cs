@@ -3,11 +3,29 @@ using DeveloperConsole.Command;
 
 namespace DeveloperConsole.IO
 {
+    /// <summary>
+    /// An output message representing shell output.
+    /// </summary>
     public class ShellOutputMessage : IOutputMessage
     {
-        // TODO: Every IOutput message should have a channel and session for routing purposes
-        public string Channel;
-        public ShellSession Session;
+        public ShellSession Session { get; }
+        
+        
+        /// <summary>
+        /// The output of the executed command.
+        /// </summary>
         public CommandOutput CommandOutput;
+
+
+        /// <summary>
+        /// Creates a new shell output message.
+        /// </summary>
+        /// <param name="session">The session this output came from.</param>
+        /// <param name="commandOutput">The output of the executed command.</param>
+        public ShellOutputMessage(ShellSession session, CommandOutput commandOutput)
+        {
+            Session = session;
+            CommandOutput = commandOutput;
+        }
     }
 }

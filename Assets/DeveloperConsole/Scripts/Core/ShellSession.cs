@@ -4,12 +4,13 @@ using DeveloperConsole.IO;
 
 namespace DeveloperConsole.Core
 {
+    /// <summary>
+    /// Owns the interaction and state context for a shell session.
+    /// </summary>
     public class ShellSession
     {
         private bool _waitingForInput;
         private TaskCompletionSource<TextInput> _inputTcs;
-        
-        // Owns interaction and session context
         
         // Must track if locked or not
         // Must buffer input
@@ -21,8 +22,19 @@ namespace DeveloperConsole.Core
         // Input sources must know their session so input manager
         // can direct input to session rather than shell.
 
+        
+        
+        /// <summary>
+        /// Is this session waiting for input?
+        /// </summary>
+        /// <returns>True if this session is waiting for input.</returns>
         public bool WaitingForInput() => _waitingForInput;
 
+        
+        /// <summary>
+        /// Receives text input. System will ignore all other input types while waiting for input.
+        /// </summary>
+        /// <param name="input">The input.</param>
         public void ReceiveInput(TextInput input)
         {
             if (_inputTcs != null && !_inputTcs.Task.IsCompleted)
@@ -34,6 +46,12 @@ namespace DeveloperConsole.Core
             _waitingForInput = false;
         }
 
+        
+        /// <summary>
+        /// The task to wait for input asynchronously.
+        /// </summary>
+        /// <returns>The text input.</returns>
+        /// <exception cref="InvalidOperationException">Thrown if this session was already waiting.</exception>
         public async Task<TextInput> WaitForInput()
         {
             _waitingForInput = true;

@@ -14,8 +14,6 @@ namespace DeveloperConsole.Tests.Parsing
         {
             var parser = new ColorParser();
             
-            Assert.AreEqual(parser.TokenCount(), 3);
-
             List<string> tokens = new() { "0", ".5", "0", "1", "0.1", ".4325643"};
             TokenStream stream = new(tokens);
 
@@ -29,24 +27,47 @@ namespace DeveloperConsole.Tests.Parsing
         }
         
         [Test]
-        public void ColorParser_NotParseable()
+        public void ColorParser_NotParseable1()
         {
             var parser = new ColorParser();
 
-            List<string> tokens = new() { null, "1", "1", "1", "1", "1.1", "-1", "0", "0", ".5", ".5"};
+            List<string> tokens = new() { null, "1", "1"};
             TokenStream stream = new(tokens);
 
             Assert.False(parser.TryParse(stream, out _));
-            Assert.AreEqual(stream.Remaining().Count(), 8);
-            
+        }
+        
+        [Test]
+        public void ColorParser_NotParseable2()
+        {
+            var parser = new ColorParser();
+
+            List<string> tokens = new() { "1", "1", "1.1" };
+            TokenStream stream = new(tokens);
+
             Assert.False(parser.TryParse(stream, out _));
-            Assert.AreEqual(stream.Remaining().Count(), 5);
-            
+        }
+        
+        [Test]
+        public void ColorParser_NotParseable3()
+        {
+            var parser = new ColorParser();
+
+            List<string> tokens = new() { "-1", "0", "0" };
+            TokenStream stream = new(tokens);
+
             Assert.False(parser.TryParse(stream, out _));
-            Assert.AreEqual(stream.Remaining().Count(), 2);
-            
+        }
+        
+        [Test]
+        public void ColorParser_NotParseable4()
+        {
+            var parser = new ColorParser();
+
+            List<string> tokens = new() { ".5", ".5" };
+            TokenStream stream = new(tokens);
+
             Assert.False(parser.TryParse(stream, out _));
-            Assert.False(stream.HasMore());
         }
     }
 }

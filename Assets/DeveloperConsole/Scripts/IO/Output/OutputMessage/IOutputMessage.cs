@@ -1,4 +1,18 @@
+using DeveloperConsole.Core;
+
 namespace DeveloperConsole.IO
 {
-    public interface IOutputMessage { }
+    /// <summary>
+    /// Interface for all output messages.
+    /// </summary>
+    public interface IOutputMessage
+    {
+        // TODO: 
+        //public string Channel { get; }
+        
+        /// <summary>
+        /// The session this output came from.
+        /// </summary>
+        public ShellSession Session { get; }
+    }
 }

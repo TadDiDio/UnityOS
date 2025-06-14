@@ -14,8 +14,6 @@ namespace DeveloperConsole.Tests.Parsing
         {
             var parser = new AlphaColorParser();
             
-            Assert.AreEqual(parser.TokenCount(), 4);
-
             List<string> tokens = new() { "0", ".5", "1", "1", "0.1", ".4325643", "0.0001", "1"};
             TokenStream stream = new(tokens);
 
@@ -29,27 +27,58 @@ namespace DeveloperConsole.Tests.Parsing
         }
         
         [Test]
-        public void AlphaColorParser_NotParseable()
+        public void AlphaColorParser_NotParseable1()
         {
             var parser = new AlphaColorParser();
 
-            List<string> tokens = new() { null, "1", "1", "1", "0", "1", "1", "1.1", "0,", "1", "1", "-1", "0", "1", "1", "a", "1", "1", "1"};
+            List<string> tokens = new() { null, "1", "1", "1"};
             TokenStream stream = new(tokens);
 
             Assert.False(parser.TryParse(stream, out _));
-            Assert.AreEqual(stream.Remaining().Count(), 15);
-            
+        }
+        
+        [Test]
+        public void AlphaColorParser_NotParseable2()
+        {
+            var parser = new AlphaColorParser();
+
+            List<string> tokens = new() { "0", "1", "1", "1.1" };
+            TokenStream stream = new(tokens);
+
             Assert.False(parser.TryParse(stream, out _));
-            Assert.AreEqual(stream.Remaining().Count(), 11);
-            
+        }
+        
+        [Test]
+        public void AlphaColorParser_NotParseable3()
+        {
+            var parser = new AlphaColorParser();
+
+            List<string> tokens = new() { "0,", "1", "1", "-1" };
+            TokenStream stream = new(tokens);
+
             Assert.False(parser.TryParse(stream, out _));
-            Assert.AreEqual(stream.Remaining().Count(), 7);
-            
+        }
+        
+        [Test]
+        public void AlphaColorParser_NotParseable4()
+        {
+            var parser = new AlphaColorParser();
+
+            List<string> tokens = new() { "0", "1", "1", "a" };
+            TokenStream stream = new(tokens);
+
             Assert.False(parser.TryParse(stream, out _));
-            Assert.AreEqual(stream.Remaining().Count(), 3);
-            
+        }
+        
+        [Test]
+        public void AlphaColorParser_NotParseable5()
+        {
+            var parser = new AlphaColorParser();
+
+            List<string> tokens = new() { "0", "1", "1" };
+            TokenStream stream = new(tokens);
+
             Assert.False(parser.TryParse(stream, out _));
-            Assert.False(stream.HasMore());
         }
     }
 }

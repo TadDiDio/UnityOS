@@ -5,9 +5,7 @@ namespace DeveloperConsole.Parsing
 {
     public class ColorParser : BaseTypeParser
     {
-        public override int TokenCount() => 3;
-
-        protected override bool TryParseType(TokenStream tokenSubSteam, out object obj)
+        public override bool TryParse(TokenStream tokenSubSteam, out object obj)
         {
             obj = null;
             if (!float.TryParse(tokenSubSteam.Next(), out float r) ||

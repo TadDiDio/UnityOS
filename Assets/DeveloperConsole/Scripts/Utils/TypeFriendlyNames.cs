@@ -1,10 +1,17 @@
 using System;
-using System.Linq;
 
 namespace DeveloperConsole
 {
+    /// <summary>
+    /// Converts system type names to friendly names and vis versa.
+    /// </summary>
     public static class TypeFriendlyNames
     {
+        /// <summary>
+        /// Converts a type to a friendly name.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>The friendly name.</returns>
         public static string TypeToName(Type type)
         {
             return type switch
@@ -23,6 +30,12 @@ namespace DeveloperConsole
             };
         }
         
+        
+        /// <summary>
+        /// Converts a friendly name to a type.
+        /// </summary>
+        /// <param name="name">The common or friendly name.</param>
+        /// <returns>The type.</returns>
         public static Type NameToType(string name)
         {
             if (string.IsNullOrEmpty(name)) return null;

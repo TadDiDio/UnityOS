@@ -1,6 +1,5 @@
 using System;
 using UnityEngine;
-using DeveloperConsole.IO;
 using System.Collections.Generic;
 using DeveloperConsole.Parsing.Tokenizing;
 
@@ -9,12 +8,9 @@ namespace DeveloperConsole.Parsing
     public class TypeParserRegistry : ITypeParserRegistryProvider
     {
         private Dictionary<Type, BaseTypeParser> _typeParsers = new();
-        private IOutputManager _outputManager;
         
-        public TypeParserRegistry(IOutputManager outputManager)
+        public TypeParserRegistry()
         {
-            _outputManager = outputManager;
-            
             // Register default type parsers
             RegisterTypeParser<int>(new IntParser());;
             RegisterTypeParser<bool>(new BoolParser());
@@ -25,6 +21,7 @@ namespace DeveloperConsole.Parsing
             RegisterTypeParser<Vector2>(new Vector2Parser());
             RegisterTypeParser<Vector3>(new Vector3Parser());
         }
+        
         public void RegisterTypeParser<T>(BaseTypeParser parser)
         {
             _typeParsers.TryAdd(typeof(T), parser);
@@ -35,7 +32,7 @@ namespace DeveloperConsole.Parsing
             obj = null;
             if (!_typeParsers.TryGetValue(type, out var parser))
             {
-                _outputManager.Emit(new SimpleOutputMessage($"There is no parser registered for type {type}."));
+                Log.Warning($"There is no type parser of {type.Name}, Did you forget to register it?");
                 return false;
             }
 

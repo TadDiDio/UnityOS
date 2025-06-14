@@ -21,7 +21,7 @@ namespace DeveloperConsole.Parsing.Rules
 
         public bool TryParse(TokenStream tokenStream, ArgumentSpecification argument, out ParseResult parseResult)
         {
-            if (!ConsoleAPI.Parsing.TryTypeParse(typeof(bool), tokenStream, out var parsedValue) || parsedValue is not bool typedValue)
+            if (!ConsoleAPI.Parsing.TryParseType(typeof(bool), tokenStream, out var parsedValue) || parsedValue is not bool typedValue)
             {
                 parseResult = ParseResult.TypeParsingFailed();
                 return false;

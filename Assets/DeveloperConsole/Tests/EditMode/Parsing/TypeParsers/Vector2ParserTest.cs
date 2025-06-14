@@ -14,8 +14,6 @@ namespace DeveloperConsole.Tests.Parsing
         {
             var parser = new Vector2Parser();
 
-            Assert.AreEqual(parser.TokenCount(), 2);
-            
             List<string> tokens = new() { "-1", "0", "10", "-123123", "-843927.8", "43.23"};
             TokenStream stream = new(tokens);
 
@@ -33,21 +31,36 @@ namespace DeveloperConsole.Tests.Parsing
         }
         
         [Test]
-        public void Vector2Parser_NotParseable()
+        public void Vector2Parser_NotParseable1()
         {
             var parser = new Vector2Parser();
 
-            List<string> tokens = new() { null, "1", "one", "3", "1"};
+            List<string> tokens = new() { null, "1" };
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out object x));
-            Assert.AreEqual(stream.Remaining().Count(), 3);
-            
-            Assert.False(parser.TryParse(stream, out object y));
-            Assert.AreEqual(stream.Remaining().Count(), 1);
-            
-            Assert.False(parser.TryParse(stream, out object z));
-            Assert.False(stream.HasMore());
+            Assert.False(parser.TryParse(stream, out _));
+        }
+        
+        [Test]
+        public void Vector2Parser_NotParseable2()
+        {
+            var parser = new Vector2Parser();
+
+            List<string> tokens = new() { "1" };
+            TokenStream stream = new(tokens);
+
+            Assert.False(parser.TryParse(stream, out _));
+        }
+        
+        [Test]
+        public void Vector2Parser_NotParseable3()
+        {
+            var parser = new Vector2Parser();
+
+            List<string> tokens = new() { "1" };
+            TokenStream stream = new(tokens);
+
+            Assert.False(parser.TryParse(stream, out _));
         }
     }
 }
