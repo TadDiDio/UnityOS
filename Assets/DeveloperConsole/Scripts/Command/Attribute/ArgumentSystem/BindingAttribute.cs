@@ -1,4 +1,5 @@
 using System;
+using DeveloperConsole.Parsing;
 using Object = UnityEngine.Object;
 
 namespace DeveloperConsole.Command
@@ -7,7 +8,7 @@ namespace DeveloperConsole.Command
     /// Specifies to inject an object of this field's type for use in the command.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class BindingAttribute : Validated
+    public class BindingAttribute : ValidatedAttribute
     {
         private Type _type;
         private string _tag;
@@ -28,17 +29,22 @@ namespace DeveloperConsole.Command
             _name = name;
         }
 
-        protected override bool Validate(AttributeValidationData data)
+        public override bool Validate(ParseContext context)
         {
-            _type = data.FieldInfo.FieldType;
-            return ConsoleAPI.TryGetBinding(data.FieldInfo.FieldType, _name, _tag, out var obj) && BindObject(data, obj);
+            var result = context.Target.GetFirstArgumentMatchingAttribute(this);
+            if (!result.HasValue) return false;
+
+            var (spec, _) = result.Value;
+            _type = spec.FieldInfo.FieldType;
+            return ConsoleAPI.TryGetBinding(_type, _name, _tag, out var obj) && 
+                   BindObject(spec, context.Target, obj);
         }
 
-        private bool BindObject(AttributeValidationData data, Object target)
+        private bool BindObject(ArgumentSpecification spec, object parseTarget, Object target)
         {
             try
             {
-                data.FieldInfo.SetValue(data.Object, target);
+                spec.FieldInfo.SetValue(parseTarget, target);
                 return true;
             }
             catch

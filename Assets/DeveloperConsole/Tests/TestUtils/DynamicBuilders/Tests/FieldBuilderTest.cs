@@ -86,12 +86,11 @@ namespace DeveloperConsole.Tests.TestUtils
             var field = new FieldBuilder()
                 .WithName("args")
                 .WithType(typeof(List<string>))
-                .WithAttribute(new VariadicAttribute("desc", isCommandPath: true))
+                .WithAttribute(new VariadicAttribute("desc"))
                 .Build();
 
             var attr = field.GetCustomAttribute<VariadicAttribute>();
             Assert.That(attr, Is.Not.Null);
-            Assert.That(attr.IsCommandPath, Is.True);
         }
 
         [Test]

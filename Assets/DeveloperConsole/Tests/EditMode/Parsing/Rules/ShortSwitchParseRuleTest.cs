@@ -28,7 +28,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsTrue(rule.CanMatch("-speed", spec, context));
         }
@@ -42,7 +42,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsFalse(rule.CanMatch("-speed", spec, context));
         }
@@ -57,7 +57,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsFalse(rule.CanMatch("-width", spec, context));
         }
@@ -72,7 +72,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsTrue(rule.CanMatch("-width", spec, context));
         }

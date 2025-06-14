@@ -27,7 +27,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsTrue(rule.CanMatch("--no-verbose", spec, context));
         }
@@ -41,7 +41,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsFalse(rule.CanMatch("--no-verbose", spec, context));
         }
@@ -56,7 +56,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsFalse(rule.CanMatch("--verbose", spec, context));
         }
@@ -71,7 +71,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsFalse(rule.CanMatch("--no-", spec, context));
         }
@@ -86,7 +86,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsFalse(rule.CanMatch("--no-flags", spec, context));
         }
@@ -101,7 +101,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsFalse(rule.CanMatch("--no-verbose", spec, context));
         }

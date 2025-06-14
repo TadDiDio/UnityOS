@@ -98,16 +98,15 @@ namespace DeveloperConsole.Tests
         /// </summary>
         /// <param name="name">The field name.</param>
         /// <param name="elementType">The field type.</param>
-        /// <param name="isCommandPath">Whether this is a command path.</param>
         /// <returns>The builder.</returns>
-        public CommandBuilder WithVariadic(string name, Type elementType, bool isCommandPath = false)
+        public CommandBuilder WithVariadic(string name, Type elementType)
         {
             var listType = typeof(List<>).MakeGenericType(elementType);
             
             var field = new FieldBuilder()
                 .WithName(name)
                 .WithType(listType)
-                .WithAttribute(new VariadicAttribute("desc", isCommandPath: isCommandPath))
+                .WithAttribute(new VariadicAttribute("desc"))
                 .Build();
             
             fields.Add(field);

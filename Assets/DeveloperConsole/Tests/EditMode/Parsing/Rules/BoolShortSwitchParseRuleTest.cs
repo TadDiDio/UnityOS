@@ -28,7 +28,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsTrue(_rule.CanMatch("-f", spec, context));
         }
@@ -42,7 +42,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsFalse(_rule.CanMatch("-f", spec, context));
         }
@@ -57,7 +57,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             // False because name after one dash doesn't match
             Assert.IsFalse(_rule.CanMatch("--f", spec, context));
@@ -73,7 +73,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             // False because name after one dash doesn't match
             Assert.IsFalse(_rule.CanMatch("f", spec, context));
@@ -89,7 +89,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsFalse(_rule.CanMatch("-", spec, context));
         }
@@ -104,7 +104,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsFalse(_rule.CanMatch("-f", spec, context));
         }
@@ -119,7 +119,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsFalse(_rule.CanMatch("-a", spec, context));
         }
@@ -134,7 +134,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsTrue(_rule.CanMatch("-f2", spec, context));
         }

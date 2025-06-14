@@ -66,6 +66,20 @@ namespace DeveloperConsole.Parsing
                 ErrorMessage = "Failed to parse a type."
             };
         }
+        
+        
+        /// TODO: More info needed here about what failed.
+        /// <summary>
+        /// Creates a failed parse result.
+        /// </summary>
+        /// <returns>The result.</returns>
+        public static ParseResult ValidationFailed(string message)
+        {
+            return new ParseResult
+            {
+                ErrorMessage = message
+            };
+        }
     }
 }
 

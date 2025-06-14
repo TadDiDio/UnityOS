@@ -13,6 +13,15 @@ namespace DeveloperConsole.Parsing
         /// </summary>
         /// <returns>A set of arguments.</returns>
         public HashSet<ArgumentSpecification> GetArguments();
+
+
+        /// <summary>
+        /// Gets the first arg spec and value matching the attribute.
+        /// </summary>
+        /// <param name="attribute">The attribute.</param>
+        /// <returns>The arg spec and value.</returns>
+        public (ArgumentSpecification spec, object value)? GetFirstArgumentMatchingAttribute(
+            ArgumentAttribute attribute);
         
         
         /// <summary>

@@ -1,7 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Rules;
 using DeveloperConsole.Parsing.Tokenizing;
+using log4net.Util;
 
 namespace DeveloperConsole.Parsing
 {
@@ -41,7 +44,7 @@ namespace DeveloperConsole.Parsing
         
         public ParseResult Parse(TokenStream stream, IParseTarget target)
         {
-            ParseContext context = new();
+            ParseContext context = new(target);
             
             // Iterate over all combinations of first token and args and get the first matching rule by priority
             while (stream.HasMore())
@@ -58,6 +61,18 @@ namespace DeveloperConsole.Parsing
 
                         target.SetArgument(arg, result.Value);
                         break;
+                    }
+                }
+            }
+
+            foreach (var arg in target.GetArguments())
+            {
+                var validated = arg.Attributes.OfType<ValidatedAttribute>();
+                foreach (var attr in validated)
+                {
+                    if (!attr.Validate(context))
+                    {
+                        return ParseResult.ValidationFailed(attr.ErrorMessage());
                     }
                 }
             }

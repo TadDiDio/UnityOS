@@ -28,7 +28,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             Assert.IsTrue(rule.CanMatch("dragon", spec, context));
         }
@@ -43,7 +43,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
             context.SetData(PositionalParseRule.PositionalIndexKey, 0); // mismatch
 
             Assert.IsFalse(rule.CanMatch("25", spec, context));
@@ -59,7 +59,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
 
             rule.CanMatch("warrior", spec, context);
 
@@ -152,7 +152,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var context = new ParseContext();
+            var context = new ParseContext(null);
             context.SetData(PositionalParseRule.PositionalIndexKey, 2);
 
             Assert.IsTrue(rule.CanMatch("enemy", spec, context));

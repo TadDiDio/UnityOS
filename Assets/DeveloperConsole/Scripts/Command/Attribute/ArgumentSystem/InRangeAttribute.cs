@@ -1,4 +1,5 @@
 using System;
+using DeveloperConsole.Parsing;
 
 namespace DeveloperConsole.Command
 {
@@ -6,7 +7,7 @@ namespace DeveloperConsole.Command
     /// Determines if an argument value is within a range.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class InRangeAttribute : Validated
+    public class InRangeAttribute : ValidatedAttribute
     {
         private float Min;
         private float Max;
@@ -28,11 +29,15 @@ namespace DeveloperConsole.Command
             Max = max;
         }
 
-        protected override bool Validate(AttributeValidationData data)
+        public override bool Validate(ParseContext context)
         {
             try
             {
-                float value = Convert.ToSingle(data.FieldInfo.GetValue(data.Object));
+                var result = context.Target.GetFirstArgumentMatchingAttribute(this);
+                if (!result.HasValue) return false;
+
+                var (_, rawValue) = result.Value;
+                float value = Convert.ToSingle(rawValue);
                 testedValue = value;
                 return value >= Min && value <= Max;
             }

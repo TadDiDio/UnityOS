@@ -9,9 +9,7 @@ Missing Command attribute on command class
 preserve attribute for anything with Command on it
 
 THINGS TO TEST
-command parse target
 parser
-type type parser
 text command resolver
 object bindings manager
 Command argument attributes

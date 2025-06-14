@@ -17,7 +17,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
         public void SetUp()
         {
             _rule = new VariadicParseRule();
-            _context = new ParseContext();
+            _context = new ParseContext(null);
         }
 
         [Test]
@@ -64,7 +64,6 @@ namespace DeveloperConsole.Tests.Parsing.Rules
 
             Assert.IsTrue(success);
             Assert.AreEqual(Status.Success, result.Status);
-            Log.Info(result.Value.GetType());
             CollectionAssert.AreEqual(new List<int> { 1, 2, 3, 4 }, (List<int>)result.Value);
         }
 

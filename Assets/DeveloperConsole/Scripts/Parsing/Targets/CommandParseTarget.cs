@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DeveloperConsole.Command;
 
 namespace DeveloperConsole.Parsing
@@ -26,6 +27,15 @@ namespace DeveloperConsole.Parsing
         public HashSet<ArgumentSpecification> GetArguments()
         {
             return Schema.ArgumentSpecifications;
+        }
+
+        public (ArgumentSpecification spec, object value)? GetFirstArgumentMatchingAttribute(ArgumentAttribute attribute)
+        {
+            var argSpec = Schema.ArgumentSpecifications.FirstOrDefault(args => args.Attributes.Contains(attribute));
+            
+            if (argSpec == null) return null;
+            
+            return (argSpec, argSpec.FieldInfo.GetValue(Command));
         }
 
         public void SetArgument(ArgumentSpecification argument, object argValue)

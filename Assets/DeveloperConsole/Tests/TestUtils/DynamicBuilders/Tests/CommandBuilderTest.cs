@@ -86,7 +86,7 @@ namespace DeveloperConsole.Tests.TestUtils
         public void CommandBuilder_WithVariadic()
         {
             var builder = new CommandBuilder()
-                .WithVariadic("files", typeof(string), isCommandPath: true);
+                .WithVariadic("files", typeof(string));
 
             var type = builder.BuildType();
             var field = type.GetField("files");
@@ -97,7 +97,6 @@ namespace DeveloperConsole.Tests.TestUtils
 
             var variadicAttr = field.GetCustomAttribute<VariadicAttribute>();
             Assert.NotNull(variadicAttr);
-            Assert.IsTrue(variadicAttr.IsCommandPath);
         }
 
         [Test]

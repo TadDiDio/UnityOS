@@ -8,8 +8,24 @@ namespace DeveloperConsole.Parsing
     /// </summary>
     public class ParseContext
     {
+        /// <summary>
+        /// The finalized parse target.
+        /// </summary>
+        public IParseTarget Target { get; }
+        
         private Dictionary<string, object> _metadata = new();
 
+        
+        /// <summary>
+        /// Creates a new parse context.
+        /// </summary>
+        /// <param name="target">The parse target.</param>
+        public ParseContext(IParseTarget target)
+        {
+            Target = target;
+        }
+        
+        
         /// <summary>
         /// Try to get data by the key.
         /// </summary>
