@@ -6,7 +6,7 @@ namespace DeveloperConsole.Command
     /// Defines a switch arg.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class SwitchAttribute : ArgumentAttribute
+    public class SwitchAttribute : InformativeAttribute
     {
         public string ShortName { get; }
         
@@ -21,6 +21,11 @@ namespace DeveloperConsole.Command
             : base(description, overrideName)
         {
             ShortName = shortName;
+        }
+        
+        public override string ToString()
+        {
+            return $"{Name ?? "Switch"} ({ShortName}): {Description}";
         }
     }
 }

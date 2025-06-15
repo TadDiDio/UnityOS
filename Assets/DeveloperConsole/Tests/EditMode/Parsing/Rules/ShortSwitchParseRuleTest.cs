@@ -30,7 +30,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
             var spec = new ArgumentSpecification(field);
             var context = new ParseContext(null);
 
-            Assert.IsTrue(rule.CanMatch("-speed", spec, context));
+            Assert.IsTrue(rule.CanMatch("-s", spec, context));
         }
 
         [Test]
@@ -63,7 +63,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
         }
 
         [Test]
-        public void CanMatch_ReturnsTrue_WhenTokenMatchesOverrideName()
+        public void CanMatch_ReturnsTrue_WhenTokenMatchesWithOverrideName()
         {
             var field = new FieldBuilder()
                 .WithName("height")
@@ -74,7 +74,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
             var spec = new ArgumentSpecification(field);
             var context = new ParseContext(null);
 
-            Assert.IsTrue(rule.CanMatch("-width", spec, context));
+            Assert.IsTrue(rule.CanMatch("-h", spec, context));
         }
         
         [Test]
@@ -87,13 +87,12 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "dragon" });
+            var tokens = new TokenStream(new List<string> { "-n", "dragon" });
 
-            var result = rule.TryParse(tokens, spec, out var parseResult);
+            var result = rule.TryParse(tokens, spec);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual("dragon", parseResult.Value);
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual("dragon", result.Value);
         }
 
         [Test]
@@ -106,13 +105,12 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "42" });
+            var tokens = new TokenStream(new List<string> { "-c", "42" });
 
-            var result = rule.TryParse(tokens, spec, out var parseResult);
+            var result = rule.TryParse(tokens, spec);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual(42, parseResult.Value);
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(42, result.Value);
         }
 
         [Test]
@@ -125,13 +123,12 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "3.14" });
+            var tokens = new TokenStream(new List<string> { "-s", "3.14" });
 
-            var result = rule.TryParse(tokens, spec, out var parseResult);
+            var result = rule.TryParse(tokens, spec);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual(3.14f, parseResult.Value);
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(3.14f, result.Value);
         }
 
         [Test]
@@ -144,13 +141,12 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "1.0", "2.0" });
+            var tokens = new TokenStream(new List<string> { "-p", "1.0", "2.0" });
 
-            var result = rule.TryParse(tokens, spec, out var parseResult);
+            var result = rule.TryParse(tokens, spec);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual(new Vector2(1.0f, 2.0f), parseResult.Value);
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(new Vector2(1.0f, 2.0f), result.Value);
         }
 
         [Test]
@@ -163,12 +159,11 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "not-a-number" });
+            var tokens = new TokenStream(new List<string> { "-l", "not-a-number" });
 
-            var result = rule.TryParse(tokens, spec, out var parseResult);
+            var result = rule.TryParse(tokens, spec);
 
-            Assert.IsFalse(result);
-                Assert.AreEqual(Status.Fail, parseResult.Status);
-            }
+            Assert.AreEqual(Status.Fail, result.Status);
+        }
     }
 }

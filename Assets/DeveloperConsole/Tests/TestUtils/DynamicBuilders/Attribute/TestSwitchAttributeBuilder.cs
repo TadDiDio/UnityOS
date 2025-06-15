@@ -4,7 +4,7 @@ namespace DeveloperConsole.Tests
 {
     public class TestSwitchAttributeBuilder : AttributeDataBuilder<SwitchAttribute>
     {
-        protected override AttributeData Build(SwitchAttribute attribute)
+        protected override AttributeData GetBuildData(SwitchAttribute attribute)
         {
             return new AttributeData
             (

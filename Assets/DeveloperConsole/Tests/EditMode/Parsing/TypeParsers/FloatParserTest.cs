@@ -8,19 +8,78 @@ namespace DeveloperConsole.Tests.Parsing
     public class FloatParserTest
     {
         [Test]
-        public void FloatParser_NotParseable()
+        public void FloatParser_NotParseable1()
         {
             var parser = new FloatParser();
 
-            List<string> tokens = new() { null, "", "asd", "-123d", "123f", "10d"};
+            List<string> tokens = new() { null };
             TokenStream stream = new(tokens);
 
-            while (stream.HasMore())
-            {
-                Assert.False(parser.TryParse(stream, out object x));
-            }
+            var result = parser.TryParseStream(stream);    
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void FloatParser_NotParseable2()
+        {
+            var parser = new FloatParser();
+
+            List<string> tokens = new() { "" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);    
+            Assert.False(result.Success);
         }
     
+        [Test]
+        public void FloatParser_NotParseable3()
+        {
+            var parser = new FloatParser();
+
+            List<string> tokens = new() { "asd" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);    
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void FloatParser_NotParseable4()
+        {
+            var parser = new FloatParser();
+
+            List<string> tokens = new() { "-123d" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);    
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void FloatParser_NotParseable5()
+        {
+            var parser = new FloatParser();
+
+            List<string> tokens = new() { "123f" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);    
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void FloatParser_NotParseable6()
+        {
+            var parser = new FloatParser();
+
+            List<string> tokens = new() { "10d" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);    
+            Assert.False(result.Success);
+        }
+        
+        
         [Test]
         public void FloatParser_Parseable()
         {
@@ -32,8 +91,9 @@ namespace DeveloperConsole.Tests.Parsing
             int count = 0;
             while (stream.HasMore())
             {
-                Assert.True(parser.TryParse(stream, out object x));
-                Assert.AreEqual(float.Parse(tokens[count++]), x);
+                var result = parser.TryParseStream(stream);
+                Assert.True(result.Success);
+                Assert.AreEqual(float.Parse(tokens[count++]), result.Value);
             }
         }
     }

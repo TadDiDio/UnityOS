@@ -4,7 +4,7 @@ namespace DeveloperConsole.Tests
 {
     public class TestVariadicAttributeBuilder : AttributeDataBuilder<VariadicAttribute>
     {
-        protected override AttributeData Build(VariadicAttribute attribute)
+        protected override AttributeData GetBuildData(VariadicAttribute attribute)
         {
             return new AttributeData
             (

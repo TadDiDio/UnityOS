@@ -17,7 +17,8 @@ namespace DeveloperConsole.Tests
 
 
         /// <summary>
-        /// Adds a name for the command.
+        /// Adds a name for the command via the attribute. Names for multiple
+        /// command don't need to be unique for the sake of avoiding assembly collisions.
         /// </summary>
         /// <param name="name">The command name.</param>
         /// <returns>The builder.</returns>
@@ -57,7 +58,7 @@ namespace DeveloperConsole.Tests
         /// </summary>
         /// <param name="name">The field name.</param>
         /// <param name="type">The field type.</param>
-        /// <param name="shortName">The short name.</param>
+        /// <param name="shortName">The short name, defaulted to the first letter of name.</param>
         /// <returns>The builder.</returns>
         public CommandBuilder WithSwitch(string name, Type type, string shortName = null)
         {
@@ -128,7 +129,7 @@ namespace DeveloperConsole.Tests
 
                 foreach (var attribute in field.GetCustomAttributes<ArgumentAttribute>())
                 {
-                    if (!AttributeBuilderRegistry.TryBuild(attribute, out var data))
+                    if (!AttributeBuilderRegistry.TryGet(attribute, out var data))
                     {
                         Log.Error($"Attribute {attribute} could not be built during test.");
                         return null;
@@ -139,7 +140,7 @@ namespace DeveloperConsole.Tests
 
             foreach (var prevalidator in prevalidators)
             {
-                if (!AttributeBuilderRegistry.TryBuild(prevalidator, out var data))
+                if (!AttributeBuilderRegistry.TryGet(prevalidator, out var data))
                 {
                     Log.Error($"Pre-execution validator {prevalidator} could not be built during test.");
                     return null;
@@ -151,7 +152,7 @@ namespace DeveloperConsole.Tests
             CommandAttribute commandAttribute = _parentType == null ? new CommandAttribute(name, "desc") : 
                 new SubcommandAttribute(name, "desc", _parentType);
 
-            if (!AttributeBuilderRegistry.TryBuild(commandAttribute, out var commandData))
+            if (!AttributeBuilderRegistry.TryGet(commandAttribute, out var commandData))
             {
                 Log.Error($"Could not build a {commandAttribute.Name} during testing.");
                 return null;

@@ -1,11 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using DeveloperConsole.Command;
 
 namespace DeveloperConsole.Parsing
 {
-    public class CommandParseTarget : IParseTarget
+    public class CommandParseTarget : AttributeValidatedParseTarget
     {
         /// <summary>
         /// The command being constructed.
@@ -24,21 +23,10 @@ namespace DeveloperConsole.Parsing
             Command = Activator.CreateInstance(schema.CommandType) as ICommand;
         }
         
-        public HashSet<ArgumentSpecification> GetArguments()
-        {
-            return Schema.ArgumentSpecifications;
-        }
+        public override HashSet<ArgumentSpecification> GetArguments() => Schema.ArgumentSpecifications;
 
-        public (ArgumentSpecification spec, object value)? GetFirstArgumentMatchingAttribute(ArgumentAttribute attribute)
-        {
-            var argSpec = Schema.ArgumentSpecifications.FirstOrDefault(args => args.Attributes.Contains(attribute));
-            
-            if (argSpec == null) return null;
-            
-            return (argSpec, argSpec.FieldInfo.GetValue(Command));
-        }
 
-        public void SetArgument(ArgumentSpecification argument, object argValue)
+        protected override void SetArgumentValue(ArgumentSpecification argument, object argValue)
         {
             argument.FieldInfo.SetValue(Command, argValue);
         }

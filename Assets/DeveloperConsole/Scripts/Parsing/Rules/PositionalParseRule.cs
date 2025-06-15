@@ -10,8 +10,6 @@ namespace DeveloperConsole.Parsing.Rules
         
         public int Priority() => 600;
 
-        // TODO: May need to track a max positional index but may also not have to since
-        // matching is done via name and index. Variadic args just take over once all positionals fail
         public bool CanMatch(string token, ArgumentSpecification argument, ParseContext context)
         {
             if (!context.TryGetData(PositionalIndexKey, out int index))
@@ -27,20 +25,20 @@ namespace DeveloperConsole.Parsing.Rules
             {
                 context.SetData(PositionalIndexKey, index + 1);
             }
-            
+
             return canMatch;
         }
 
-        public bool TryParse(TokenStream tokenStream, ArgumentSpecification argument, out ParseResult parseResult)
+        public ParseResult TryParse(TokenStream tokenStream, ArgumentSpecification argument)
         {
-            if (!ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream, out var parsedValue))
+            var result = ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream);
+            
+            if (!result.Success)
             {
-                parseResult = ParseResult.TypeParsingFailed();
-                return false;
+                return ParseResult.TypeParsingFailed(result.ErrorMessage, argument);
             }
             
-            parseResult = ParseResult.Success(parsedValue);
-            return true;
+            return ParseResult.Success(result.Value);
         }
     }
 }

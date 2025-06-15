@@ -27,7 +27,7 @@ namespace DeveloperConsole.Tests
 
         public FieldBuilder WithAttribute(ArgumentAttribute argumentAttribute)
         {
-            if (!AttributeBuilderRegistry.TryBuild(argumentAttribute, out var data))
+            if (!AttributeBuilderRegistry.TryGet(argumentAttribute, out var data))
             {
                 Log.Error($"Argument attribute '{argumentAttribute.GetType().Name}' could not be built in a test.");
                 return null;
@@ -46,7 +46,8 @@ namespace DeveloperConsole.Tests
 
             foreach (var data in _attributes)
             {
-                var builder = new CustomAttributeBuilder(data.ConstructorInfo, data.Arguments);
+                object[] args = data.Arguments ?? Array.Empty<object>();
+                var builder = new CustomAttributeBuilder(data.ConstructorInfo, args);
                 fieldBuilder.SetCustomAttribute(builder);
             }
             

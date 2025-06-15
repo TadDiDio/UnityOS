@@ -116,11 +116,10 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "true" });
+            var stream = new TokenStream(new List<string> { "-v", "true" });
 
-            var success = rule.TryParse(stream, spec, out var result);
+            var result = rule.TryParse(stream, spec);
 
-            Assert.IsTrue(success);
             Assert.AreEqual(Status.Success, result.Status);
             Assert.AreEqual(false, result.Value);
         }
@@ -135,11 +134,10 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "false" });
+            var stream = new TokenStream(new List<string> { "-v", "false" });
 
-            var success = rule.TryParse(stream, spec, out var result);
+            var result = rule.TryParse(stream, spec);
 
-            Assert.IsTrue(success);
             Assert.AreEqual(Status.Success, result.Status);
             Assert.AreEqual(true, result.Value);
         }
@@ -154,17 +152,16 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { });
+            var stream = new TokenStream(new List<string> { "-v" });
 
-            var success = rule.TryParse(stream, spec, out var result);
+            var result = rule.TryParse(stream, spec);
 
-            Assert.IsTrue(success);
             Assert.AreEqual(Status.Success, result.Status);
             Assert.AreEqual(false, result.Value);
         }
         
         [Test]
-        public void TryParse_ShouldReturnFail_WhenTokenIsInvalid()
+        public void TryParse_ShouldReturnFalse_WhenTokenIsInvalid()
         {
             var field = new FieldBuilder()
                 .WithName("verbose")
@@ -173,12 +170,12 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "notabool" });
+            var stream = new TokenStream(new List<string> { "-v", "notabool" });
 
-            var success = rule.TryParse(stream, spec, out var result);
-
-            Assert.IsFalse(success);
-            Assert.AreEqual(Status.Fail, result.Status);
+            var result = rule.TryParse(stream, spec);
+           
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(false, result.Value);
         }
     }
 }

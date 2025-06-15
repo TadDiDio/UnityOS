@@ -15,13 +15,13 @@ namespace DeveloperConsole.Parsing
         public HashSet<ArgumentSpecification> GetArguments();
 
 
+        
         /// <summary>
-        /// Gets the first arg spec and value matching the attribute.
+        /// Validates that this target is properly constructed.
         /// </summary>
-        /// <param name="attribute">The attribute.</param>
-        /// <returns>The arg spec and value.</returns>
-        public (ArgumentSpecification spec, object value)? GetFirstArgumentMatchingAttribute(
-            ArgumentAttribute attribute);
+        /// <param name="errorMessage">The error message if failed.</param>
+        /// <returns>True if validation passes.</returns>
+        public bool Validate(out string errorMessage);
         
         
         /// <summary>

@@ -12,10 +12,11 @@ namespace DeveloperConsole.Tests.Parsing
         {
             var parser = new TypeTypeParser();
             var tokens = new TokenStream(new List<string> { "int" });
-            bool result = parser.TryParse(tokens, out var obj);
+            
+            var result = parser.TryParseStream(tokens);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(typeof(int), obj);
+            Assert.IsTrue(result.Success);
+            Assert.AreEqual(typeof(int), result.Value);
         }
 
         [Test]
@@ -23,10 +24,10 @@ namespace DeveloperConsole.Tests.Parsing
         {
             var parser = new TypeTypeParser();
             var tokens = new TokenStream(new List<string> { "notatype" });
-            bool result = parser.TryParse(tokens, out var obj);
+            
+            var result = parser.TryParseStream(tokens);
 
-            Assert.IsFalse(result);
-            Assert.IsNull(obj);
+            Assert.IsFalse(result.Success);
         }
 
         [Test]
@@ -35,7 +36,7 @@ namespace DeveloperConsole.Tests.Parsing
             var parser = new TypeTypeParser();
             var tokens = new TokenStream(new List<string> { "int", "extra" });
         
-            parser.TryParse(tokens, out var obj);
+            parser.TryParseStream(tokens);
 
             Assert.AreEqual("extra", tokens.Peek());
         }

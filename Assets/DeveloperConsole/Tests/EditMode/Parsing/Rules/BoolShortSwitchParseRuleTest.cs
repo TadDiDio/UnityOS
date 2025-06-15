@@ -149,11 +149,10 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "true" });
+            var stream = new TokenStream(new List<string> { "-f", "true" });
 
-            var success = _rule.TryParse(stream, spec, out var result);
+            var result = _rule.TryParse(stream, spec);
 
-            Assert.IsTrue(success);
             Assert.AreEqual(Status.Success, result.Status);
             Assert.AreEqual(true, result.Value);
         }
@@ -168,11 +167,10 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { });
+            var stream = new TokenStream(new List<string> { "-f" });
 
-            var success = _rule.TryParse(stream, spec, out var result);
+            var result = _rule.TryParse(stream, spec);
 
-            Assert.IsTrue(success);
             Assert.AreEqual(Status.Success, result.Status);
             Assert.AreEqual(true, result.Value);
         }
@@ -187,17 +185,16 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "FaLsE" });
+            var stream = new TokenStream(new List<string> { "-f", "FaLsE" });
 
-            var success = _rule.TryParse(stream, spec, out var result);
+            var result = _rule.TryParse(stream, spec);
 
-            Assert.IsTrue(success);
             Assert.AreEqual(Status.Success, result.Status);
             Assert.AreEqual(false, result.Value);
         }
         
         [Test]
-        public void TryParse_ShouldReturnFail_WhenInvalidBoolToken()
+        public void TryParse_ShouldReturnTrue_WhenInvalidBoolToken()
         {
             var field = new FieldBuilder()
                 .WithName("flag")
@@ -206,12 +203,12 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "notabool" });
+            var stream = new TokenStream(new List<string> { "-f", "notabool" });
 
-            var success = _rule.TryParse(stream, spec, out var result);
-
-            Assert.IsFalse(success);
-            Assert.AreEqual(Status.Fail, result.Status);
+            var result = _rule.TryParse(stream, spec);
+            
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(true, result.Value);
         }
         
         [Test]
@@ -224,12 +221,12 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "1" });
+            var stream = new TokenStream(new List<string> { "-f", "1" });
 
-            var success = _rule.TryParse(stream, spec, out var result);
-
-            Assert.IsFalse(success);
-            Assert.AreEqual(Status.Fail, result.Status);
+            var result = _rule.TryParse(stream, spec);
+            
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(true, result.Value);
         }
     }
 }

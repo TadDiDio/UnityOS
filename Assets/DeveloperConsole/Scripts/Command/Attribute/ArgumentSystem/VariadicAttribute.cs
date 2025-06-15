@@ -6,7 +6,7 @@ namespace DeveloperConsole.Command
     /// Creates new variadic args.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class VariadicAttribute : ArgumentAttribute
+    public class VariadicAttribute : InformativeAttribute
     {
         /// <summary>
         /// Creates a new variadic arg list.
@@ -14,5 +14,11 @@ namespace DeveloperConsole.Command
         /// <param name="description">The arg's description.</param>
         /// <param name="overrideName">Overrides the field name.</param>
         public VariadicAttribute(string description, string overrideName = null) : base(description, overrideName) { }
+        
+        
+        public override string ToString()
+        {
+            return $"{Name ?? "Variadic"}: {Description}";
+        }
     }
 }

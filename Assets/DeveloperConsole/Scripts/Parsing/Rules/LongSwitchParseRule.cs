@@ -18,16 +18,19 @@ namespace DeveloperConsole.Parsing.Rules
                    token[2..].Equals(argument.Name);
         }
 
-        public bool TryParse(TokenStream tokenStream, ArgumentSpecification argument, out ParseResult parseResult)
+        public ParseResult TryParse(TokenStream tokenStream, ArgumentSpecification argument)
         {
-            if (!ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream, out var parsedValue))
+            // Peel off switch name before parsing
+            tokenStream.Next();
+
+            var result = ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream);
+            
+            if (!result.Success)
             {
-                parseResult = ParseResult.TypeParsingFailed();
-                return false;
+                return ParseResult.TypeParsingFailed(result.ErrorMessage, argument);
             }
             
-            parseResult = ParseResult.Success(parsedValue);
-            return true;
+            return ParseResult.Success(result.Value);
         }
     }
 }

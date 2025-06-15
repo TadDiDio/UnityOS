@@ -1,17 +1,17 @@
-using UnityEngine;
 using DeveloperConsole.Parsing.Tokenizing;
+using UnityEngine;
 
 namespace DeveloperConsole.Parsing
 {
     public class AlphaColorParser : BaseTypeParser
     {
-        public override bool TryParse(TokenStream tokenSubSteam, out object obj)
+        protected override bool TryParse(TokenStream tokenStream, out object obj)
         {
             obj = null;
-            if (!float.TryParse(tokenSubSteam.Next(), out float r) ||
-                !float.TryParse(tokenSubSteam.Next(), out float g) ||
-                !float.TryParse(tokenSubSteam.Next(), out float b) ||
-                !float.TryParse(tokenSubSteam.Next(), out float a)) return false;
+            if (!float.TryParse(tokenStream.Next(), out float r) ||
+                !float.TryParse(tokenStream.Next(), out float g) ||
+                !float.TryParse(tokenStream.Next(), out float b) ||
+                !float.TryParse(tokenStream.Next(), out float a)) return false;
             
             if (r is < 0 or > 1) return false;
             if (g is < 0 or > 1) return false;

@@ -79,11 +79,10 @@ namespace DeveloperConsole.Tests.Parsing.Rules
             var spec = new ArgumentSpecification(field);
             var tokens = new TokenStream(new List<string> { "dragon" });
 
-            var result = rule.TryParse(tokens, spec, out var parseResult);
+            var result = rule.TryParse(tokens, spec);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual("dragon", parseResult.Value);
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual("dragon", result.Value);
         }
 
         [Test]
@@ -98,11 +97,10 @@ namespace DeveloperConsole.Tests.Parsing.Rules
             var spec = new ArgumentSpecification(field);
             var tokens = new TokenStream(new List<string> { "42" });
 
-            var result = rule.TryParse(tokens, spec, out var parseResult);
+            var result = rule.TryParse(tokens, spec);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual(42, parseResult.Value);
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(42, result.Value);
         }
 
         [Test]
@@ -117,11 +115,10 @@ namespace DeveloperConsole.Tests.Parsing.Rules
             var spec = new ArgumentSpecification(field);
             var tokens = new TokenStream(new List<string> { "1.0", "2.0" });
 
-            var result = rule.TryParse(tokens, spec, out var parseResult);
+            var result = rule.TryParse(tokens, spec);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual(new Vector2(1f, 2f), parseResult.Value);
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(new Vector2(1f, 2f), result.Value);
         }
 
         [Test]
@@ -136,10 +133,9 @@ namespace DeveloperConsole.Tests.Parsing.Rules
             var spec = new ArgumentSpecification(field);
             var tokens = new TokenStream(new List<string> { "not-an-int" });
 
-            var result = rule.TryParse(tokens, spec, out var parseResult);
+            var result = rule.TryParse(tokens, spec);
 
-            Assert.IsFalse(result);
-            Assert.AreEqual(Status.Fail, parseResult.Status);
+            Assert.AreEqual(Status.Fail, result.Status);
         }
 
         [Test]

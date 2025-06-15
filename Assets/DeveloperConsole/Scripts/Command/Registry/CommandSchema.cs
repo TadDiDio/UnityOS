@@ -74,10 +74,47 @@ namespace DeveloperConsole.Command
         {
             Attributes = fieldInfo.GetCustomAttributes<ArgumentAttribute>().ToList();
             if (Attributes == null || Attributes.Count == 0) return;
-
+            
+            var info = Attributes.OfType<InformativeAttribute>().FirstOrDefault();
+            
             FieldInfo = fieldInfo;
-            Name = Attributes[0].Name ?? fieldInfo.Name;
-            Description = Attributes[0].Description;
+            Name = info?.Name ?? fieldInfo.Name;
+            Description = info?.Description ?? "Missing description.";
+        }
+
+        
+        /// <summary>
+        /// Gets all argument specifications from a type.
+        /// </summary>
+        /// <typeparam name="T">The type.</typeparam>
+        /// <returns>A set of specs.</returns>
+        public static HashSet<ArgumentSpecification> GetAllFromType<T>()
+        {
+            return GetAllFromType(typeof(T));
+        }
+        
+        
+        /// <summary>
+        /// Gets all argument specifications from a type.
+        /// </summary>
+        /// <param name="type">The type.</param>
+        /// <returns>A set of specs.</returns>
+        public static HashSet<ArgumentSpecification> GetAllFromType(Type type)
+        {
+            BindingFlags flags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static;
+            var allFields = type.GetFields(flags);
+
+            HashSet<ArgumentSpecification> specs = new();
+            
+            foreach (var field in allFields)
+            {
+                var attributes = field.GetCustomAttributes<ArgumentAttribute>().ToList();
+                if (attributes.Count == 0) continue;
+
+                specs.Add(new ArgumentSpecification(field));
+            }
+            
+            return specs;
         }
     }
 }

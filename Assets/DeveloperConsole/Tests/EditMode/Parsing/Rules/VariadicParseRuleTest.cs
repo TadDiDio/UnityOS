@@ -60,9 +60,8 @@ namespace DeveloperConsole.Tests.Parsing.Rules
             var spec = new ArgumentSpecification(field);
             var stream = new TokenStream(new List<string> { "1", "2", "3", "4" });
 
-            var success = _rule.TryParse(stream, spec, out var result);
+            var result = _rule.TryParse(stream, spec);
 
-            Assert.IsTrue(success);
             Assert.AreEqual(Status.Success, result.Status);
             CollectionAssert.AreEqual(new List<int> { 1, 2, 3, 4 }, (List<int>)result.Value);
         }
@@ -79,9 +78,8 @@ namespace DeveloperConsole.Tests.Parsing.Rules
             var spec = new ArgumentSpecification(field);
             var stream = new TokenStream(new List<string> { "Alice", "Bob", "Charlie" });
 
-            var success = _rule.TryParse(stream, spec, out var result);
+            var result = _rule.TryParse(stream, spec);
 
-            Assert.IsTrue(success);
             Assert.AreEqual(Status.Success, result.Status);
             CollectionAssert.AreEqual(new List<string> { "Alice", "Bob", "Charlie" }, (List<string>)result.Value);
         }
@@ -98,9 +96,8 @@ namespace DeveloperConsole.Tests.Parsing.Rules
             var spec = new ArgumentSpecification(field);
             var stream = new TokenStream(new List<string> { "0", "0", "1", "1", "2", "2" });
 
-            var success = _rule.TryParse(stream, spec, out var result);
+            var result = _rule.TryParse(stream, spec);
 
-            Assert.IsTrue(success);
             Assert.AreEqual(Status.Success, result.Status);
             var points = (List<Vector2>)result.Value;
 
@@ -122,9 +119,8 @@ namespace DeveloperConsole.Tests.Parsing.Rules
             var spec = new ArgumentSpecification(field);
             var stream = new TokenStream(new List<string> { "1", "two", "3" });
 
-            var success = _rule.TryParse(stream, spec, out var result);
+            var result = _rule.TryParse(stream, spec);
 
-            Assert.IsFalse(success);
             Assert.AreEqual(Status.Fail, result.Status);
         }
     }

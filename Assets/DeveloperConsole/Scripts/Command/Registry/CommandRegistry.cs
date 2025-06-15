@@ -60,7 +60,10 @@ namespace DeveloperConsole.Command
                 result.Add(fullName, thisSchema);
             }
 
-            BuildSchemas(result);
+            foreach (var commandSchema in result.Select(kvp => kvp.Value))
+            {
+                commandSchema.ArgumentSpecifications = ArgumentSpecification.GetAllFromType(commandSchema.CommandType);
+            }
             
             return result;
         }
@@ -132,26 +135,6 @@ namespace DeveloperConsole.Command
 
             names.Reverse();
             return string.Join(".", names);
-        }
-
-        private static void BuildSchemas(Dictionary<string, CommandSchema> commandTable)
-        {
-            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-
-            foreach (var commandSchema in commandTable.Select(kvp => kvp.Value))
-            {
-                commandSchema.ArgumentSpecifications = new HashSet<ArgumentSpecification>();
-
-                var allFields = commandSchema.CommandType.GetFields(flags);
-
-                foreach (var field in allFields)
-                {
-                    var attributes = field.GetCustomAttributes<ArgumentAttribute>().ToList();
-                    if (attributes.Count == 0) continue;
-
-                    commandSchema.ArgumentSpecifications.Add(new ArgumentSpecification(field));
-                }
-            }
         }
         #endregion
         

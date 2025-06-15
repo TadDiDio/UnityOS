@@ -22,11 +22,11 @@ namespace DeveloperConsole.Tests
             _providers[typeof(T)] = dataBuilder;
         }
 
-        public static bool TryBuild(Attribute attr, out AttributeData data)
+        public static bool TryGet(Attribute attr, out AttributeData data)
         {
             if (_providers.TryGetValue(attr.GetType(), out var provider))
             {
-                data = provider.Build(attr);
+                data = provider.GetBuildData(attr);
                 return true;
             }
 
@@ -37,28 +37,25 @@ namespace DeveloperConsole.Tests
 
     public interface IAttributeDataBuilder
     {
-        AttributeData Build(object attributeInstance);
+        AttributeData GetBuildData(object attributeInstance);
     }
 
     public abstract class AttributeDataBuilder<T> : IAttributeDataBuilder where T : Attribute
     {
-        protected abstract AttributeData Build(T attribute);
-        public AttributeData Build(object attributeInstance)
+        protected abstract AttributeData GetBuildData(T attribute);
+        public AttributeData GetBuildData(object attributeInstance)
         {
-            if (attributeInstance is not Attribute attribute)
-            {
-                Log.Error("The injected object was not an attribute.");
-                return default;
-            }
-
-            return Build((T)attribute);
+            if (attributeInstance is Attribute attribute) return GetBuildData((T)attribute);
+            
+            Log.Error("The injected object was not an attribute.");
+            return null;
         }
     }
     
     public class AttributeData
     {
-        public object[] Arguments;
-        public ConstructorInfo ConstructorInfo;
+        public readonly object[] Arguments;
+        public readonly ConstructorInfo ConstructorInfo;
 
         public AttributeData(ConstructorInfo constructorInfo, object[] arguments)
         {

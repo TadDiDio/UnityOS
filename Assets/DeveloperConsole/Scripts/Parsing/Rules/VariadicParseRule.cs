@@ -19,7 +19,7 @@ namespace DeveloperConsole.Parsing.Rules
             return attribute != null && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);;
         }
 
-        public bool TryParse(TokenStream tokenStream, ArgumentSpecification argument, out ParseResult parseResult)
+        public ParseResult TryParse(TokenStream tokenStream, ArgumentSpecification argument)
         {
             Type elementType = argument.FieldInfo.FieldType.GetGenericArguments()[0];
             Type listType = typeof(List<>).MakeGenericType(elementType);
@@ -28,17 +28,16 @@ namespace DeveloperConsole.Parsing.Rules
             
             while (tokenStream.HasMore())
             {
-                if (!ConsoleAPI.Parsing.TryParseType(elementType, tokenStream, out var parsedValue))
+                var result = ConsoleAPI.Parsing.TryParseType(elementType, tokenStream);
+                if (!result.Success)
                 {
-                    parseResult = ParseResult.TypeParsingFailed();
-                    return false;
+                    return ParseResult.TypeParsingFailed(result.ErrorMessage, argument);
                 }
                 
-                addMethod!.Invoke(listInstance, new[] { parsedValue });
+                addMethod!.Invoke(listInstance, new[] { result.Value });
             }
 
-            parseResult = ParseResult.Success(listInstance);
-            return true;
+            return ParseResult.Success(listInstance);
         }
     }
 }

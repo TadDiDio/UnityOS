@@ -15,19 +15,22 @@ namespace DeveloperConsole.Parsing.Rules
             return attribute != null &&
                    token.StartsWith("-") && 
                    token.Length > 1 &&
-                   token[1..].Equals(argument.Name);
+                   token[1..].Equals(attribute.ShortName);
         }
 
-        public bool TryParse(TokenStream tokenStream, ArgumentSpecification argument, out ParseResult parseResult)
+        public ParseResult TryParse(TokenStream tokenStream, ArgumentSpecification argument)
         {
-            if (!ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream, out var parsedValue))
+            // Peel off switch name before parsing
+            tokenStream.Next();
+            
+            var result = ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream);
+            
+            if (!result.Success)
             {
-                parseResult = ParseResult.TypeParsingFailed();
-                return false;
+                return ParseResult.TypeParsingFailed(result.ErrorMessage, argument);
             }
             
-            parseResult = ParseResult.Success(parsedValue);
-            return true;
+            return ParseResult.Success(result.Value);
         }
     }
 }

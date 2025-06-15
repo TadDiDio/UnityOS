@@ -1,3 +1,5 @@
+using DeveloperConsole.Command;
+
 namespace DeveloperConsole.Parsing
 {
     /// <summary>
@@ -39,7 +41,6 @@ namespace DeveloperConsole.Parsing
         }
         
         
-        // TODO: Parser checks errormessage null for success, transfer to status check
         /// <summary>
         /// Creates a finished parse result.
         /// </summary>
@@ -54,30 +55,63 @@ namespace DeveloperConsole.Parsing
         }
         
         
-        /// TODO: More info needed here about what failed.
         /// <summary>
-        /// Creates a failed parse result.
+        /// Creates a result reflecting a failed type parsing.
         /// </summary>
+        /// <param name="errorToken">The token that caused the error.</param>
+        /// <param name="arg">The current arg.</param>
         /// <returns>The result.</returns>
-        public static ParseResult TypeParsingFailed()
+        public static ParseResult TypeParsingFailed(string errorToken, ArgumentSpecification arg)
         {
             return new ParseResult
             {
-                ErrorMessage = "Failed to parse a type."
+                ErrorMessage = $"Failed to parse '{errorToken}' ({arg.Name}) as a " +
+                               $"{TypeFriendlyNames.TypeToName(arg.FieldInfo.FieldType)}",
             };
         }
         
         
-        /// TODO: More info needed here about what failed.
+        /// <summary>
+        /// Creates a result reflecting a token not consumed error.
+        /// </summary>
+        /// <param name="errorToken">The token that caused the error.</param>
+        /// <param name="arg">The current arg.</param>
+        /// <returns>The result.</returns>
+        public static ParseResult TokenNotConsumed(string errorToken, ArgumentSpecification arg)
+        {
+            return new ParseResult
+            {
+                ErrorMessage = $"The token '{errorToken}' ({arg.Name}) was not consumed by " +
+                               $"{TypeFriendlyNames.TypeToName(arg.FieldInfo.FieldType)} but " +
+                               $"should have been.",
+            };
+        }
+        
+        
         /// <summary>
         /// Creates a failed parse result.
         /// </summary>
+        /// <param name="message">The failure message.</param>
         /// <returns>The result.</returns>
         public static ParseResult ValidationFailed(string message)
         {
             return new ParseResult
             {
                 ErrorMessage = message
+            };
+        }
+        
+        
+        /// <summary>
+        /// Creates a failed parse result.
+        /// </summary>
+        /// <param name="token">The unexpected token.</param>
+        /// <returns>The result.</returns>
+        public static ParseResult UnexpectedToken(string token)
+        {
+            return new ParseResult
+            {
+                ErrorMessage = $"Saw an unexpected token: '{token}'"
             };
         }
     }

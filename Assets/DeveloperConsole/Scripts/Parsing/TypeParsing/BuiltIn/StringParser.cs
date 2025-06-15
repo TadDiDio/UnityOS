@@ -4,9 +4,9 @@ namespace DeveloperConsole.Parsing
 {
     public class StringParser : BaseTypeParser
     {
-        public override bool TryParse(TokenStream tokenSubSteam, out object obj)
+        protected override bool TryParse(TokenStream tokenStream, out object obj)
         {
-            obj = tokenSubSteam.Next();
+            obj = tokenStream.Next();
             return true;
         }
     }

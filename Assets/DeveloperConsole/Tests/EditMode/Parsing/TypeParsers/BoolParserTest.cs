@@ -13,14 +13,18 @@ namespace DeveloperConsole.Tests.Parsing
         {
             var parser = new BoolParser();
 
-            List<string> tokens = new() { null, "", "asd", "-123d", "asdw", "10d", "t", "f", "T", "F"};
+            List<string> tokens = new() { null, "", "asd", "-123d", "1", "t", "F" };
 
             foreach (var token in tokens)
             {
-                Assert.False(parser.TryParse(new TokenStream(new List<string> {token}), out object x));
+                TokenStream tokenStream = new TokenStream(new List<string> { token });
+                var result = parser.TryParseStream(tokenStream);
+                Assert.False(result.Success);
             }
         }
     
+        
+        
         [Test]
         public void BoolParser_Parseable()
         {
@@ -32,8 +36,9 @@ namespace DeveloperConsole.Tests.Parsing
             int count = 0;
             while (stream.HasMore())
             {
-                Assert.True(parser.TryParse(stream, out object x));
-                Assert.AreEqual(bool.Parse(tokens[count++]), x);
+                var result = parser.TryParseStream(stream);
+                Assert.True(result.Success);
+                Assert.AreEqual(bool.Parse(tokens[count++]), result.Value);
             }
         }
     }

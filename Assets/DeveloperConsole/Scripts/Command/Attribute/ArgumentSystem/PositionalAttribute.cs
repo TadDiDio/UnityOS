@@ -6,7 +6,7 @@ namespace DeveloperConsole.Command
     /// Declares a positional arg.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class PositionalAttribute : ArgumentAttribute
+    public class PositionalAttribute : InformativeAttribute
     {
         /// <summary>
         /// The index in the command.
@@ -24,6 +24,11 @@ namespace DeveloperConsole.Command
             : base(description, overrideName)
         {
             Index = index;
+        }
+
+        public override string ToString()
+        {
+            return $"{Name ?? "Positional"} ({Index}): {Description}";
         }
     }
 }

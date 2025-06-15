@@ -4,22 +4,13 @@ namespace DeveloperConsole.Parsing
 {
     public class BoolParser : BaseTypeParser
     {
-        public override bool TryParse(TokenStream tokenSubSteam, out object obj)
+        protected override bool TryParse(TokenStream tokenStream, out object obj)
         {
-            // Existence implies true, parse rules may invert this based on '--no-' prefix
-            if (!tokenSubSteam.HasMore())
-            {
-                obj = true;
-                return true;
-            }
-
-            string token = tokenSubSteam.Peek();
+            string token = tokenStream.Peek();
             bool success = bool.TryParse(token, out bool typed);
 
-            if (success)
-            {
-                tokenSubSteam.Next();
-            }
+            // Only consume if explicit value
+            if (success) tokenStream.Next();
             
             obj = typed;
             return success;

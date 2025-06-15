@@ -30,8 +30,7 @@ namespace DeveloperConsole.Parsing.Rules
         /// </summary>
         /// <param name="tokenStream">The stream.</param>
         /// <param name="argument">The arg.</param>
-        /// <param name="parseResult">The result of the parse.</param>
-        /// <returns>True if successful.</returns>
-        public bool TryParse(TokenStream tokenStream, ArgumentSpecification argument, out ParseResult parseResult);
+        /// <returns>The result.</returns>
+        public ParseResult TryParse(TokenStream tokenStream, ArgumentSpecification argument);
     }
 }

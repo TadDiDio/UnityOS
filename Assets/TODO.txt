@@ -9,9 +9,9 @@ Missing Command attribute on command class
 preserve attribute for anything with Command on it
 
 THINGS TO TEST
-parser
+parser - MAY NEED TO KEEP SET OF SET ARGS SO MULTIPLE TOKENS DON'T TRIGGER THE SAME ARG AND OVERWRITE IT
 text command resolver
-object bindings manager
+object bindings manager and attribute
 Command argument attributes
 command attributes
 pre execution validators
@@ -73,9 +73,10 @@ NOTES FOR DOCS
 - Parse rules and their priorities, lower = higher priority
 - When a session is waiting for input, it expects a text input and everything else will be ignored.
 - All inputs can be promoted to command requests.
-- To use the test system, you must make sure to register a custom attribute builder if you are testing it.
+- To use the test system, you must make sure to register a custom attribute builder if you are testing it. Note how this works with empty and non empty constructors.
 - recommand inheriting test classes from ConsoleTest since it reboots the system before and after the test runs.
 - If adding more than one field to a test type, give them distinct names or they will all default to "test"
+
 
 COMMAND IDEAS
 bind

@@ -18,14 +18,12 @@ namespace DeveloperConsole.Tests.Parsing.Rules
             _rule = new BoolLongSwitchParseRule();
         }
 
-        private ArgumentSpecification CreateArgumentSpec(string name, Type fieldType, ArgumentAttribute attr = null)
+        private ArgumentSpecification CreateArgumentSpec(string name, Type fieldType, ArgumentAttribute attr)
         {
             var fieldBuilder = new FieldBuilder()
                 .WithName(name)
-                .WithType(fieldType);
-
-            if (attr != null)
-                fieldBuilder.WithAttribute(attr);
+                .WithType(fieldType)
+                .WithAttribute(attr);
 
             FieldInfo fieldInfo = fieldBuilder.Build();
 
@@ -45,7 +43,12 @@ namespace DeveloperConsole.Tests.Parsing.Rules
         [Test]
         public void CanMatch_ReturnsFalse_WhenNoSwitchAttribute()
         {
-            var argument = CreateArgumentSpec("flag", typeof(bool));
+            var fieldInfo = new FieldBuilder()
+                .WithName("flag")
+                .WithType(typeof(bool))
+                .Build();
+
+            var argument = new ArgumentSpecification(fieldInfo);
 
             bool result = _rule.CanMatch("--flag", argument, null);
             Assert.IsFalse(result);
@@ -104,55 +107,53 @@ namespace DeveloperConsole.Tests.Parsing.Rules
         [Test]
         public void TryParse_ReturnsTrueAndSuccess_WhenTypeParseSucceeds()
         {
-            // Assume TokenStream ctor takes string token
+            var switchAttr = new SwitchAttribute("flag", "desc");
             var tokenStream = new TokenStream(new List<string> { "true" });
-            var argument = CreateArgumentSpec("flag", typeof(bool));
+            var argument = CreateArgumentSpec("flag", typeof(bool), switchAttr);
 
-            bool result = _rule.TryParse(tokenStream, argument, out var parseResult);
+            var result = _rule.TryParse(tokenStream, argument);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual(true, parseResult.Value);
+            Assert.IsTrue(result.Status is Status.Success);
+            Assert.AreEqual(true, result.Value);
         }
         
         [Test]
         public void TryParse_ReturnsImpliedTrueAndSuccess_WhenTypeParseSucceeds()
         {
-            // Assume TokenStream ctor takes string token
+            var switchAttr = new SwitchAttribute("flag", "desc");
             var tokenStream = new TokenStream(new List<string> { });
-            var argument = CreateArgumentSpec("flag", typeof(bool));
+            var argument = CreateArgumentSpec("flag", typeof(bool), switchAttr);
 
-            bool result = _rule.TryParse(tokenStream, argument, out var parseResult);
+            var result = _rule.TryParse(tokenStream, argument);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual(true, parseResult.Value);
+            Assert.IsTrue(result.Status is Status.Success);
+            Assert.AreEqual(true, result.Value);
         }
 
         [Test]
         public void TryParse_ReturnsFalseAndSuccess_WhenTypeParseSucceeds()
         {
-            // Assume TokenStream ctor takes string token
-            var tokenStream = new TokenStream(new List<string> { "False" });
-            var argument = CreateArgumentSpec("flag", typeof(bool));
+            var switchAttr = new SwitchAttribute("flag", "desc");
+            var tokenStream = new TokenStream(new List<string> { "--flag", "False" });
+            var argument = CreateArgumentSpec("flag", typeof(bool), switchAttr);
 
-            bool result = _rule.TryParse(tokenStream, argument, out var parseResult);
+            var result = _rule.TryParse(tokenStream, argument);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual(false, parseResult.Value);
+            Assert.IsTrue(result.Status is Status.Success);
+            Assert.AreEqual(false, result.Value);
         }
         
         [Test]
-        public void TryParse_ReturnsFalseAndFailure_WhenTypeParseFails()
+        public void TryParse_ReturnsFalseAndSuccess_WhenTypeParseFails()
         {
+            var switchAttr = new SwitchAttribute("flag", "desc");
             var tokenStream = new TokenStream(new List<string> { "notabool" });
-            var argument = CreateArgumentSpec("flag", typeof(bool));
+            var argument = CreateArgumentSpec("flag", typeof(bool), switchAttr);
 
-            bool result = _rule.TryParse(tokenStream, argument, out var parseResult);
+            var result = _rule.TryParse(tokenStream, argument);
 
-            Assert.IsFalse(result);
-            Assert.AreEqual(Status.Fail, parseResult.Status);
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(true, result.Value);
         }
     }
 }

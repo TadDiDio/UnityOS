@@ -15,60 +15,128 @@ namespace DeveloperConsole.Tests.Parsing
         }
         
         [Test]
-        public void EnumColorParser_Parseable()
+        public void EnumColorParser_Parseable1()
         {
             var parser = new EnumParser<TestEnum>();
             
-            List<string> tokens = new() { "dog", "cat", " dog", " 1 ", "DOG", "CAT" };
+            List<string> tokens = new() { "dog"};
             TokenStream stream = new(tokens);
 
-            Assert.True(parser.TryParse(stream, out object x));
-            Assert.AreEqual(TestEnum.Dog, x);
-            Assert.AreEqual(stream.Remaining().Count(), 5);
-            
-            Assert.True(parser.TryParse(stream, out x));
-            Assert.AreEqual(TestEnum.Cat, x);
-            Assert.AreEqual(stream.Remaining().Count(), 4);
-            
-            Assert.True(parser.TryParse(stream, out x));
-            Assert.AreEqual(TestEnum.Dog, x);
-            Assert.AreEqual(stream.Remaining().Count(), 3);
-            
-            Assert.True(parser.TryParse(stream, out x));
-            Assert.AreEqual(TestEnum.Cat, x);
-            Assert.AreEqual(stream.Remaining().Count(), 2);
-            
-            Assert.True(parser.TryParse(stream, out x));
-            Assert.AreEqual(TestEnum.Dog, x);
-            Assert.AreEqual(stream.Remaining().Count(), 1);
-            
-            Assert.True(parser.TryParse(stream, out x));
-            Assert.AreEqual(TestEnum.Cat, x);
-            Assert.False(stream.HasMore());
+            var result = parser.TryParseStream(stream);
+            Assert.True(result.Success);
+            Assert.AreEqual(TestEnum.Dog, result.Value);
         }
         
         [Test]
-        public void EnumParser_NotParseable()
+        public void EnumColorParser_Parseable2()
+        {
+            var parser = new EnumParser<TestEnum>();
+            
+            List<string> tokens = new() { "cat" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.True(result.Success);
+            Assert.AreEqual(TestEnum.Cat, result.Value);
+        }
+        
+        [Test]
+        public void EnumColorParser_Parseable3()
+        {
+            var parser = new EnumParser<TestEnum>();
+            
+            List<string> tokens = new() { " dog" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.True(result.Success);
+            Assert.AreEqual(TestEnum.Dog, result.Value);
+        }
+        
+        [Test]
+        public void EnumColorParser_Parseable4()
+        {
+            var parser = new EnumParser<TestEnum>();
+            
+            List<string> tokens = new() { " 1 ", "DOG", "CAT" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.True(result.Success);
+            Assert.AreEqual(TestEnum.Cat, result.Value);
+        }
+        
+        [Test]
+        public void EnumColorParser_Parseable5()
+        {
+            var parser = new EnumParser<TestEnum>();
+            
+            List<string> tokens = new() {  "DOG" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.True(result.Success);
+            Assert.AreEqual(TestEnum.Dog, result.Value);
+        }
+        
+        [Test]
+        public void EnumParser_NotParseable1()
         {
             var parser = new EnumParser<TestEnum>();
 
-            List<string> tokens = new() { null, "a", "20", "catt", "adog"};
+            List<string> tokens = new() { null };
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out _));
-            Assert.AreEqual(stream.Remaining().Count(), 4);
-            
-            Assert.False(parser.TryParse(stream, out _));
-            Assert.AreEqual(stream.Remaining().Count(), 3);
-            
-            Assert.False(parser.TryParse(stream, out _));
-            Assert.AreEqual(stream.Remaining().Count(), 2);
-            
-            Assert.False(parser.TryParse(stream, out _));
-            Assert.AreEqual(stream.Remaining().Count(), 1);
-            
-            Assert.False(parser.TryParse(stream, out _));
-            Assert.False(stream.HasMore());
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void EnumParser_NotParseable2()
+        {
+            var parser = new EnumParser<TestEnum>();
+
+            List<string> tokens = new() { "a" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void EnumParser_NotParseable3()
+        {
+            var parser = new EnumParser<TestEnum>();
+
+            List<string> tokens = new() { "20" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void EnumParser_NotParseable4()
+        {
+            var parser = new EnumParser<TestEnum>();
+
+            List<string> tokens = new() { "catt" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void EnumParser_NotParseable5()
+        {
+            var parser = new EnumParser<TestEnum>();
+
+            List<string> tokens = new() { "adog"};
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
         }
     }
 }

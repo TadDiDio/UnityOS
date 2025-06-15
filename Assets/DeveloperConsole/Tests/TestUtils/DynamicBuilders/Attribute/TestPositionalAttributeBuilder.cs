@@ -4,7 +4,7 @@ namespace DeveloperConsole.Tests
 {
     public class TestPositionalAttributeBuilder : AttributeDataBuilder<PositionalAttribute>
     {
-        protected override AttributeData Build(PositionalAttribute attribute)
+        protected override AttributeData GetBuildData(PositionalAttribute attribute)
         {
             return new AttributeData
             (

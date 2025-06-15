@@ -1,10 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Rules;
 using DeveloperConsole.Parsing.Tokenizing;
-using log4net.Util;
 
 namespace DeveloperConsole.Parsing
 {
@@ -22,6 +20,7 @@ namespace DeveloperConsole.Parsing
         {
             _tokenizer = tokenizer;
             
+            // TODO: Inject these
             List<IParseRule> rules = new()
             {
                 new InvertedBoolLongSwitchParseRule(),
@@ -42,42 +41,63 @@ namespace DeveloperConsole.Parsing
             return _tokenizer.Tokenize(input);
         }
         
+        /// <summary>
+        /// Parses an argument token stream into the parse target.
+        /// Note that this stream should only include arguments and not
+        /// target identifiers like command names.
+        /// </summary>
+        /// <param name="stream">The token stream.</param>
+        /// <param name="target">The target.</param>
+        /// <returns>The result.</returns>
         public ParseResult Parse(TokenStream stream, IParseTarget target)
         {
             ParseContext context = new(target);
             
-            // Iterate over all combinations of first token and args and get the first matching rule by priority
+            HashSet<ArgumentSpecification> unsetArgs = new(target.GetArguments());
+
+            // Iterate over tokens in order
             while (stream.HasMore())
             {
-                // Type parsers expect that the name is already peeled off
-                string token = stream.Next();
+                string token = stream.Peek();
+                bool tokensConsumed = false;
                 
-                foreach (var arg in target.GetArguments())
+                // Find the first rule that matches and only set a single arg.
+                foreach (var arg in unsetArgs.ToList())
                 {
+                    bool applied = false;
                     foreach (var rule in _rules)
                     {
                         if (!rule.CanMatch(token, arg, context)) continue;
-                        if (!rule.TryParse(stream, arg, out var result)) return result;
 
-                        target.SetArgument(arg, result.Value);
+                        int remainingTokens = stream.Count();
+                        var parseResult = rule.TryParse(stream, arg);
+
+                        if (parseResult.Status is not Status.Success) return parseResult;
+                        if (stream.Count() == remainingTokens)
+                        {
+                            return ParseResult.TokenNotConsumed(token, arg);
+                        }
+                        
+                        tokensConsumed = true;
+                        unsetArgs.Remove(arg);
+                        target.SetArgument(arg, parseResult.Value);
+                        applied = true;
                         break;
                     }
+                    
+                    if (applied) break;
                 }
-            }
 
-            foreach (var arg in target.GetArguments())
-            {
-                var validated = arg.Attributes.OfType<ValidatedAttribute>();
-                foreach (var attr in validated)
+                if (!tokensConsumed)
                 {
-                    if (!attr.Validate(context))
-                    {
-                        return ParseResult.ValidationFailed(attr.ErrorMessage());
-                    }
+                    return ParseResult.UnexpectedToken(token);
                 }
             }
 
-            // TODO: Check that the IParseTarget is in a valid state before returning success
+            if (!target.Validate(out string errorMessage))
+            {
+                return ParseResult.ValidationFailed(errorMessage);
+            }
             
             return ParseResult.Finished();
         }

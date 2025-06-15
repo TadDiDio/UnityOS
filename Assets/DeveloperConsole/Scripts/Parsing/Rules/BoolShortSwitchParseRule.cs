@@ -19,16 +19,15 @@ namespace DeveloperConsole.Parsing.Rules
                    argument.FieldInfo.FieldType == typeof(bool);
         }
 
-        public bool TryParse(TokenStream tokenStream, ArgumentSpecification argument, out ParseResult parseResult)
+        public ParseResult TryParse(TokenStream tokenStream, ArgumentSpecification argument)
         {
-            if (!ConsoleAPI.Parsing.TryParseType(typeof(bool), tokenStream, out var parsedValue) || parsedValue is not bool typedValue)
-            {
-                parseResult = ParseResult.TypeParsingFailed();
-                return false;
-            }
+            // Peel off switch name before parsing
+            tokenStream.Next();
 
-            parseResult = ParseResult.Success(typedValue);
-            return true;
+            var result = ConsoleAPI.Parsing.TryParseType(typeof(bool), tokenStream);
+            
+            // If parsing failed, we assume it is an implied true flag with no value
+            return ParseResult.Success(!result.Success ? true : result.Value);
         }
     }
 }

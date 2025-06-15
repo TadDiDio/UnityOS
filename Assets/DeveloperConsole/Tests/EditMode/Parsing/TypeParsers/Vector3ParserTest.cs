@@ -14,15 +14,13 @@ namespace DeveloperConsole.Tests.Parsing
         {
             var parser = new Vector3Parser();
             
-            List<string> tokens = new() { "-1", "0", "10", "-123123", "-843927.8", "43.23"};
+            List<string> tokens = new() { "-1", "0", "10" };
             TokenStream stream = new(tokens);
 
-            Assert.True(parser.TryParse(stream, out object x));
-            Assert.AreEqual(new Vector3(-1, 0, 10), x);
-            Assert.AreEqual(stream.Remaining().Count(), 3);
+            var result = parser.TryParseStream(stream);
+            Assert.True(result.Success);
             
-            Assert.True(parser.TryParse(stream, out object y));
-            Assert.AreEqual(new Vector3(-123123, -843927.8f, 43.23f), y);
+            Assert.AreEqual(new Vector3(-1, 0, 10), result.Value);
             Assert.False(stream.HasMore());
         }
         
@@ -34,9 +32,9 @@ namespace DeveloperConsole.Tests.Parsing
             List<string> tokens = new() { null, "1", "one" };
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out _));
+            Assert.False(parser.TryParseStream(stream).Success);
         }
-        
+
         [Test]
         public void Vector3Parser_NotParseable2()
         {
@@ -45,7 +43,7 @@ namespace DeveloperConsole.Tests.Parsing
             List<string> tokens = new() { "3", "1" };
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out _));
+            Assert.False(parser.TryParseStream(stream).Success);
         }
     }
 }

@@ -11,7 +11,7 @@ namespace DeveloperConsole.Parsing.Rules
         public bool CanMatch(string token, ArgumentSpecification argument, ParseContext context)
         {
             SwitchAttribute attribute = argument.Attributes.OfType<SwitchAttribute>().FirstOrDefault();
-            
+
             return attribute != null &&
                    token.StartsWith("--") && 
                    token.Length > 2 &&
@@ -19,16 +19,15 @@ namespace DeveloperConsole.Parsing.Rules
                    argument.FieldInfo.FieldType == typeof(bool);
         }
 
-        public bool TryParse(TokenStream tokenStream, ArgumentSpecification argument, out ParseResult parseResult)
+        public ParseResult TryParse(TokenStream tokenStream, ArgumentSpecification argument)
         {
-            if (!ConsoleAPI.Parsing.TryParseType(typeof(bool), tokenStream, out var parsedValue))
-            {
-                parseResult = ParseResult.TypeParsingFailed();
-                return false;
-            }
+            // Peel off switch name before parsing
+            tokenStream.Next();
+            
+            var result = ConsoleAPI.Parsing.TryParseType(typeof(bool), tokenStream);
 
-            parseResult = ParseResult.Success(parsedValue);
-            return true;
+            // If parsing failed, we assume it is an implied true flag with no value
+            return ParseResult.Success(!result.Success ? true : result.Value);
         }
     }
 }

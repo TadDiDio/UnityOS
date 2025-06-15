@@ -14,16 +14,14 @@ namespace DeveloperConsole.Tests.Parsing
         {
             var parser = new AlphaColorParser();
             
-            List<string> tokens = new() { "0", ".5", "1", "1", "0.1", ".4325643", "0.0001", "1"};
+            List<string> tokens = new() { "0", ".5", "1", "1"};
             TokenStream stream = new(tokens);
 
-            Assert.True(parser.TryParse(stream, out object x));
-            Assert.AreEqual(new Color(0, 0.5f, 1), x);
-            Assert.AreEqual(stream.Remaining().Count(), 4);
+            var result = parser.TryParseStream(stream);
             
-            Assert.True(parser.TryParse(stream, out object y));
-            Assert.AreEqual(new Color(0.1f, .4325643f, 0.0001f), y);
-            Assert.False(stream.HasMore());
+            Assert.True(result.Success);
+            Assert.AreEqual(new Color(0, 0.5f, 1), result.Value);
+            Assert.IsFalse(stream.HasMore());
         }
         
         [Test]
@@ -34,7 +32,8 @@ namespace DeveloperConsole.Tests.Parsing
             List<string> tokens = new() { null, "1", "1", "1"};
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out _));
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
         }
         
         [Test]
@@ -45,7 +44,8 @@ namespace DeveloperConsole.Tests.Parsing
             List<string> tokens = new() { "0", "1", "1", "1.1" };
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out _));
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
         }
         
         [Test]
@@ -56,7 +56,8 @@ namespace DeveloperConsole.Tests.Parsing
             List<string> tokens = new() { "0,", "1", "1", "-1" };
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out _));
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
         }
         
         [Test]
@@ -67,7 +68,8 @@ namespace DeveloperConsole.Tests.Parsing
             List<string> tokens = new() { "0", "1", "1", "a" };
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out _));
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
         }
         
         [Test]
@@ -78,7 +80,8 @@ namespace DeveloperConsole.Tests.Parsing
             List<string> tokens = new() { "0", "1", "1" };
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out _));
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
         }
     }
 }

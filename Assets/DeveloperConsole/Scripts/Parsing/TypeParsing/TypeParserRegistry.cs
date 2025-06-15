@@ -27,16 +27,22 @@ namespace DeveloperConsole.Parsing
             _typeParsers.TryAdd(typeof(T), parser);
         }
         
-        public bool TryParse(Type type, TokenStream stream, out object obj)
+        public TypeParseResult TryParse(Type type, TokenStream stream)
         {
-            obj = null;
             if (!_typeParsers.TryGetValue(type, out var parser))
             {
-                Log.Warning($"There is no type parser of {type.Name}, Did you forget to register it?");
-                return false;
+                string error = $"There is no type parser of {type.Name}, Did you forget to register it?";
+                Log.Warning(error);
+                
+                return new TypeParseResult
+                {
+                    Success = false,
+                    Value = null,
+                    ErrorMessage = error
+                };
             }
 
-            return parser.TryParse(stream, out obj);
+            return parser.TryParseStream(stream);
         }
     }
 }

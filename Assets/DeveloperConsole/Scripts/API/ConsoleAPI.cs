@@ -158,20 +158,16 @@ namespace DeveloperConsole
             
             /// <summary>
             /// Tries to parse a stream of tokens into a specific type.
-            /// Only the necessary tokens are comsumed.
+            /// Only tokens which are parsed correctly are consumed.
             /// </summary>
             /// <param name="targetType"></param>
             /// <param name="stream"></param>
             /// <param name="obj"></param>
             /// <returns></returns>
-            public static bool TryParseType(Type targetType, TokenStream stream, out object obj)
+            public static TypeParseResult TryParseType(Type targetType, TokenStream stream)
             {
-                object result = null;
-                bool success = WithService<ITypeParserRegistryProvider, bool>
-                            (r => r.TryParse(targetType, stream, out result));
-            
-                obj = result;
-                return success;
+                return WithService<ITypeParserRegistryProvider, TypeParseResult>
+                    (r => r.TryParse(targetType, stream));
             }
             
             
@@ -209,7 +205,7 @@ namespace DeveloperConsole
           
             
             /// <summary>
-            /// Tries to resolve a list of tokens to a schema.
+            /// Tries to resolve a list of tokens to the deepest valid schema in a nested hierarchy.
             /// </summary>
             /// <param name="tokens">The tokens.</param>
             /// <param name="schema">The matching schema.</param>

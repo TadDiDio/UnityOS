@@ -8,17 +8,87 @@ namespace DeveloperConsole.Tests.Parsing
     public class IntParserTest
     {
         [Test]
-        public void IntParser_NotParseable()
+        public void IntParser_NotParseable1()
         {
             var parser = new IntParser();
 
-            List<string> tokens = new() { null, "", "asd", "-123.0", "123.0", "10f", "1.5"};
+            List<string> tokens = new() { null };
             TokenStream stream = new(tokens);
 
-            while (stream.HasMore())
-            {
-                Assert.False(parser.TryParse(stream, out object x));
-            }
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void IntParser_NotParseable2()
+        {
+            var parser = new IntParser();
+
+            List<string> tokens = new() { "" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void IntParser_NotParseable3()
+        {
+            var parser = new IntParser();
+
+            List<string> tokens = new() { "asd" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void IntParser_NotParseable4()
+        {
+            var parser = new IntParser();
+
+            List<string> tokens = new() { "-123.0" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void IntParser_NotParseable5()
+        {
+            var parser = new IntParser();
+
+            List<string> tokens = new() { "123.0" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void IntParser_NotParseable6()
+        {
+            var parser = new IntParser();
+
+            List<string> tokens = new() { "10f" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
+        }
+        
+        [Test]
+        public void IntParser_NotParseable7()
+        {
+            var parser = new IntParser();
+
+            List<string> tokens = new() { "1.5" };
+            TokenStream stream = new(tokens);
+
+            var result = parser.TryParseStream(stream);
+            Assert.False(result.Success);
         }
         
         [Test]
@@ -32,8 +102,9 @@ namespace DeveloperConsole.Tests.Parsing
             int count = 0;
             while (stream.HasMore())
             {
-                Assert.True(parser.TryParse(stream, out object x));
-                Assert.AreEqual(int.Parse(tokens[count++]), x);
+                var result = parser.TryParseStream(stream);
+                Assert.True(result.Success);
+                Assert.AreEqual(int.Parse(tokens[count++]), result.Value);
             }
         }
     }

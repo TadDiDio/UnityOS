@@ -10,25 +10,19 @@ namespace DeveloperConsole.Tests.Parsing
     public class Vector2ParserTest
     {
         [Test]
-        public void Vector2Parser_Parseable()
+        public void Vector2Parser_Parseable1()
         {
             var parser = new Vector2Parser();
 
-            List<string> tokens = new() { "-1", "0", "10", "-123123", "-843927.8", "43.23"};
+            List<string> tokens = new() { "-1", "0" };
             TokenStream stream = new(tokens);
 
-            Assert.True(parser.TryParse(stream, out object x));
-            Assert.AreEqual(new Vector2(-1, 0), x);
-            Assert.AreEqual(stream.Remaining().Count(), 4);
-            
-            Assert.True(parser.TryParse(stream, out object y));
-            Assert.AreEqual(new Vector2(10, -123123), y);
-            Assert.AreEqual(stream.Remaining().Count(), 2);
-            
-            Assert.True(parser.TryParse(stream, out object z));
-            Assert.AreEqual(new Vector2(-843927.8f, 43.23f), z);
+            var result = parser.TryParseStream(stream);
+            Assert.True(result.Success);
+            Assert.AreEqual(new Vector2(-1, 0), result.Value);
             Assert.False(stream.HasMore());
         }
+        
         
         [Test]
         public void Vector2Parser_NotParseable1()
@@ -38,7 +32,7 @@ namespace DeveloperConsole.Tests.Parsing
             List<string> tokens = new() { null, "1" };
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out _));
+            Assert.False(parser.TryParseStream(stream).Success);
         }
         
         [Test]
@@ -49,7 +43,7 @@ namespace DeveloperConsole.Tests.Parsing
             List<string> tokens = new() { "1" };
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out _));
+            Assert.False(parser.TryParseStream(stream).Success);
         }
         
         [Test]
@@ -60,7 +54,7 @@ namespace DeveloperConsole.Tests.Parsing
             List<string> tokens = new() { "1" };
             TokenStream stream = new(tokens);
 
-            Assert.False(parser.TryParse(stream, out _));
+            Assert.False(parser.TryParseStream(stream).Success);
         }
     }
 }

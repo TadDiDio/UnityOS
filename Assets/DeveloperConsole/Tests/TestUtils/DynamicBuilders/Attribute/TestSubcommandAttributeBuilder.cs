@@ -5,7 +5,7 @@ namespace DeveloperConsole.Tests
 {
     public class TestSubcommandAttributeBuilder : AttributeDataBuilder<SubcommandAttribute>
     {
-        protected override AttributeData Build(SubcommandAttribute attribute)
+        protected override AttributeData GetBuildData(SubcommandAttribute attribute)
         {
             return new AttributeData
             (

@@ -106,9 +106,6 @@ namespace DeveloperConsole.Tests.TestUtils
             Assert.True(log.HasLog(LogType.Error, "could not be built"));
         }
 
-        private class CustomFakeAttribute : ArgumentAttribute
-        {
-            public CustomFakeAttribute() : base("bad", "desc") { }
-        }
+        private class CustomFakeAttribute : ArgumentAttribute { }
     }
 }

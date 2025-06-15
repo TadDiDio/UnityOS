@@ -21,8 +21,7 @@ namespace DeveloperConsole.Parsing
         /// </summary>
         /// <param name="type">The type to parse to.</param>
         /// <param name="stream">The token stream.</param>
-        /// <param name="obj">The resulting value.</param>
-        /// <returns>True if successful.</returns>
-        public bool TryParse(Type type, TokenStream stream, out object obj);
+        /// <returns>The result.</returns>
+        public TypeParseResult TryParse(Type type, TokenStream stream);
     }
 }

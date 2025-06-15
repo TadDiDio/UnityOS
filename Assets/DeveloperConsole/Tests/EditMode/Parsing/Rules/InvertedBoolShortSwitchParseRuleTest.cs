@@ -116,13 +116,11 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "true" });
+            var stream = new TokenStream(new List<string> { "-v", "true" });
 
-            var result = rule.TryParse(stream, spec, out var parseResult);
-
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual(false, parseResult.Value);
+            var result = rule.TryParse(stream, spec);
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(false, result.Value);
         }
 
         [Test]
@@ -135,13 +133,12 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { });
+            var stream = new TokenStream(new List<string> { "-v" });
 
-            var result = rule.TryParse(stream, spec, out var parseResult);
+            var result = rule.TryParse(stream, spec);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual(false, parseResult.Value);
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(false, result.Value);
         }
         
         [Test]
@@ -154,17 +151,16 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "false" });
+            var stream = new TokenStream(new List<string> { "-v", "false" });
 
-            var result = rule.TryParse(stream, spec, out var parseResult);
+            var result = rule.TryParse(stream, spec);
 
-            Assert.IsTrue(result);
-            Assert.AreEqual(Status.Success, parseResult.Status);
-            Assert.AreEqual(true, parseResult.Value);
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(true, result.Value);
         }
 
         [Test]
-        public void TryParse_ShouldReturnFail_WhenInvalidBoolToken()
+        public void TryParse_ShouldReturnFalse_WhenInvalidBoolToken()
         {
             var field = new FieldBuilder()
                 .WithName("verbose")
@@ -173,12 +169,12 @@ namespace DeveloperConsole.Tests.Parsing.Rules
                 .Build();
 
             var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "invalid" });
+            var stream = new TokenStream(new List<string> { "-v", "invalid" });
 
-            var result = rule.TryParse(stream, spec, out var parseResult);
+            var result = rule.TryParse(stream, spec);
 
-            Assert.IsFalse(result);
-            Assert.AreEqual(Status.Fail, parseResult.Status);
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(false, result.Value);
         }
     }
 }
