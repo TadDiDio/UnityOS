@@ -24,8 +24,13 @@ namespace DeveloperConsole.Parsing.Rules
             tokenStream.Next();
             
             var result = ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream);
-            var value = new Dictionary<ArgumentSpecification, object> {{argument , result.Value}};
+
+            if (!result.Success)
+            {
+                return ParseResult.TypeParsingFailed(result.ErrorMessage, argument);
+            }
             
+            var value = new Dictionary<ArgumentSpecification, object> {{argument , result.Value}};
             return ParseResult.Success(value);
         }
     }

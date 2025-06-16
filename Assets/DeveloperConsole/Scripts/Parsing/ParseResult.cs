@@ -68,8 +68,8 @@ namespace DeveloperConsole.Parsing
             return new ParseResult
             {
                 Status = Status.Fail,
-                ErrorMessage = $"Failed to parse '{errorToken}' ({arg.Name}) as a " +
-                               $"{TypeFriendlyNames.TypeToName(arg.FieldInfo.FieldType)}",
+                ErrorMessage = $"Parsing '{arg.Name}' as a {TypeFriendlyNames.TypeToName(arg.FieldInfo.FieldType)}" +
+                               $" failed at '{errorToken}'"
             };
         }
         

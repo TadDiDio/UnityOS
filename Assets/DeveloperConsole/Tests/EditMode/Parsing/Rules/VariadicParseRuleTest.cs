@@ -140,7 +140,7 @@ namespace DeveloperConsole.Tests.Parsing.Rules
             var result = rule.Apply(stream, allArgs);
             
             Assert.AreEqual(Status.Fail, result.Status);
-            Assert.IsTrue(result.ErrorMessage.Contains("Failed to parse"));
+            Assert.IsTrue(result.ErrorMessage.Contains("Parsing"));
         }
         
         [Test]

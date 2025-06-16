@@ -1,5 +1,6 @@
 using System.Linq;
 using DeveloperConsole.Parsing.Tokenizing;
+using NUnit.Framework;
 
 namespace DeveloperConsole.Parsing
 {
@@ -42,12 +43,12 @@ namespace DeveloperConsole.Parsing
                     ErrorMessage = null
                 };
             }
-
+            
             return new TypeParseResult
             {
                 Success = false,
                 Value = null,
-                ErrorMessage = string.Join(", ", copy.Read(numConsumed).ToList())
+                ErrorMessage = string.Join(", ", tokenStream.Remaining().Take(numConsumed + 1).ToList())
             };
         }
     }
