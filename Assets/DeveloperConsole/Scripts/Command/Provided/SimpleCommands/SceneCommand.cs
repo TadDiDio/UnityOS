@@ -14,7 +14,7 @@ namespace DeveloperConsole
     {
         [Positional(0, "The name of the scene to load.")] private string sceneName;
         
-        [Switch("a", "Should the scene be loaded additively?")]
+        [Switch('a', "Should the scene be loaded additively?")]
         private bool additive;
         
         protected override CommandOutput Execute(CommandContext context)

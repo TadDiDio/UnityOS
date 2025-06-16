@@ -1,180 +1,258 @@
-using NUnit.Framework;
 using System.Collections.Generic;
 using DeveloperConsole.Command;
-using DeveloperConsole.Parsing;
 using DeveloperConsole.Parsing.Rules;
 using DeveloperConsole.Parsing.Tokenizing;
+using NUnit.Framework;
+using UnityEngine;
 
 namespace DeveloperConsole.Tests.Parsing.Rules
 {
     public class InvertedBoolShortSwitchParseRuleTest
     {
-        private InvertedBoolShortSwitchParseRule rule;
+        private IParseRule rule;
 
+        private ArgumentSpecification otherFlag;
+        private ArgumentSpecification randomArg;
+        
         [SetUp]
-        public void SetUp()
+        public void Setup()
         {
             rule = new InvertedBoolShortSwitchParseRule();
+            
+            var otherBool = new FieldBuilder()
+                .WithName("flag2")
+                .WithType(typeof(bool))
+                .WithAttribute(new SwitchAttribute('o', "desc"))
+                .Build();
+            
+            var random = new FieldBuilder()
+                .WithName("random")
+                .WithType(typeof(float))
+                .WithAttribute(new PositionalAttribute(0, "desc"))
+                .Build();
+            
+            otherFlag = new ArgumentSpecification(otherBool);
+            randomArg = new ArgumentSpecification(random);
         }
 
         [Test]
-        public void CanMatch_ShouldReturnTrue_ForValidInvertedShortSwitch()
+        public void Filter_ShouldMatch()
         {
             var field = new FieldBuilder()
-                .WithName("verbose")
+                .WithName("flag")
                 .WithType(typeof(bool))
-                .WithAttribute(new SwitchAttribute("v", "desc"))
+                .WithAttribute(new SwitchAttribute('f', "desc"))
                 .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var context = new ParseContext(null);
-
-            Assert.IsTrue(rule.CanMatch("-no-v", spec, context));
-        }
-
-        [Test]
-        public void CanMatch_ShouldReturnFalse_IfNoSwitchAttribute()
-        {
-            var field = new FieldBuilder()
-                .WithName("verbose")
-                .WithType(typeof(bool))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var context = new ParseContext(null);
-
-            Assert.IsFalse(rule.CanMatch("-no-v", spec, context));
-        }
-
-        [Test]
-        public void CanMatch_ShouldReturnFalse_IfNotStartingWithNoPrefix()
-        {
-            var field = new FieldBuilder()
-                .WithName("verbose")
-                .WithType(typeof(bool))
-                .WithAttribute(new SwitchAttribute("v", "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var context = new ParseContext(null);
-
-            Assert.IsFalse(rule.CanMatch("-v", spec, context));
-        }
-
-        [Test]
-        public void CanMatch_ShouldReturnFalse_IfTokenTooShort()
-        {
-            var field = new FieldBuilder()
-                .WithName("v")
-                .WithType(typeof(bool))
-                .WithAttribute(new SwitchAttribute("v", "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var context = new ParseContext(null);
-
-            Assert.IsFalse(rule.CanMatch("-no-", spec, context));
-        }
-
-        [Test]
-        public void CanMatch_ShouldReturnFalse_IfNameDoesNotMatch()
-        {
-            var field = new FieldBuilder()
-                .WithName("v")
-                .WithType(typeof(bool))
-                .WithAttribute(new SwitchAttribute("v", "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var context = new ParseContext(null);
-
-            Assert.IsFalse(rule.CanMatch("-no-a", spec, context));
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag, otherFlag, randomArg };
+            
+            var result = rule.Filter("-no-f", allArgs, null);
+            
+            Assert.IsTrue(result.Length == 1);
+            Assert.AreEqual(flag, result[0]);
+            Assert.AreEqual(flag.Name, result[0].Name);
         }
         
         [Test]
-        public void CanMatch_ShouldReturnFalse_IfFieldTypeIsNotBool()
+        public void Filter_ShouldReturnNull_WhenMissingAttribute()
         {
             var field = new FieldBuilder()
-                .WithName("v")
-                .WithType(typeof(string))
-                .WithAttribute(new SwitchAttribute("v", "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var context = new ParseContext(null);
-
-            Assert.IsFalse(rule.CanMatch("-no-v", spec, context));
-        }
-
-        [Test]
-        public void TryParse_ShouldReturnSuccess_WithInvertedTrue()
-        {
-            var field = new FieldBuilder()
-                .WithName("verbose")
+                .WithName("flag")
                 .WithType(typeof(bool))
-                .WithAttribute(new SwitchAttribute("v", "desc"))
                 .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "-v", "true" });
-
-            var result = rule.TryParse(stream, spec);
-            Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(false, result.Value);
-        }
-
-        [Test]
-        public void TryParse_ShouldReturnSuccess_WithInvertedImpliedTrue()
-        {
-            var field = new FieldBuilder()
-                .WithName("verbose")
-                .WithType(typeof(bool))
-                .WithAttribute(new SwitchAttribute("v", "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "-v" });
-
-            var result = rule.TryParse(stream, spec);
-
-            Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(false, result.Value);
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag, otherFlag, randomArg };
+            
+            var result = rule.Filter("-no-f", allArgs, null);
+            
+            Assert.IsNull(result);
         }
         
         [Test]
-        public void TryParse_ShouldReturnSuccess_WithInvertedFalse()
+        public void Filter_ShouldReturnNull_WhenFlagDoesntStartWithNo()
         {
             var field = new FieldBuilder()
-                .WithName("verbose")
+                .WithName("flag")
                 .WithType(typeof(bool))
-                .WithAttribute(new SwitchAttribute("v", "desc"))
+                .WithAttribute(new SwitchAttribute('f', "desc"))
                 .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "-v", "false" });
-
-            var result = rule.TryParse(stream, spec);
-
-            Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(true, result.Value);
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag, otherFlag, randomArg };
+            
+            var result = rule.Filter("-f", allArgs, null);
+            
+            Assert.IsNull(result);
         }
-
+        
         [Test]
-        public void TryParse_ShouldReturnFalse_WhenInvalidBoolToken()
+        public void Filter_ShouldReturnNull_WhenFlagDoesntMatchName()
         {
             var field = new FieldBuilder()
-                .WithName("verbose")
+                .WithName("flag")
                 .WithType(typeof(bool))
-                .WithAttribute(new SwitchAttribute("v", "desc"))
+                .WithAttribute(new SwitchAttribute('f', "desc"))
                 .Build();
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag, otherFlag, randomArg };
+            
+            var result = rule.Filter("-no-a", allArgs, null);
+            
+            Assert.IsNull(result);
+        }
+        
+        [Test]
+        public void Filter_ShouldReturnNull_WhenFlagIsOnlyNo()
+        {
+            var field = new FieldBuilder()
+                .WithName("flag")
+                .WithType(typeof(bool))
+                .WithAttribute(new SwitchAttribute('f', "desc"))
+                .Build();
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag, otherFlag, randomArg };
+            
+            var result = rule.Filter("-no-", allArgs, null);
+            
+            Assert.IsNull(result);
+        }
+        
+        [Test]
+        public void Filter_ShouldReturnNull_WhenFieldIsNotBool()
+        {
+            var field = new FieldBuilder()
+                .WithName("flag")
+                .WithType(typeof(int))
+                .WithAttribute(new SwitchAttribute('f', "desc"))
+                .Build();
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag, otherFlag, randomArg };
+            
+            var result = rule.Filter("-no-f", allArgs, null);
+            
+            Assert.IsNull(result);
+        }
+        
+        [Test]
+        public void Filter_ShouldReturnNull_WhenArgIsNotSwitch()
+        {
+            ArgumentSpecification[] allArgs = { otherFlag, randomArg };
+            
+            var result = rule.Filter("-no-f", allArgs, null);
+            
+            Assert.IsNull(result);
+        }
+        
+        [Test]
+        public void Apply_ShouldSucceedReturnFalse_WhenBoolIsTrue()
+        {
+            var field = new FieldBuilder()
+                .WithName("flag")
+                .WithType(typeof(bool))
+                .WithAttribute(new SwitchAttribute('f', "desc"))
+                .Build();
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag };
 
-            var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "-v", "invalid" });
-
-            var result = rule.TryParse(stream, spec);
-
+            List<string> tokens = new() { "-no-f", "true" };
+            TokenStream stream = new TokenStream(tokens);
+            
+            var result = rule.Apply(stream, allArgs);
+            
             Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(false, result.Value);
+            Assert.AreEqual(false, result.Values[flag]);
+        }
+        
+        [Test]
+        public void Apply_ShouldSucceedReturnTrue_WhenBoolIsFalse()
+        {
+            var field = new FieldBuilder()
+                .WithName("flag")
+                .WithType(typeof(bool))
+                .WithAttribute(new SwitchAttribute('f', "desc"))
+                .Build();
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag };
+
+            List<string> tokens = new() { "-no-f", "false" };
+            TokenStream stream = new TokenStream(tokens);
+            
+            var result = rule.Apply(stream, allArgs);
+            
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(true, result.Values[flag]);
+        }
+        
+        [Test]
+        public void Apply_ShouldSucceedReturnFalse_WhenBoolIsImplied()
+        {
+            var field = new FieldBuilder()
+                .WithName("flag")
+                .WithType(typeof(bool))
+                .WithAttribute(new SwitchAttribute('f', "desc"))
+                .Build();
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag };
+
+            List<string> tokens = new() { "-no-f" };
+            TokenStream stream = new TokenStream(tokens);
+            
+            var result = rule.Apply(stream, allArgs);
+            
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(false, result.Values[flag]);
+        }
+        
+        [Test]
+        public void Apply_ShouldSucceedReturnTrue_WhenBoolIsImpliedWithAnotherToken()
+        {
+            var field = new FieldBuilder()
+                .WithName("flag")
+                .WithType(typeof(bool))
+                .WithAttribute(new SwitchAttribute('f', "desc"))
+                .Build();
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag };
+
+            List<string> tokens = new() { "-no-f", "token" };
+            TokenStream stream = new TokenStream(tokens);
+            
+            var result = rule.Apply(stream, allArgs);
+            
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(false, result.Values[flag]);
+        }
+        
+        [Test]
+        public void Apply_ShouldFail_WhenMultipleArgsPassed()
+        {
+            using SilentLogCapture log = new();
+            
+            var field = new FieldBuilder()
+                .WithName("flag")
+                .WithType(typeof(bool))
+                .WithAttribute(new SwitchAttribute('f', "desc"))
+                .Build();
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag, otherFlag };
+
+            List<string> tokens = new() { "-no-f" };
+            TokenStream stream = new TokenStream(tokens);
+            
+            var result = rule.Apply(stream, allArgs);
+            Assert.AreEqual(Status.Fail, result.Status);
+            Assert.AreEqual(1, log.Count(LogType.Error));
+            Assert.IsTrue(log.HasLog(LogType.Error, "Too many arguments"));
         }
     }
 }

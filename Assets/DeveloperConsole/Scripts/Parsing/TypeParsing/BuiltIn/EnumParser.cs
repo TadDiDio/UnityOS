@@ -5,9 +5,9 @@ namespace DeveloperConsole.Parsing
 {
     public class EnumParser<TEnum> : BaseTypeParser where TEnum : struct, Enum
     {
-        protected override bool TryParse(TokenStream tokenStream, out object obj)
+        protected override bool TryParse(TokenStream streamCopy, out object obj)
         {
-            bool success = Enum.TryParse(tokenStream.Next(), true, out TEnum typed) &&
+            bool success = Enum.TryParse(streamCopy.Next(), true, out TEnum typed) &&
                    Enum.IsDefined(typeof(TEnum), typed);
             
             obj = typed;

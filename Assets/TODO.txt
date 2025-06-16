@@ -1,3 +1,6 @@
+TODO: 
+Need to support grouped flags, and more generally support for a single token setting multiple args
+
 ROSLYN:
 Check attributes on bad types, i.e. Subcommand only allowed on ICommand objects
 Check that positional indexes are different
@@ -9,7 +12,6 @@ Missing Command attribute on command class
 preserve attribute for anything with Command on it
 
 THINGS TO TEST
-parser - MAY NEED TO KEEP SET OF SET ARGS SO MULTIPLE TOKENS DON'T TRIGGER THE SAME ARG AND OVERWRITE IT
 text command resolver
 object bindings manager and attribute
 Command argument attributes
@@ -76,6 +78,7 @@ NOTES FOR DOCS
 - To use the test system, you must make sure to register a custom attribute builder if you are testing it. Note how this works with empty and non empty constructors.
 - recommand inheriting test classes from ConsoleTest since it reboots the system before and after the test runs.
 - If adding more than one field to a test type, give them distinct names or they will all default to "test"
+- Safe to return null for none matches in IParseRules
 
 
 COMMAND IDEAS

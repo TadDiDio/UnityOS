@@ -4,14 +4,9 @@ namespace DeveloperConsole.Parsing
 {
     public class BoolParser : BaseTypeParser
     {
-        protected override bool TryParse(TokenStream tokenStream, out object obj)
+        protected override bool TryParse(TokenStream streamCopy, out object obj)
         {
-            string token = tokenStream.Peek();
-            bool success = bool.TryParse(token, out bool typed);
-
-            // Only consume if explicit value
-            if (success) tokenStream.Next();
-            
+            bool success = bool.TryParse(streamCopy.Next(), out bool typed);
             obj = typed;
             return success;
         }

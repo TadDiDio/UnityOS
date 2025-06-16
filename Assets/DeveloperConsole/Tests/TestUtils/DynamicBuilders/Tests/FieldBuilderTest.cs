@@ -35,7 +35,7 @@ namespace DeveloperConsole.Tests.TestUtils
         [Test]
         public void FieldBuilder_SwitchAttributeOnField()
         {
-            var attr = new SwitchAttribute("f", "Enable the flag");
+            var attr = new SwitchAttribute('f', "Enable the flag");
 
             var field = new FieldBuilder()
                 .WithName("flag")
@@ -45,15 +45,15 @@ namespace DeveloperConsole.Tests.TestUtils
 
             var actualAttr = field.GetCustomAttribute<SwitchAttribute>();
             Assert.NotNull(actualAttr);
-            Assert.AreEqual("f", actualAttr.ShortName);
+            Assert.AreEqual('f', actualAttr.Alias);
             Assert.AreEqual(CommandMetaProcessor.Description("Enable the flag"), actualAttr.Description);
         }
 
         [Test]
         public void FieldBuilder_MultipleAttributes()
         {
-            var attr1 = new SwitchAttribute("x", "desc1");
-            var attr2 = new SwitchAttribute("y", "desc2");
+            var attr1 = new SwitchAttribute('x', "desc1");
+            var attr2 = new SwitchAttribute('y', "desc2");
 
             var field = new FieldBuilder()
                 .WithName("multi")

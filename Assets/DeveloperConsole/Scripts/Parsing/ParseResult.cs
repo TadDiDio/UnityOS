@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using DeveloperConsole.Command;
+using DeveloperConsole.Parsing.Rules;
 
 namespace DeveloperConsole.Parsing
 {
@@ -14,9 +16,9 @@ namespace DeveloperConsole.Parsing
         
         
         /// <summary>
-        /// The value of the parse.
+        /// The parse values.
         /// </summary>
-        public object Value;
+        public Dictionary<ArgumentSpecification, object> Values;
         
         
         /// <summary>
@@ -28,14 +30,14 @@ namespace DeveloperConsole.Parsing
         /// <summary>
         /// Creates a successful parse result.
         /// </summary>
-        /// <param name="value">The value that was parsed.</param>
+        /// <param name="values">The values that were parsed.</param>
         /// <returns>The result.</returns>
-        public static ParseResult Success(object value)
+        public static ParseResult Success(Dictionary<ArgumentSpecification, object> values)
         {
             return new ParseResult
             {
                 Status = Status.Success,
-                Value = value,
+                Values = values,
                 ErrorMessage = null
             };
         }
@@ -65,6 +67,7 @@ namespace DeveloperConsole.Parsing
         {
             return new ParseResult
             {
+                Status = Status.Fail,
                 ErrorMessage = $"Failed to parse '{errorToken}' ({arg.Name}) as a " +
                                $"{TypeFriendlyNames.TypeToName(arg.FieldInfo.FieldType)}",
             };
@@ -81,6 +84,7 @@ namespace DeveloperConsole.Parsing
         {
             return new ParseResult
             {
+                Status = Status.Fail,
                 ErrorMessage = $"The token '{errorToken}' ({arg.Name}) was not consumed by " +
                                $"{TypeFriendlyNames.TypeToName(arg.FieldInfo.FieldType)} but " +
                                $"should have been.",
@@ -97,6 +101,7 @@ namespace DeveloperConsole.Parsing
         {
             return new ParseResult
             {
+                Status = Status.Fail,
                 ErrorMessage = message
             };
         }
@@ -111,7 +116,36 @@ namespace DeveloperConsole.Parsing
         {
             return new ParseResult
             {
+                Status = Status.Fail,
                 ErrorMessage = $"Saw an unexpected token: '{token}'"
+            };
+        }
+
+        
+        /// <summary>
+        /// Creates a no args set result.
+        /// </summary>
+        /// <param name="rule">The offending rule.</param>
+        /// <returns>The result.</returns>
+        public static ParseResult NoArgSet(IParseRule rule)
+        {
+            return new ParseResult
+            {
+                Status = Status.Fail,
+                ErrorMessage = $"No args were set by '{rule.GetType().Name}' despite parsing returing success."
+            };
+        }
+        
+        /// <summary>
+        /// Creates a too many args result.
+        /// </summary>
+        /// <returns>The result.</returns>
+        public static ParseResult TooManyArgs()
+        {
+            return new ParseResult
+            {
+                Status = Status.Fail,
+                ErrorMessage = "Too many arguments attempting to set while applying long bool switch rule."
             };
         }
     }

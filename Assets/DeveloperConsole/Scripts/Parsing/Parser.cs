@@ -27,6 +27,7 @@ namespace DeveloperConsole.Parsing
                 new InvertedBoolShortSwitchParseRule(),
                 new BoolLongSwitchParseRule(),
                 new BoolShortSwitchParseRule(),
+                new GroupedShortBoolSwitchRule(),
                 new LongSwitchParseRule(),
                 new ShortSwitchParseRule(),
                 new PositionalParseRule(),
@@ -58,34 +59,41 @@ namespace DeveloperConsole.Parsing
             // Iterate over tokens in order
             while (stream.HasMore())
             {
-                string token = stream.Peek();
                 bool tokensConsumed = false;
+                string token = stream.Peek();
                 
-                // Find the first rule that matches and only set a single arg.
-                foreach (var arg in unsetArgs.ToList())
+                // Find the first rule that matches and get the list of args it should set - 
+                // note this number is normally one however some rules look for tokens setting multiple at once
+                foreach (var rule in _rules)
                 {
-                    bool applied = false;
-                    foreach (var rule in _rules)
-                    {
-                        if (!rule.CanMatch(token, arg, context)) continue;
+                    // Filter the args
+                    var argsToSet = rule.Filter(token, unsetArgs.ToArray(), context);
+                    if (argsToSet == null || argsToSet.Length == 0) continue;
 
-                        int remainingTokens = stream.Count();
-                        var parseResult = rule.TryParse(stream, arg);
-
-                        if (parseResult.Status is not Status.Success) return parseResult;
-                        if (stream.Count() == remainingTokens)
-                        {
-                            return ParseResult.TokenNotConsumed(token, arg);
-                        }
-                        
-                        tokensConsumed = true;
-                        unsetArgs.Remove(arg);
-                        target.SetArgument(arg, parseResult.Value);
-                        applied = true;
-                        break;
-                    }
+                    int remainingTokens = stream.Count();
                     
-                    if (applied) break;
+                    // Apply rule
+                    var parseResult = rule.Apply(stream, argsToSet);
+                    
+                    if (parseResult.Status is not Status.Success) return parseResult;
+                    if (parseResult.Values == null || parseResult.Values.Count == 0) ParseResult.NoArgSet(rule);
+                    
+                    // Check for consumed tokens
+                    if (stream.Count() == remainingTokens)
+                    {
+                        return ParseResult.TokenNotConsumed(token, argsToSet[0]);
+                    }
+                    tokensConsumed = true;
+
+                    // Update iterations and target
+                    foreach (var (arg, value) in parseResult.Values!)
+                    {
+                        unsetArgs.Remove(arg);
+                        target.SetArgument(arg, value);
+                    }
+
+                    // Only apply a single rule per token.
+                    break;
                 }
 
                 if (!tokensConsumed)

@@ -1,24 +1,22 @@
+using System.Collections.Generic;
 using System.Linq;
 using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Tokenizing;
 
 namespace DeveloperConsole.Parsing.Rules
 {
-    public class ShortSwitchParseRule : IParseRule
+    public class ShortSwitchParseRule : SingleMatchParseRule
     {
-        public int Priority() => 500;
-
-        public bool CanMatch(string token, ArgumentSpecification argument, ParseContext context)
+        public override int Priority() => 500;
+        
+        protected override ArgumentSpecification FindMatchingArg(string token, ArgumentSpecification[] allArgs, ParseContext context)
         {
-            SwitchAttribute attribute = argument.Attributes.OfType<SwitchAttribute>().FirstOrDefault();
-            
-            return attribute != null &&
-                   token.StartsWith("-") && 
-                   token.Length > 1 &&
-                   token[1..].Equals(attribute.ShortName);
+            if (!token.StartsWith("-") || token.Length != 2) return null;
+
+            return allArgs.FirstOrDefault(arg => arg.Attributes.OfType<SwitchAttribute>().Any(attr => attr.Alias.Equals(token[1])));
         }
 
-        public ParseResult TryParse(TokenStream tokenStream, ArgumentSpecification argument)
+        protected override ParseResult ApplyToArg(TokenStream tokenStream, ArgumentSpecification argument)
         {
             // Peel off switch name before parsing
             tokenStream.Next();
@@ -30,7 +28,9 @@ namespace DeveloperConsole.Parsing.Rules
                 return ParseResult.TypeParsingFailed(result.ErrorMessage, argument);
             }
             
-            return ParseResult.Success(result.Value);
+            var value = new Dictionary<ArgumentSpecification, object> {{argument , result.Value}};
+            
+            return ParseResult.Success(value);
         }
     }
 }

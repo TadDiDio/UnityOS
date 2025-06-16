@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
@@ -64,7 +63,7 @@ namespace DeveloperConsole.Tests.TestUtils
 
             var switchAttr = field.GetCustomAttribute<SwitchAttribute>();
             Assert.NotNull(switchAttr);
-            Assert.AreEqual("v", switchAttr.ShortName);  // default alias is first char
+            Assert.AreEqual('v', switchAttr.Alias);  // default alias is first char
         }
 
         [Test]

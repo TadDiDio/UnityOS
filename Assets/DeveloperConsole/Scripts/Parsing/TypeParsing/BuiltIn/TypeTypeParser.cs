@@ -4,10 +4,10 @@ namespace DeveloperConsole.Parsing
 {
     public class TypeTypeParser : BaseTypeParser
     {
-        protected override bool TryParse(TokenStream tokenStream, out object obj)
+        protected override bool TryParse(TokenStream streamCopy, out object obj)
         {
             obj = null;
-            string typeName = tokenStream.Next();
+            string typeName = streamCopy.Next();
 
             obj = TypeFriendlyNames.NameToType(typeName);
 

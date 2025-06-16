@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -58,15 +59,15 @@ namespace DeveloperConsole.Tests
         /// </summary>
         /// <param name="name">The field name.</param>
         /// <param name="type">The field type.</param>
-        /// <param name="shortName">The short name, defaulted to the first letter of name.</param>
+        /// <param name="alias">The alias, defaulted to the first letter of name.</param>
         /// <returns>The builder.</returns>
-        public CommandBuilder WithSwitch(string name, Type type, string shortName = null)
+        public CommandBuilder WithSwitch(string name, Type type, char alias = '\0')
         {
-            string alias = shortName ?? name[..1];
+            char workingAlias = alias == '\0' ? name[0] : alias;
             var field = new FieldBuilder()
                 .WithName(name)
                 .WithType(type)
-                .WithAttribute(new SwitchAttribute(alias, "desc"))
+                .WithAttribute(new SwitchAttribute(workingAlias, "desc"))
                 .Build();
             
             fields.Add(field);

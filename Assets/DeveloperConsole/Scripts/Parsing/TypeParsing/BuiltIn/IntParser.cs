@@ -4,9 +4,9 @@ namespace DeveloperConsole.Parsing
 {
     public class IntParser : BaseTypeParser
     {
-        protected override bool TryParse(TokenStream tokenStream, out object obj)
+        protected override bool TryParse(TokenStream streamCopy, out object obj)
         {
-            bool success = int.TryParse(tokenStream.Next(), out int typed);
+            bool success = int.TryParse(streamCopy.Next(), out int typed);
 
             obj = typed;
             return success;

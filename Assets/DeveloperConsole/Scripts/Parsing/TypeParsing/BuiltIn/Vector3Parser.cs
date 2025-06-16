@@ -5,12 +5,12 @@ namespace DeveloperConsole.Parsing
 {
     public class Vector3Parser : BaseTypeParser
     {
-        protected override bool TryParse(TokenStream tokenStream, out object obj)
+        protected override bool TryParse(TokenStream streamCopy, out object obj)
         {
             obj = null;
-            if (!float.TryParse(tokenStream.Next(), out float x) ||
-                !float.TryParse(tokenStream.Next(), out float y) ||
-                !float.TryParse(tokenStream.Next(), out float z)) return false;
+            if (!float.TryParse(streamCopy.Next(), out float x) ||
+                !float.TryParse(streamCopy.Next(), out float y) ||
+                !float.TryParse(streamCopy.Next(), out float z)) return false;
             
             obj = new Vector3(x, y, z);
             return true;

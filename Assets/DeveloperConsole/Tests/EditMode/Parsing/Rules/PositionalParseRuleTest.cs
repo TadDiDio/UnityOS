@@ -10,148 +10,140 @@ namespace DeveloperConsole.Tests.Parsing.Rules
 {
     public class PositionalParseRuleTest
     {
-        private PositionalParseRule rule;
+        private IParseRule rule;
+
+        private ArgumentSpecification firstArg;
+        private ArgumentSpecification secondArg;
 
         [SetUp]
-        public void SetUp()
+        public void Setup()
         {
             rule = new PositionalParseRule();
-        }
 
-        [Test]
-        public void CanMatch_True_WhenIndexMatches()
-        {
-            var field = new FieldBuilder()
-                .WithName("name")
+            var field1 = new FieldBuilder()
+                .WithName("message")
                 .WithType(typeof(string))
                 .WithAttribute(new PositionalAttribute(0, "desc"))
                 .Build();
 
-            var spec = new ArgumentSpecification(field);
-            var context = new ParseContext(null);
-
-            Assert.IsTrue(rule.CanMatch("dragon", spec, context));
-        }
-
-        [Test]
-        public void CanMatch_False_WhenIndexDoesNotMatch()
-        {
-            var field = new FieldBuilder()
-                .WithName("age")
+            var field2 = new FieldBuilder()
+                .WithName("count")
                 .WithType(typeof(int))
                 .WithAttribute(new PositionalAttribute(1, "desc"))
                 .Build();
 
-            var spec = new ArgumentSpecification(field);
+            firstArg = new ArgumentSpecification(field1);
+            secondArg = new ArgumentSpecification(field2);
+        }
+
+        [Test]
+        public void Filter_ShouldMatch_FirstPositional()
+        {
             var context = new ParseContext(null);
-            context.SetData(PositionalParseRule.PositionalIndexKey, 0); // mismatch
+            ArgumentSpecification[] args = { firstArg, secondArg };
 
-            Assert.IsFalse(rule.CanMatch("25", spec, context));
+            var result = rule.Filter("hello", args, context);
+
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Length);
+            Assert.AreEqual(firstArg, result[0]);
         }
 
         [Test]
-        public void CanMatch_IncrementsPositionalIndexOnSuccess()
+        public void Filter_ShouldMatch_SecondPositional_AfterContextIncrement()
         {
-            var field = new FieldBuilder()
-                .WithName("class")
-                .WithType(typeof(string))
-                .WithAttribute(new PositionalAttribute(0, "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
             var context = new ParseContext(null);
+            context.SetData(PositionalParseRule.PositionalIndexKey, 1);
+            ArgumentSpecification[] args = { firstArg, secondArg };
 
-            rule.CanMatch("warrior", spec, context);
+            var result = rule.Filter("123", args, context);
 
-            Assert.IsTrue(context.TryGetData(PositionalParseRule.PositionalIndexKey, out int newIndex));
-            Assert.AreEqual(1, newIndex);
+            Assert.IsNotNull(result);
+            Assert.AreEqual(1, result.Length);
+            Assert.AreEqual(secondArg, result[0]);
         }
 
         [Test]
-        public void TryParse_Succeeds_WithString()
+        public void Filter_ShouldReturnNull_WhenNoMatchingIndex()
         {
-            var field = new FieldBuilder()
-                .WithName("name")
-                .WithType(typeof(string))
-                .WithAttribute(new PositionalAttribute(0, "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "dragon" });
-
-            var result = rule.TryParse(tokens, spec);
-
-            Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual("dragon", result.Value);
-        }
-
-        [Test]
-        public void TryParse_Succeeds_WithInt()
-        {
-            var field = new FieldBuilder()
-                .WithName("level")
-                .WithType(typeof(int))
-                .WithAttribute(new PositionalAttribute(0, "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "42" });
-
-            var result = rule.TryParse(tokens, spec);
-
-            Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(42, result.Value);
-        }
-
-        [Test]
-        public void TryParse_Succeeds_WithVector2()
-        {
-            var field = new FieldBuilder()
-                .WithName("position")
-                .WithType(typeof(Vector2))
-                .WithAttribute(new PositionalAttribute(0, "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "1.0", "2.0" });
-
-            var result = rule.TryParse(tokens, spec);
-
-            Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(new Vector2(1f, 2f), result.Value);
-        }
-
-        [Test]
-        public void TryParse_Fails_WithInvalidInput()
-        {
-            var field = new FieldBuilder()
-                .WithName("score")
-                .WithType(typeof(int))
-                .WithAttribute(new PositionalAttribute(0, "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "not-an-int" });
-
-            var result = rule.TryParse(tokens, spec);
-
-            Assert.AreEqual(Status.Fail, result.Status);
-        }
-
-        [Test]
-        public void CanMatch_UsesExistingIndex_WhenPresent()
-        {
-            var field = new FieldBuilder()
-                .WithName("target")
-                .WithType(typeof(string))
-                .WithAttribute(new PositionalAttribute(2, "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
             var context = new ParseContext(null);
             context.SetData(PositionalParseRule.PositionalIndexKey, 2);
+            ArgumentSpecification[] args = { firstArg, secondArg };
 
-            Assert.IsTrue(rule.CanMatch("enemy", spec, context));
+            var result = rule.Filter("anything", args, context);
+
+            Assert.IsNull(result);
+        }
+
+        [Test]
+        public void Filter_ShouldReturnNull_WhenNoAttribute()
+        {
+            var field = new FieldBuilder()
+                .WithName("message")
+                .WithType(typeof(int))
+                .WithAttribute(new VariadicAttribute("desc"))
+                .Build();
+
+            ArgumentSpecification variadic = new(field);
+            
+            ArgumentSpecification[] args = { variadic };
+            var result = rule.Filter("anything", args, new ParseContext(null));
+
+            Assert.IsNull(result);
+        }
+        
+        [Test]
+        public void Apply_ShouldParse_StringSuccessfully()
+        {
+            ArgumentSpecification[] args = { firstArg };
+            var tokens = new List<string> { "hello world" };
+            var stream = new TokenStream(tokens);
+
+            var result = rule.Apply(stream, args);
+
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual("hello world", result.Values[firstArg]);
+        }
+
+        [Test]
+        public void Apply_ShouldParse_IntSuccessfully()
+        {
+            ArgumentSpecification[] args = { secondArg };
+            var tokens = new List<string> { "42" };
+            var stream = new TokenStream(tokens);
+
+            var result = rule.Apply(stream, args);
+
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(42, result.Values[secondArg]);
+        }
+
+        [Test]
+        public void Apply_ShouldFail_InvalidInt()
+        {
+            ArgumentSpecification[] args = { secondArg };
+            var tokens = new List<string> { "notanumber" };
+            var stream = new TokenStream(tokens);
+
+            var result = rule.Apply(stream, args);
+
+            Assert.AreEqual(Status.Fail, result.Status);
+            Assert.IsTrue(result.ErrorMessage.Contains("Failed to parse"));
+        }
+
+        [Test]
+        public void Apply_ShouldFail_WhenMultipleArgsPassed()
+        {
+            using SilentLogCapture log = new();
+
+            ArgumentSpecification[] args = { firstArg, secondArg };
+            var tokens = new List<string> { "value" };
+            var stream = new TokenStream(tokens);
+
+            var result = rule.Apply(stream, args);
+
+            Assert.AreEqual(Status.Fail, result.Status);
+            Assert.IsTrue(log.HasLog(LogType.Error, "Too many arguments"));
         }
     }
 }

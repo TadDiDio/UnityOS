@@ -8,24 +8,24 @@ namespace DeveloperConsole.Command
     [AttributeUsage(AttributeTargets.Field)]
     public class SwitchAttribute : InformativeAttribute
     {
-        public string ShortName { get; }
+        public char Alias { get; }
         
         
         /// <summary>
         /// Creates a new switch arg.
         /// </summary>
-        /// <param name="shortName">The short name for this switch.</param>
+        /// <param name="alias">The short name for this switch.</param>
         /// <param name="description">The arg's description.</param>
         /// <param name="overrideName">Overrides the field name.</param>
-        public SwitchAttribute(string shortName, string description, string overrideName = null) 
+        public SwitchAttribute(char alias, string description, string overrideName = null) 
             : base(description, overrideName)
         {
-            ShortName = shortName;
+            Alias = alias;
         }
         
         public override string ToString()
         {
-            return $"{Name ?? "Switch"} ({ShortName}): {Description}";
+            return $"{Name ?? "Switch"} ({Alias}): {Description}";
         }
     }
 }

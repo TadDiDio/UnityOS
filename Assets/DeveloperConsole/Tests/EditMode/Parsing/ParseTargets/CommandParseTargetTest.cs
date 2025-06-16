@@ -12,7 +12,7 @@ namespace DeveloperConsole.Tests.EditMode.Parsing.ParseTargets
         public void Constructor_CreatesCommandInstance()
         {
             var builder = new CommandBuilder()
-                .WithSwitch("flag", typeof(bool), "f");
+                .WithSwitch("flag", typeof(bool), 'f');
             Type commandType = builder.BuildType();
 
             var argSpecs = commandType.GetFields()
@@ -35,7 +35,7 @@ namespace DeveloperConsole.Tests.EditMode.Parsing.ParseTargets
         public void GetArguments_ReturnsSchemaArguments()
         {
             var builder = new CommandBuilder()
-                .WithSwitch("flag", typeof(bool), "f");
+                .WithSwitch("flag", typeof(bool), 'f');
             Type commandType = builder.BuildType();
 
             var argSpecs = commandType.GetFields()
@@ -59,7 +59,7 @@ namespace DeveloperConsole.Tests.EditMode.Parsing.ParseTargets
         public void SetArgument_SetsValueOnCommand()
         {
             var builder = new CommandBuilder()
-                .WithSwitch("flag", typeof(bool), "f");
+                .WithSwitch("flag", typeof(bool), 'f');
             Type commandType = builder.BuildType();
 
             var argSpecs = commandType.GetFields()

@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using DeveloperConsole.Command;
-using DeveloperConsole.Parsing;
 using DeveloperConsole.Parsing.Rules;
 using DeveloperConsole.Parsing.Tokenizing;
 using NUnit.Framework;
@@ -10,118 +9,161 @@ namespace DeveloperConsole.Tests.Parsing.Rules
 {
     public class VariadicParseRuleTest
     {
-        private VariadicParseRule _rule;
-        private ParseContext _context;
+        private IParseRule rule;
 
+        private ArgumentSpecification flag;
+        private ArgumentSpecification number;
+        
         [SetUp]
-        public void SetUp()
+        public void Setup()
         {
-            _rule = new VariadicParseRule();
-            _context = new ParseContext(null);
+            rule = new VariadicParseRule();
+            
+            var flagField = new FieldBuilder()
+                .WithName("flag")
+                .WithType(typeof(bool))
+                .WithAttribute(new SwitchAttribute('o', "desc"))
+                .Build();
+            
+            var numberField = new FieldBuilder()
+                .WithName("number")
+                .WithType(typeof(float))
+                .WithAttribute(new PositionalAttribute(0, "desc"))
+                .Build();
+            
+            flag = new ArgumentSpecification(flagField);
+            number = new ArgumentSpecification(numberField);
         }
 
         [Test]
-        public void CanMatch_True_ForListIntField()
+        public void Filter_ShouldMatch()
         {
             var field = new FieldBuilder()
-                .WithName("numbers")
+                .WithName("nums")
                 .WithType(typeof(List<int>))
                 .WithAttribute(new VariadicAttribute("desc"))
                 .Build();
-
-            var spec = new ArgumentSpecification(field);
-
-            Assert.IsTrue(_rule.CanMatch("1", spec, _context));
+            
+            ArgumentSpecification nums = new(field);
+            ArgumentSpecification[] allArgs = { nums, flag, number };
+            
+            var result = rule.Filter("1", allArgs, null);
+            
+            Assert.IsTrue(result.Length == 1);
+            Assert.AreEqual(nums, result[0]);
+            Assert.AreEqual(nums.Name, result[0].Name);
         }
-
+        
         [Test]
-        public void CanMatch_False_ForArrayField()
+        public void Filter_ShouldReturnNull_WhenMissingAttribute()
         {
             var field = new FieldBuilder()
-                .WithName("numbers")
-                .WithType(typeof(int[]))
-                .WithAttribute(new VariadicAttribute("desc"))
+                .WithName("nums")
+                .WithType(typeof(List<int>))
                 .Build();
-
-            var spec = new ArgumentSpecification(field);
-
-            Assert.IsFalse(_rule.CanMatch("1", spec, _context));
+            
+            ArgumentSpecification nums = new(field);
+            ArgumentSpecification[] allArgs = { nums, flag, number };
+            
+            var result = rule.Filter("1", allArgs, null);
+            
+            Assert.IsNull(result);
         }
-
+        
         [Test]
-        public void TryParse_Succeeds_ForListOfInts()
+        public void Filter_ShouldReturnNull_WhenArgIsNotVariadic()
+        {
+            ArgumentSpecification[] allArgs = { flag, number };
+            
+            var result = rule.Filter("-f", allArgs, null);
+            
+            Assert.IsNull(result);
+        }
+        
+        [Test]
+        public void Apply_ShouldSucceedReturnTrue_WhenWellFormed()
         {
             var field = new FieldBuilder()
-                .WithName("numbers")
+                .WithName("nums")
                 .WithType(typeof(List<int>))
                 .WithAttribute(new VariadicAttribute("desc"))
                 .Build();
+            
+            ArgumentSpecification nums = new(field);
+            ArgumentSpecification[] allArgs = { nums };
 
-            var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "1", "2", "3", "4" });
-
-            var result = _rule.TryParse(stream, spec);
-
+            List<string> tokens = new() { "-1", "2" };
+            TokenStream stream = new TokenStream(tokens);
+            
+            var result = rule.Apply(stream, allArgs);
+            
             Assert.AreEqual(Status.Success, result.Status);
-            CollectionAssert.AreEqual(new List<int> { 1, 2, 3, 4 }, (List<int>)result.Value);
+            CollectionAssert.AreEqual(new List<int> {-1, 2}, (List<int>)result.Values[nums]);
         }
-
+        
         [Test]
-        public void TryParse_Succeeds_ForListOfStrings()
+        public void Apply_ShouldSucceedReturnTrue_WithMultiTokenTypes()
         {
             var field = new FieldBuilder()
-                .WithName("names")
-                .WithType(typeof(List<string>))
-                .WithAttribute(new VariadicAttribute("desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "Alice", "Bob", "Charlie" });
-
-            var result = _rule.TryParse(stream, spec);
-
-            Assert.AreEqual(Status.Success, result.Status);
-            CollectionAssert.AreEqual(new List<string> { "Alice", "Bob", "Charlie" }, (List<string>)result.Value);
-        }
-
-        [Test]
-        public void TryParse_Succeeds_ForListOfVector2()
-        {
-            var field = new FieldBuilder()
-                .WithName("points")
+                .WithName("nums")
                 .WithType(typeof(List<Vector2>))
                 .WithAttribute(new VariadicAttribute("desc"))
                 .Build();
+            
+            ArgumentSpecification nums = new(field);
+            ArgumentSpecification[] allArgs = { nums };
 
-            var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "0", "0", "1", "1", "2", "2" });
-
-            var result = _rule.TryParse(stream, spec);
-
+            List<string> tokens = new() { "-1", "2", "0", "1" };
+            TokenStream stream = new TokenStream(tokens);
+            
+            var result = rule.Apply(stream, allArgs);
+            
             Assert.AreEqual(Status.Success, result.Status);
-            var points = (List<Vector2>)result.Value;
-
-            Assert.AreEqual(3, points.Count);
-            Assert.AreEqual(new Vector2(0, 0), points[0]);
-            Assert.AreEqual(new Vector2(1, 1), points[1]);
-            Assert.AreEqual(new Vector2(2, 2), points[2]);
+            CollectionAssert.AreEqual(new List<Vector2> {new(-1, 2), new (0, 1)}, (List<Vector2>)result.Values[nums]);
         }
-
+        
         [Test]
-        public void TryParse_Fails_IfTokenCannotBeParsed()
+        public void Apply_ShouldFail_WhenBadType()
         {
             var field = new FieldBuilder()
-                .WithName("numbers")
+                .WithName("nums")
                 .WithType(typeof(List<int>))
                 .WithAttribute(new VariadicAttribute("desc"))
                 .Build();
+            
+            ArgumentSpecification nums = new(field);
+            ArgumentSpecification[] allArgs = { nums };
 
-            var spec = new ArgumentSpecification(field);
-            var stream = new TokenStream(new List<string> { "1", "two", "3" });
-
-            var result = _rule.TryParse(stream, spec);
-
+            List<string> tokens = new() { "-1", "a" };
+            TokenStream stream = new TokenStream(tokens);
+            
+            var result = rule.Apply(stream, allArgs);
+            
             Assert.AreEqual(Status.Fail, result.Status);
+            Assert.IsTrue(result.ErrorMessage.Contains("Failed to parse"));
+        }
+        
+        [Test]
+        public void Apply_ShouldFail_WhenMultipleArgsPassed()
+        {
+            using SilentLogCapture log = new();
+            
+            var field = new FieldBuilder()
+                .WithName("nums")
+                .WithType(typeof(List<int>))
+                .WithAttribute(new VariadicAttribute("desc"))
+                .Build();
+            
+            ArgumentSpecification nums = new(field);
+            ArgumentSpecification[] allArgs = { flag, nums };
+
+            List<string> tokens = new() { "-f", "1", "2" };
+            TokenStream stream = new TokenStream(tokens);
+            
+            var result = rule.Apply(stream, allArgs);
+            Assert.AreEqual(Status.Fail, result.Status);
+            Assert.AreEqual(1, log.Count(LogType.Error));
+            Assert.IsTrue(log.HasLog(LogType.Error, "Too many arguments"));
         }
     }
 }

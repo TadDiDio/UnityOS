@@ -1,16 +1,17 @@
+using System.Collections.Generic;
 using System.Linq;
 using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Tokenizing;
 
 namespace DeveloperConsole.Parsing.Rules
 {
-    public class PositionalParseRule : IParseRule
+    public class PositionalParseRule : SingleMatchParseRule
     {
         public static readonly string PositionalIndexKey = "positional_index";
         
-        public int Priority() => 600;
-
-        public bool CanMatch(string token, ArgumentSpecification argument, ParseContext context)
+        public override int Priority() => 600;
+        
+        protected override ArgumentSpecification FindMatchingArg(string token, ArgumentSpecification[] allArgs, ParseContext context)
         {
             if (!context.TryGetData(PositionalIndexKey, out int index))
             {
@@ -18,18 +19,20 @@ namespace DeveloperConsole.Parsing.Rules
                 context.SetData(PositionalIndexKey, 0);
             }
 
-            PositionalAttribute attribute = argument.Attributes.OfType<PositionalAttribute>().FirstOrDefault();
-            bool canMatch = attribute != null && attribute.Index == index;
+            var arg = allArgs
+                .FirstOrDefault(arg => 
+                    arg.Attributes.OfType<PositionalAttribute>().Any(attr => attr.Index == index));
+            PositionalAttribute attribute = arg?
+                .Attributes.OfType<PositionalAttribute>()
+                .FirstOrDefault(attr => attr.Index == index);
 
-            if (canMatch)
-            {
-                context.SetData(PositionalIndexKey, index + 1);
-            }
-
-            return canMatch;
+            if (attribute == null) return null;
+            
+            context.SetData(PositionalIndexKey, index + 1);
+            return arg;
         }
 
-        public ParseResult TryParse(TokenStream tokenStream, ArgumentSpecification argument)
+        protected override ParseResult ApplyToArg(TokenStream tokenStream, ArgumentSpecification argument)
         {
             var result = ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream);
             
@@ -38,7 +41,9 @@ namespace DeveloperConsole.Parsing.Rules
                 return ParseResult.TypeParsingFailed(result.ErrorMessage, argument);
             }
             
-            return ParseResult.Success(result.Value);
+            var value = new Dictionary<ArgumentSpecification, object> {{argument , result.Value}};
+            
+            return ParseResult.Success(value);
         }
     }
 }

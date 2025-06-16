@@ -1,33 +1,34 @@
+using System.Collections.Generic;
 using System.Linq;
 using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Tokenizing;
 
 namespace DeveloperConsole.Parsing.Rules
 {
-    public class InvertedBoolLongSwitchParseRule : IParseRule
+    public class InvertedBoolLongSwitchParseRule : SingleMatchParseRule
     {
-        public int Priority() => 0;
-
-        public bool CanMatch(string token, ArgumentSpecification argument, ParseContext context)
+        public override int Priority() => 0;
+        protected override ArgumentSpecification FindMatchingArg(string token, ArgumentSpecification[] allArgs, ParseContext context)
         {
-            SwitchAttribute attribute = argument.Attributes.OfType<SwitchAttribute>().FirstOrDefault();
-            
-            return attribute != null &&
-                   token.StartsWith("--no-") && 
-                   token.Length > 5 &&
-                   token[5..].Equals(argument.Name) && 
-                   argument.FieldInfo.FieldType == typeof(bool);
+            if (!token.StartsWith("--no-") || token.Length <= 5) return null;
+
+            return allArgs
+                .Where(arg => arg.FieldInfo.FieldType == typeof(bool))
+                .Where(arg => arg.Name.Equals(token[5..]))
+                .FirstOrDefault(arg => arg.Attributes.OfType<SwitchAttribute>().Any());
         }
 
-        public ParseResult TryParse(TokenStream tokenStream, ArgumentSpecification argument)
+        protected override ParseResult ApplyToArg(TokenStream tokenStream, ArgumentSpecification argument)
         {
             // Peel off switch name before parsing
             tokenStream.Next();
-
-            var result = ConsoleAPI.Parsing.TryParseType(typeof(bool), tokenStream);
             
-            // If parsing failed, we assume it is an implied false flag with no value
-            return ParseResult.Success(result.Success && !(bool)result.Value);
+            var result = ConsoleAPI.Parsing.TryParseType(typeof(bool), tokenStream);
+
+            // If parsing failed, we assume it is an implied true flag with no value
+            var value = new Dictionary<ArgumentSpecification, object> {{argument , result.Success && !(bool)result.Value}};
+            
+            return ParseResult.Success(value);
         }
     }
 }

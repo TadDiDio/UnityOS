@@ -1,36 +1,32 @@
+using System.Collections.Generic;
 using System.Linq;
 using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Tokenizing;
 
 namespace DeveloperConsole.Parsing.Rules
 {
-    public class LongSwitchParseRule : IParseRule
+    public class LongSwitchParseRule : SingleMatchParseRule
     {
-        public int Priority() => 200;
-
-        public bool CanMatch(string token, ArgumentSpecification argument, ParseContext context)
+        public override int Priority() => 200;
+        
+        protected override ArgumentSpecification FindMatchingArg(string token, ArgumentSpecification[] allArgs, ParseContext context)
         {
-            SwitchAttribute attribute = argument.Attributes.OfType<SwitchAttribute>().FirstOrDefault();
+            if (!token.StartsWith("--") || token.Length <= 2) return null;
 
-            return attribute != null &&
-                   token.StartsWith("--") && 
-                   token.Length > 2 &&
-                   token[2..].Equals(argument.Name);
+            return allArgs
+                .Where(arg => arg.Name.Equals(token[2..]))
+                .FirstOrDefault(arg => arg.Attributes.OfType<SwitchAttribute>().Any());
         }
 
-        public ParseResult TryParse(TokenStream tokenStream, ArgumentSpecification argument)
+        protected override ParseResult ApplyToArg(TokenStream tokenStream, ArgumentSpecification argument)
         {
             // Peel off switch name before parsing
             tokenStream.Next();
-
+            
             var result = ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream);
+            var value = new Dictionary<ArgumentSpecification, object> {{argument , result.Value}};
             
-            if (!result.Success)
-            {
-                return ParseResult.TypeParsingFailed(result.ErrorMessage, argument);
-            }
-            
-            return ParseResult.Success(result.Value);
+            return ParseResult.Success(value);
         }
     }
 }

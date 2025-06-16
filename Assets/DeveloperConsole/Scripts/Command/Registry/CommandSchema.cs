@@ -73,8 +73,6 @@ namespace DeveloperConsole.Command
         public ArgumentSpecification(FieldInfo fieldInfo)
         {
             Attributes = fieldInfo.GetCustomAttributes<ArgumentAttribute>().ToList();
-            if (Attributes == null || Attributes.Count == 0) return;
-            
             var info = Attributes.OfType<InformativeAttribute>().FirstOrDefault();
             
             FieldInfo = fieldInfo;

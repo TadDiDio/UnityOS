@@ -8,8 +8,8 @@ namespace DeveloperConsole.Tests
         {
             return new AttributeData
             (
-                attribute.GetType().GetConstructor(new[] { typeof(string), typeof(string), typeof(string) }),
-                new object[] { attribute.ShortName, attribute.Description, attribute.Name }
+                attribute.GetType().GetConstructor(new[] { typeof(char), typeof(string), typeof(string) }),
+                new object[] { attribute.Alias, attribute.Description, attribute.Name }
             );
         }
     }

@@ -1,169 +1,164 @@
 using System.Collections.Generic;
 using DeveloperConsole.Command;
-using DeveloperConsole.Parsing;
 using DeveloperConsole.Parsing.Rules;
 using DeveloperConsole.Parsing.Tokenizing;
 using NUnit.Framework;
 using UnityEngine;
 
-namespace DeveloperConsole.Tests.Parsing.Rules
+namespace DeveloperConsole.Tests.EditMode.Parsing.Rules
 {
     public class LongSwitchParseRuleTest
     {
-        private LongSwitchParseRule rule;
+        private IParseRule rule;
 
+        private ArgumentSpecification stringArg;
+        private ArgumentSpecification floatArg;
+        
         [SetUp]
-        public void SetUp()
+        public void Setup()
         {
             rule = new LongSwitchParseRule();
+            
+            var stringField = new FieldBuilder()
+                .WithName("message")
+                .WithType(typeof(string))
+                .WithAttribute(new PositionalAttribute(0, "desc"))
+                .Build();
+            
+            var floatField = new FieldBuilder()
+                .WithName("number")
+                .WithType(typeof(float))
+                .WithAttribute(new SwitchAttribute('n', "desc"))
+                .Build();
+            
+            stringArg = new ArgumentSpecification(stringField);
+            floatArg = new ArgumentSpecification(floatField);
         }
 
         [Test]
-        public void CanMatch_ReturnsTrue_WhenTokenMatchesLongSwitch()
+        public void Filter_ShouldMatch()
         {
-            var field = new FieldBuilder()
-                .WithName("speed")
-                .WithType(typeof(float))
-                .WithAttribute(new SwitchAttribute("s", "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var context = new ParseContext(null);
-
-            Assert.IsTrue(rule.CanMatch("--speed", spec, context));
-        }
-
-        [Test]
-        public void CanMatch_ReturnsFalse_WhenSwitchAttributeMissing()
-        {
-            var field = new FieldBuilder()
-                .WithName("speed")
-                .WithType(typeof(float))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var context = new ParseContext(null);
-
-            Assert.IsFalse(rule.CanMatch("--speed", spec, context));
-        }
-
-        [Test]
-        public void CanMatch_ReturnsFalse_WhenTokenDoesNotMatchFieldName()
-        {
-            var field = new FieldBuilder()
-                .WithName("height")
-                .WithType(typeof(float))
-                .WithAttribute(new SwitchAttribute("h", "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var context = new ParseContext(null);
-
-            Assert.IsFalse(rule.CanMatch("--width", spec, context));
-        }
-
-        [Test]
-        public void CanMatch_ReturnsTrue_WhenTokenMatchesOverrideFieldName()
-        {
-            var field = new FieldBuilder()
-                .WithName("height")
-                .WithType(typeof(float))
-                .WithAttribute(new SwitchAttribute("h", "desc", "width"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var context = new ParseContext(null);
-
-            Assert.IsTrue(rule.CanMatch("--width", spec, context));
+            ArgumentSpecification[] allArgs = { stringArg, floatArg };
+            
+            var result = rule.Filter("--number", allArgs, null);
+            
+            Assert.IsTrue(result.Length == 1);
+            Assert.AreEqual(floatArg, result[0]);
+            Assert.AreEqual(floatArg.Name, result[0].Name);
         }
         
         [Test]
-        public void TryParse_Succeeds_WithStringValue()
+        public void Filter_ShouldReturnNull_WhenMissingAttribute()
         {
             var field = new FieldBuilder()
-                .WithName("name")
-                .WithType(typeof(string))
-                .WithAttribute(new SwitchAttribute("n", "desc"))
+                .WithName("flag")
+                .WithType(typeof(bool))
                 .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "-n", "dragon" });
-
-            var result = rule.TryParse(tokens, spec);
-
-            Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual("dragon", result.Value);
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag, stringArg, floatArg };
+            
+            var result = rule.Filter("--flag", allArgs, null);
+            
+            Assert.IsNull(result);
         }
-
+        
         [Test]
-        public void TryParse_Succeeds_WithIntValue()
+        public void Filter_ShouldReturnNull_WhenFlagDoesntStartWithDashes()
         {
-            var field = new FieldBuilder()
-                .WithName("count")
-                .WithType(typeof(int))
-                .WithAttribute(new SwitchAttribute("c", "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "-c", "42" });
-
-            var result = rule.TryParse(tokens, spec);
-
-            Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(42, result.Value);
+            ArgumentSpecification[] allArgs = { stringArg, floatArg };
+            
+            var result = rule.Filter("number", allArgs, null);
+            
+            Assert.IsNull(result);
         }
-
+        
         [Test]
-        public void TryParse_Succeeds_WithFloatValue()
+        public void Filter_ShouldReturnNull_WhenFlagDoesntMatchName()
         {
-            var field = new FieldBuilder()
-                .WithName("scale")
-                .WithType(typeof(float))
-                .WithAttribute(new SwitchAttribute("s", "desc"))
-                .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "-s", "3.14" });
-
-            var result = rule.TryParse(tokens, spec);
-
-            Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(3.14f, result.Value);
+            ArgumentSpecification[] allArgs = { stringArg, floatArg };
+            
+            var result = rule.Filter("--numbers", allArgs, null);
+            
+            Assert.IsNull(result);
         }
-
+        
         [Test]
-        public void TryParse_Succeeds_WithVector2Value_FromTwoTokens()
+        public void Filter_ShouldReturnNull_WhenFlagIsOnlyDashes()
+        {
+            ArgumentSpecification[] allArgs = { stringArg, floatArg };
+            
+            var result = rule.Filter("--", allArgs, null);
+            
+            Assert.IsNull(result);
+        }
+        
+        [Test]
+        public void Filter_ShouldReturnNull_WhenArgIsNotSwitch()
+        {
+            ArgumentSpecification[] allArgs = { stringArg, floatArg };
+            
+            var result = rule.Filter("--message", allArgs, null);
+            
+            Assert.IsNull(result);
+        }
+        
+        [Test]
+        public void Apply_ShouldSucceed_WhenNumberIsValid()
+        {
+            ArgumentSpecification[] allArgs = { floatArg };
+            List<string> tokens = new() { "--number", "-12" };
+            TokenStream stream = new TokenStream(tokens);
+            
+            var result = rule.Apply(stream, allArgs);
+            
+            Assert.AreEqual(Status.Success, result.Status);
+            Assert.AreEqual(-12, result.Values[floatArg]);
+        }
+        
+        [Test]
+        public void Apply_ShouldSucceed_WithMultipleTokenArg()
         {
             var field = new FieldBuilder()
                 .WithName("position")
                 .WithType(typeof(Vector2))
-                .WithAttribute(new SwitchAttribute("p", "desc"))
+                .WithAttribute(new SwitchAttribute('p', "desc"))
                 .Build();
-
-            var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "-p", "1.0", "2.5" });
-
-            var result = rule.TryParse(tokens, spec);
-
+            
+            ArgumentSpecification position = new(field);
+            ArgumentSpecification[] allArgs = { position };
+            
+            List<string> tokens = new() { "--position", "-1", "0" };
+            TokenStream stream = new TokenStream(tokens);
+            
+            var result = rule.Apply(stream, allArgs);
+            
             Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(new Vector2(1.0f, 2.5f), result.Value);
+            Assert.AreEqual(new Vector2(-1, 0), result.Values[position]);
         }
-
+        
+        
         [Test]
-        public void TryParse_Fails_WithInvalidTypeInput()
+        public void Apply_ShouldFail_WhenMultipleArgsPassed()
         {
+            using SilentLogCapture log = new();
+            
             var field = new FieldBuilder()
-                .WithName("score")
-                .WithType(typeof(int))
-                .WithAttribute(new SwitchAttribute("s", "desc"))
+                .WithName("flag")
+                .WithType(typeof(bool))
+                .WithAttribute(new SwitchAttribute('f', "desc"))
                 .Build();
+            
+            ArgumentSpecification flag = new(field);
+            ArgumentSpecification[] allArgs = { flag, stringArg };
 
-            var spec = new ArgumentSpecification(field);
-            var tokens = new TokenStream(new List<string> { "-s", "not-a-number" });
-
-            var result = rule.TryParse(tokens, spec);
-
+            List<string> tokens = new() { "--flag" };
+            TokenStream stream = new TokenStream(tokens);
+            
+            var result = rule.Apply(stream, allArgs);
             Assert.AreEqual(Status.Fail, result.Status);
+            Assert.AreEqual(1, log.Count(LogType.Error));
+            Assert.IsTrue(log.HasLog(LogType.Error, "Too many arguments"));
         }
     }
 }

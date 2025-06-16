@@ -4,22 +4,21 @@ using System.Linq;
 using System.Reflection;
 using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Tokenizing;
-using JetBrains.Annotations;
 
 namespace DeveloperConsole.Parsing.Rules
 {
-    public class VariadicParseRule : IParseRule
+    public class VariadicParseRule : SingleMatchParseRule
     {
-        public int Priority() => 700;
-
-        public bool CanMatch(string token, [NotNull] ArgumentSpecification argument, ParseContext context)
+        public override int Priority() => 700;
+        protected override ArgumentSpecification FindMatchingArg(string token, ArgumentSpecification[] allArgs, ParseContext context)
         {
-            VariadicAttribute attribute = argument.Attributes.OfType<VariadicAttribute>().FirstOrDefault();
-            Type type = argument.FieldInfo.FieldType;
-            return attribute != null && type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>);;
+            return allArgs.FirstOrDefault(arg =>
+                arg.Attributes.OfType<VariadicAttribute>().Any() &&
+                arg.FieldInfo.FieldType.IsGenericType &&
+                arg.FieldInfo.FieldType.GetGenericTypeDefinition() == typeof(List<>));
         }
 
-        public ParseResult TryParse(TokenStream tokenStream, ArgumentSpecification argument)
+        protected override ParseResult ApplyToArg(TokenStream tokenStream, ArgumentSpecification argument)
         {
             Type elementType = argument.FieldInfo.FieldType.GetGenericArguments()[0];
             Type listType = typeof(List<>).MakeGenericType(elementType);
@@ -37,7 +36,8 @@ namespace DeveloperConsole.Parsing.Rules
                 addMethod!.Invoke(listInstance, new[] { result.Value });
             }
 
-            return ParseResult.Success(listInstance);
+            var value = new Dictionary<ArgumentSpecification, object> {{argument , listInstance}};
+            return ParseResult.Success(value);
         }
     }
 }

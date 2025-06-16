@@ -12,10 +12,10 @@ namespace DeveloperConsole
         [Positional(0, "The type of the object you want to bind to.")] 
         private Type type;
 
-        [Switch("name", "The name of the object you want to bind to.")] 
+        [Switch('n', "The name of the object you want to bind to.")] 
         private string name;
         
-        [Switch("tag", "The tag of the object you want to bind to.")] 
+        [Switch('t', "The tag of the object you want to bind to.")] 
         private string tag;
         
         protected override CommandOutput Execute(CommandContext context)
@@ -28,7 +28,7 @@ namespace DeveloperConsole
     [Subcommand("list", "Lists all current bindings.", typeof(BindCommand))]
     public class ListBindingsCommand : SimpleCommand
     {
-        [Switch("type", "The type of the object you want to show.")]
+        [Switch('t', "The type of the object you want to show.")]
         private Type type = null;
         
         protected override CommandOutput Execute(CommandContext context)
