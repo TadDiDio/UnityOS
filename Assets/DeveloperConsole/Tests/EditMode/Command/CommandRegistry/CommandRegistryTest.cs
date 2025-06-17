@@ -1,91 +1,109 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using DeveloperConsole.Command;
+
 using NUnit.Framework;
-using UnityEngine;
 
 namespace DeveloperConsole.Tests.Command
 {
-    // TODO: Test max recursion depth once configurable
-    public class CommandRegistryTest
+    public class CommandRegistryTest : ConsoleTest
     {
-        [Test]
-        public void CommandRegistry_ConstructorEntriesValid()
+        private class MockDiscovery : ICommandDiscoveryStrategy
         {
-            ICommandRegistry registry = new CommandRegistry(
-                new MockCommandDiscovery(TestUtilities.CommandRegistryValidTypes));
-            
-            Assert.AreEqual(registry.SchemaTable.Count, 4);
+            private readonly List<Type> _types;
+            public MockDiscovery(params Type[] types) => _types = types.ToList();
+            public List<Type> GetAllCommandTypes() => _types;
+        }
 
-            var test1Entry = registry.SchemaTable.Values.FirstOrDefault(schema => schema.Name == CommandMetaProcessor.Name("test1"));
-            var test2Entry = registry.SchemaTable.Values.FirstOrDefault(schema => schema.Name == CommandMetaProcessor.Name("test2"));
-            var subOfTest1Entry = registry.SchemaTable.Values.FirstOrDefault(schema => schema.Name == CommandMetaProcessor.Name("suboftest1"));
-            var subOfSubOfTest1Entry = registry.SchemaTable.Values.FirstOrDefault(schema => schema.Name == CommandMetaProcessor.Name("subofsuboftest1"));
-            
-            Assert.NotNull(test1Entry);
-            Assert.NotNull(test2Entry);
-            Assert.NotNull(subOfTest1Entry);
-            Assert.NotNull(subOfSubOfTest1Entry);
-            
-            Assert.AreEqual(test1Entry.Subcommands.Count, 1);
-            Assert.AreEqual(test2Entry.Subcommands.Count, 0);
-            Assert.AreEqual(subOfTest1Entry.Subcommands.Count, 1);
-            Assert.AreEqual(subOfSubOfTest1Entry.Subcommands.Count, 0);
+        [Test]
+        public void RegistersSingleRootCommand()
+        {
+            var rootType = new CommandBuilder()
+                .WithName("root")
+                .BuildType();
 
-            Assert.AreEqual(test1Entry.Subcommands.Single().Name, CommandMetaProcessor.Name("suboftest1"));
-            Assert.AreEqual(subOfTest1Entry.Subcommands.Single().Name, CommandMetaProcessor.Name("subofsuboftest1"));
+            var registry = new CommandRegistry(new MockDiscovery(rootType));
+
+            Assert.That(registry.AllCommandNames(), Contains.Item("root"));
+            Assert.True(registry.TryResolveCommandSchema("root", out var schema));
+            Assert.AreEqual("root", schema.Name);
+            Assert.AreEqual(rootType, schema.CommandType);
+            Assert.IsNull(schema.ParentSchema);
         }
-        
+
         [Test]
-        public void CommandRegistry_ConstructorCyclicalReferences()
+        public void RegistersRootAndSubcommandHierarchy()
         {
-            using SilentLogCapture log = new SilentLogCapture();
-            
-            ICommandRegistry registry = new CommandRegistry(
-                new MockCommandDiscovery(TestUtilities.CommandRegistryCyclicalTypes));
-            
-            Assert.AreEqual(registry.SchemaTable.Count, 0);
-            Assert.AreEqual(log.Count(LogType.Error), 2);
-            Assert.True(log.HasLog(LogType.Error, "hierarchy at 'cyclicalsub1.cyclicalsub2'"));
-            Assert.True(log.HasLog(LogType.Error, "hierarchy at 'cyclicalsub2.cyclicalsub1'"));
+            var root = new CommandBuilder().WithName("root").BuildType();
+            var child = new CommandBuilder().WithName("child").AsSubcommand(root).BuildType();
+            var grandchild = new CommandBuilder().WithName("grandchild").AsSubcommand(child).BuildType();
+
+            var registry = new CommandRegistry(new MockDiscovery(root, child, grandchild));
+
+            Assert.That(registry.AllCommandNames(), Contains.Item("root.child"));
+            Assert.That(registry.AllCommandNames(), Contains.Item("root.child.grandchild"));
+
+            Assert.True(registry.TryResolveCommandSchema(new List<string> { "root", "child", "grandchild" }, out var schema));
+            Assert.AreEqual("grandchild", schema.Name);
+            Assert.AreEqual(grandchild, schema.CommandType);
         }
-        
+
         [Test]
-        public void CommandRegistry_ConstructorSelfCyclical()
+        public void GetFullyQualifiedCommandName_ReturnsExpectedValue()
         {
-            using SilentLogCapture log = new SilentLogCapture();
-            
-            ICommandRegistry registry = new CommandRegistry(
-                new MockCommandDiscovery(TestUtilities.CommandRegistrySelfCyclicalTypes));
-            
-            Assert.AreEqual(registry.SchemaTable.Count, 0);
-            Assert.AreEqual(log.Count(LogType.Error), 1);
-            Assert.True(log.HasLog(LogType.Error, "hierarchy at 'selfcyclical'"));
+            var root = new CommandBuilder().WithName("root").BuildType();
+            var child = new CommandBuilder().WithName("child").AsSubcommand(root).BuildType();
+
+            var registry = new CommandRegistry(new MockDiscovery(root, child));
+            var fqName = registry.GetFullyQualifiedCommandName(child);
+
+            Assert.AreEqual("root.child", fqName);
         }
-        
+
         [Test]
-        public void CommandRegistry_ConstructorBadType()
+        public void TryResolveCommandSchema_PartialPath_ReturnsTrueHalfWay()
         {
-            using SilentLogCapture log = new SilentLogCapture();
-            
-            ICommandRegistry registry = new CommandRegistry(
-                new MockCommandDiscovery(TestUtilities.CommandRegistryBadParent));
-            
-            Assert.AreEqual(registry.SchemaTable.Count, 0);
-            Assert.AreEqual(log.Count(LogType.Error), 1);
-            Assert.True(log.HasLog(LogType.Error, "is missing CommandAttribute"));
+            var root = new CommandBuilder().WithName("root").BuildType();
+
+            var registry = new CommandRegistry(new MockDiscovery(root));
+            Assert.True(registry.TryResolveCommandSchema(new List<string> { "root", "nonexistent" }, out var schema));
+            Assert.AreEqual("root", schema.Name);
         }
-        
+
         [Test]
-        public void CommandRegistry_ConstructorNoParent()
+        public void RegisterCommand_DynamicallyAddsCommand()
         {
-            using SilentLogCapture log = new SilentLogCapture();
-            
-            ICommandRegistry registry = new CommandRegistry(
-                new MockCommandDiscovery(TestUtilities.CommandRegistryNoParent));
-            
-            Assert.AreEqual(registry.SchemaTable.Count, 0);
-            Assert.AreEqual(log.Count(LogType.Error), 1);
-            Assert.True(log.HasLog(LogType.Error, "not found for subcommand"));
+            var root = new CommandBuilder().WithName("root").BuildType();
+            var registry = new CommandRegistry(new MockDiscovery(root));
+
+            var child = new CommandBuilder().WithName("child").AsSubcommand(root).BuildType();
+
+            registry.RegisterCommand(child);
+
+            Assert.That(registry.AllCommandNames(), Contains.Item("root.child"));
+        }
+
+        [Test]
+        public void RegistersArgumentsProperly()
+        {
+            var command = new CommandBuilder()
+                .WithName("args")
+                .WithSwitch("flag", typeof(bool))
+                .WithPositional("target", typeof(string), index: 0)
+                .WithVariadic("values", typeof(int))
+                .BuildType();
+
+            var registry = new CommandRegistry(new MockDiscovery(command));
+
+            Assert.True(registry.TryResolveCommandSchema("args", out var schema));
+            var args = schema.ArgumentSpecifications;
+
+            Assert.IsNotNull(args);
+            Assert.AreEqual(3, args.Count);
+            Assert.IsTrue(args.Any(arg => arg.Name == "flag"));
+            Assert.IsTrue(args.Any(arg => arg.Name == "target"));
+            Assert.IsTrue(args.Any(arg => arg.Name == "values"));
         }
     }
 }

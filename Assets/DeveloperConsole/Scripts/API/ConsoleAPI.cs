@@ -49,82 +49,81 @@ namespace DeveloperConsole
             }
         }
         
-        
         // TODO: Convert all these to use WithService helper and also check that errors but not exceptions
         // return the correct defaults.
-        
-        
-        
-        /// <summary>
-        /// Tries to get an object by checking if there is a binding, then searching for one if not.
-        /// </summary>
-        /// <param name="type">The type of object to get.</param>
-        /// <param name="name">The name to find if there isn't an object already bound. Ignored if empty.</param>
-        /// <param name="tag">The tag to find if there isn't an object already bound. Ignored if empty.</param>
-        /// <param name="obj">The bound object.</param>
-        /// <returns>True if a bound object was found in the cache or scene.</returns>
-        public static bool TryGetBinding(Type type, string name, string tag, out Object obj)
+        public static class Bindings
         {
-            obj = null;
-            if (!Kernel.IsInitialized) return false;
-            var bindingsProvider = Kernel.Instance.Get<IObjectBindingsManager>();
+             /// <summary>
+            /// Tries to get an object by checking if there is a binding, then searching for one if not.
+            /// </summary>
+            /// <param name="type">The type of object to get.</param>
+            /// <param name="name">The name to find if there isn't an object already bound. Ignored if empty.</param>
+            /// <param name="tag">The tag to find if there isn't an object already bound. Ignored if empty.</param>
+            /// <param name="obj">The bound object.</param>
+            /// <returns>True if a bound object was found in the cache or scene.</returns>
+            public static bool TryGetBinding(Type type, string name, string tag, out Object obj)
+            {
+                obj = null;
+                if (!Kernel.IsInitialized) return false;
+                var bindingsProvider = Kernel.Instance.Get<IObjectBindingsManager>();
+                
+                try
+                {
+                    var result = bindingsProvider.TryGetBinding(type, name, tag, out obj);
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    Log.Exception(e);
+                    return false;
+                }
+            }
             
-            try
-            {
-                var result = bindingsProvider.TryGetBinding(type, name, tag, out obj);
-                return result;
-            }
-            catch (Exception e)
-            {
-                Log.Exception(e);
-                return false;
-            }
-        }
-        
-        
-        /// <summary>
-        /// Binds an object for commands to reference.
-        /// </summary>
-        /// <param name="objType">The type to bind.</param>
-        /// <param name="name">The name to search for. Ignored if empty.</param>
-        /// <param name="tag">The tag to search for. Ignored if empty.</param>
-        /// <returns>The bound object or null if one wasn't found.</returns>
-        public static Object ResolveBinding(Type objType, string name, string tag)
-        {
-            if (!Kernel.IsInitialized) return null;
-            var bindingsProvider = Kernel.Instance.Get<IObjectBindingsManager>();
             
-            try
+            /// <summary>
+            /// Binds an object for commands to reference.
+            /// </summary>
+            /// <param name="objType">The type to bind.</param>
+            /// <param name="name">The name to search for. Ignored if empty.</param>
+            /// <param name="tag">The tag to search for. Ignored if empty.</param>
+            /// <returns>The bound object or null if one wasn't found.</returns>
+            public static Object ResolveBinding(Type objType, string name, string tag)
             {
-                var result = bindingsProvider.ResolveBinding(objType, name, tag);
-                return result;
+                if (!Kernel.IsInitialized) return null;
+                var bindingsProvider = Kernel.Instance.Get<IObjectBindingsManager>();
+                
+                try
+                {
+                    var result = bindingsProvider.ResolveBinding(objType, name, tag);
+                    return result;
+                }
+                catch (Exception e)
+                {
+                    Log.Exception(e);
+                    return null;
+                }
             }
-            catch (Exception e)
-            {
-                Log.Exception(e);
-                return null;
-            }
-        }
 
-        
-        /// <summary>
-        /// Gets all current bindings.
-        /// </summary>
-        /// <returns>The bindings table.</returns>
-        public static Dictionary<Type, Object> GetAllBindings()
-        {
-            if (!Kernel.IsInitialized) return null;
-            var bindingsProvider = Kernel.Instance.Get<IObjectBindingsManager>();
             
-            try
+            /// <summary>
+            /// Gets all current bindings.
+            /// </summary>
+            /// <returns>The bindings table.</returns>
+            public static Dictionary<Type, Object> GetAllBindings()
             {
-                return bindingsProvider.GetAllBindings();
-            }
-            catch (Exception e)
-            {
-                Log.Exception(e);
-                return null;
-            }
+                if (!Kernel.IsInitialized) return null;
+                var bindingsProvider = Kernel.Instance.Get<IObjectBindingsManager>();
+                
+                try
+                {
+                    return bindingsProvider.GetAllBindings();
+                }
+                catch (Exception e)
+                {
+                    Log.Exception(e);
+                    return null;
+                }
+            }   
         }
         
 
@@ -218,16 +217,16 @@ namespace DeveloperConsole
                 schema = commandSchema;
                 return success;
             }
-     
-            
+
+
             /// <summary>
-            /// Tests if there is a command with the given name.
+            /// Gets the fully qualified name for a command.
             /// </summary>
-            /// <param name="fullyQualifiedName">The name.</param>
-            /// <returns>True if there is.</returns>
-            public static bool IsValidCommand(string fullyQualifiedName)
+            /// <param name="commandType">The command type to get the name for.</param>
+            /// <returns>The fully qualified name.</returns>
+            public static string GetFullyQualifiedName(Type commandType)
             {
-                return WithService<ICommandRegistry, bool>(r => r.TryResolveCommandSchema(fullyQualifiedName, out _));
+                return WithService<ICommandRegistry, string>(r => r.GetFullyQualifiedCommandName(commandType));
             }
             
             
@@ -243,6 +242,32 @@ namespace DeveloperConsole
                     r.TryResolveCommandSchema(fullyQualifiedName, out var schema) ? schema.Description : ""
                 );
             }
+
+
+            /// <summary>
+            /// Registers a command to the kernel's registry. Only persists until the domain is reloaded.
+            /// </summary>
+            /// <typeparam name="T">The type of the command to register.</typeparam>
+            public static void RegisterCommand<T>() where T : ICommand
+            {
+                RegisterCommand(typeof(T));
+            }
+            
+            
+            /// <summary>
+            /// Registers a command to the kernel's registry. Only persists until the domain is reloaded.
+            /// </summary>
+            /// <param name="type">The type of the command to register.</param>
+            public static void RegisterCommand(Type type)
+            {
+                if (!typeof(ICommand).IsAssignableFrom(type))
+                {
+                    Log.Error($"Cannot register type {type.Name} because it is not an ICommand.");
+                    return;
+                }
+                
+                WithService<ICommandRegistry>(r => r.RegisterCommand(type));
+            }
             
             
             // TODO: No longer accurate
@@ -250,7 +275,7 @@ namespace DeveloperConsole
             /// Gets all command names.
             /// </summary>
             /// <returns>A list of all names.</returns>
-            public static List<string> GetBaseCommandNames()
+            public static List<string> GetAllCommandNames()
             {
                 return WithService<ICommandRegistry, List<string>>(r => r.AllCommandNames());
             }

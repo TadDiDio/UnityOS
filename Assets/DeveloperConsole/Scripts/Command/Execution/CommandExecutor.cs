@@ -20,8 +20,11 @@ namespace DeveloperConsole.Command
             }
             
             // 2. Build context
-            // TODO: Fill this out
+            // TODO: Finish
             var context = new CommandContext();
+            context.Session = executionRequest.Request.ShellSession;
+            context.Shell = executionRequest.Shell;
+            context.Output = executionRequest.Shell.OutputManager;
             
             // 3. Pre-execution validation
             ICommand command = resolveResult.Command;

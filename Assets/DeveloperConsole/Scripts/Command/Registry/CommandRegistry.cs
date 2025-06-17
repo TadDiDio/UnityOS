@@ -2,6 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using UnityEngine;
+using UnityEngine.Assertions.Must;
+using UnityEngine.UIElements;
 
 namespace DeveloperConsole.Command
 {
@@ -10,8 +13,10 @@ namespace DeveloperConsole.Command
     /// </summary>
     public class CommandRegistry : ICommandRegistry
     {
-        
-        public Dictionary<string, CommandSchema> SchemaTable { get; }
+        /// <summary>
+        /// Maps fully qualified command names to their schemas.
+        /// </summary>
+        public Dictionary<string, CommandSchema> SchemaTable { get; } = new();
 
         
         /// <summary>
@@ -21,79 +26,63 @@ namespace DeveloperConsole.Command
         public CommandRegistry(ICommandDiscoveryStrategy commandDiscoveryStrategy)
         {
             var commandTypes = commandDiscoveryStrategy.GetAllCommandTypes();
-            SchemaTable = BuildFullCommandTable(commandTypes);
+            
+            var lookup = commandTypes
+                .Where(t => t.GetCustomAttribute<CommandAttribute>() != null)
+                .ToLookup(t => t.GetCustomAttribute<CommandAttribute>().GetType() == typeof(CommandAttribute));
+
+            // Root commands then subcommands
+            foreach (var rootCommand in lookup[true]) RegisterType(rootCommand);
+            foreach (var subCommand in lookup[false]) RegisterType(subCommand);
         }
         
         #region SETUP
-        private Dictionary<string, CommandSchema> BuildFullCommandTable(List<Type> commandTypes)
+        private void RegisterType(Type type)
         {
-            var result = AddRootCommands(commandTypes);
-            
-            var subcommands = commandTypes
-                .Select(t => (Type: t, SubcommandAttribute: t.GetCustomAttribute<SubcommandAttribute>()))
-                .Where(t => t.SubcommandAttribute != null)
-                .ToList();
-            
-            foreach (var subcommand in subcommands)
+            if (!typeof(ICommand).IsAssignableFrom(type))
             {
-                var thisSchema = new CommandSchema
-                {
-                    Name = subcommand.SubcommandAttribute.Name,
-                    Description = subcommand.SubcommandAttribute.Description,
-                    CommandType = subcommand.Type,
-                    Subcommands = new HashSet<CommandSchema>()
-                };
+                Log.Error($"Type {type.Name} is not an ICommand and cannot be registered.");
+                return;
+            }
 
-                var parentName = DeriveParentNameFromParentType(subcommand.SubcommandAttribute.ParentCommandType);
-                if (parentName == null) continue;
-                
-                if (!result.TryGetValue(parentName, out var parentSchema))
+            var attribute = type.GetCustomAttribute<CommandAttribute>();
+            
+            var thisSchema = new CommandSchema
+            {
+                Name = attribute.Name,
+                Description = attribute.Description,
+                CommandType = type,
+                Subcommands = new HashSet<CommandSchema>()
+            };
+
+            if (attribute is SubcommandAttribute subcommand)
+            {
+                var parentName = DeriveNameFromType(subcommand.ParentCommandType);
+                if (!SchemaTable.TryGetValue(parentName, out var parentSchema))
                 {
-                    Log.Error($"Parent command '{parentName}' not found for subcommand '{subcommand.SubcommandAttribute.Name}'!");
-                    continue;
+                    Log.Error($"Parent command '{parentName}' not found for subcommand '{subcommand.Name}'!");
+                    return;
                 }
                 
                 parentSchema.Subcommands.Add(thisSchema);
                 thisSchema.ParentSchema = parentSchema;
-                
-                var fullName = $"{parentName}.{subcommand.SubcommandAttribute.Name}";
-                result.Add(fullName, thisSchema);
+                SchemaTable.Add($"{parentName}.{subcommand.Name}", thisSchema);
             }
-
-            foreach (var commandSchema in result.Select(kvp => kvp.Value))
+            else
             {
-                commandSchema.ArgumentSpecifications = ArgumentSpecification.GetAllFromType(commandSchema.CommandType);
+                SchemaTable.Add(attribute.Name, thisSchema);
             }
             
-            return result;
+            thisSchema.ArgumentSpecifications = ArgumentSpecification.GetAllFromType(type);
         }
 
-        private static Dictionary<string, CommandSchema> AddRootCommands(List<Type> commandTypes)
-        {
-            var rootCommands = commandTypes
-                .Select(t => (Type: t, CommandAttribute: t.GetCustomAttributes(typeof(CommandAttribute))
-                .FirstOrDefault(attr => attr.GetType() == typeof(CommandAttribute)) as CommandAttribute))
-                .Where(t => t.CommandAttribute != null)
-                .ToList();
-
-            return rootCommands.Select(command => new CommandSchema
-            {
-                Name = command.CommandAttribute.Name,
-                Description = command.CommandAttribute.Description,
-                CommandType = command.Type,
-                ParentSchema = null,
-                Subcommands = new HashSet<CommandSchema>()
-            })
-            .ToDictionary(schema => schema.Name);
-        }
-        
-        private static string DeriveParentNameFromParentType(Type parentType)
+        private string DeriveNameFromType(Type type)
         {
             var names = new List<string>();
             var visited = new HashSet<Type>();
 
             int depth = 0;
-            Type currentType = parentType;
+            Type currentType = type;
 
             while (currentType != null)
             {
@@ -139,8 +128,31 @@ namespace DeveloperConsole.Command
         #endregion
         
         public List<string> AllCommandNames() => SchemaTable.Keys.ToList();
+
         
-        
+        public void RegisterCommand(Type type)
+        {
+            RegisterType(type);
+        }
+
+        public string GetFullyQualifiedCommandName(Type commandType)
+        {
+            if (!typeof(ICommand).IsAssignableFrom(commandType))
+            {
+                Log.Error($"Command '{commandType.Name}' is not a command.");
+                return null;
+            }
+            
+            if (commandType.GetCustomAttribute<CommandAttribute>() == null)
+            {
+                Log.Error($"Command '{commandType.Name}' is missing a command attribute.");
+                return null;
+            }
+            
+            return DeriveNameFromType(commandType);
+        }
+
+
         public bool TryResolveCommandSchema(string fullyQualifiedName, out CommandSchema schema)
         {
             return SchemaTable.TryGetValue(fullyQualifiedName, out schema);

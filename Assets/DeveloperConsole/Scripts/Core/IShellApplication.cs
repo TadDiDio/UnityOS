@@ -1,4 +1,5 @@
 using DeveloperConsole.Command;
+using DeveloperConsole.IO;
 
 namespace DeveloperConsole.Core
 {
@@ -7,6 +8,9 @@ namespace DeveloperConsole.Core
     /// </summary>
     public interface IShellApplication : IKernelApplication
     {
+        public IInputManager InputManager { get; }
+        public IOutputManager OutputManager { get; }
+        
         /// <summary>
         /// Creates a new, unique session.
         /// </summary>

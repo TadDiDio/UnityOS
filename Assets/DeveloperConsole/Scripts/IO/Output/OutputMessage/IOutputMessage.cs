@@ -13,6 +13,6 @@ namespace DeveloperConsole.IO
         /// <summary>
         /// The session this output came from.
         /// </summary>
-        public ShellSession Session { get; }
+        public IShellSession Session { get; }
     }
 }

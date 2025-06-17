@@ -37,7 +37,7 @@ namespace DeveloperConsole.Command
         public override bool Validate(ArgumentSpecification spec)
         {
             _type = spec.FieldInfo.FieldType;
-            bool success = ConsoleAPI.TryGetBinding(_type, Name, Tag, out var obj);
+            bool success = ConsoleAPI.Bindings.TryGetBinding(_type, Name, Tag, out var obj);
 
             if (!success) return false;
 

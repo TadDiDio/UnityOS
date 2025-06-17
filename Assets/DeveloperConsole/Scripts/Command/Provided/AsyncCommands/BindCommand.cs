@@ -20,7 +20,7 @@ namespace DeveloperConsole
         
         protected override CommandOutput Execute(CommandContext context)
         {
-            var obj = ConsoleAPI.ResolveBinding(type, name, tag);
+            var obj = ConsoleAPI.Bindings.ResolveBinding(type, name, tag);
             return obj ? new CommandOutput($"Binding set:  {type}  =>  {obj}") : new CommandOutput("Binding could not be set.");
         }
     }
@@ -33,7 +33,7 @@ namespace DeveloperConsole
         
         protected override CommandOutput Execute(CommandContext context)
         {
-            var bindings = ConsoleAPI.GetAllBindings();
+            var bindings = ConsoleAPI.Bindings.GetAllBindings();
             if (bindings.Count == 0) return new CommandOutput("There are no bindings currently.");
 
             if (type == null)
@@ -60,7 +60,7 @@ namespace DeveloperConsole
         
         protected override CommandOutput Execute(CommandContext context)
         {
-            var bindings = ConsoleAPI.GetAllBindings();
+            var bindings = ConsoleAPI.Bindings.GetAllBindings();
             
             if (!bindings.Remove(type, out var obj))
             {
@@ -77,7 +77,7 @@ namespace DeveloperConsole
     {
         protected override CommandOutput Execute(CommandContext context)
         {
-            var bindings = ConsoleAPI.GetAllBindings();
+            var bindings = ConsoleAPI.Bindings.GetAllBindings();
             if (bindings == null || bindings.Count == 0) return new CommandOutput("There are no bindings currently.");
             
             bindings.Clear();

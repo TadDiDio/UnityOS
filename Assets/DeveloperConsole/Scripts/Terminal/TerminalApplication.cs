@@ -1,20 +1,27 @@
 using System;
+using DeveloperConsole.Core;
 using UnityEngine;
 using DeveloperConsole.IO;
 using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole
 {
-    public class ConsoleApplication : IWindow, IInputSource, IOutputSink
+    public class TerminalApplication : IWindow, IInputSource, IOutputSink
     {
         public event Action<IInput> InputSubmitted;
-        
-        private ConsoleState _consoleState;
 
+        private ShellSession _session;
+        
         private bool _shown;
         private int _historyIndexFromEnd;
         private string _inputBuffer = "";
         private Vector2 _scrollPosition = Vector2.zero;
+
+
+        public TerminalApplication(ShellSession session)
+        {
+            _session = session;
+        }
         
         public void Draw(Rect areaRect)
         {
@@ -29,19 +36,18 @@ namespace DeveloperConsole
             _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.ExpandHeight(true));
 
             // Print each output line
-            foreach (string line in _consoleState.OutputBuffer)
+            foreach (string line in _session.OutputBuffer)
             {
-                GUILayout.Label(line, ConsoleGUIStyle.DefaultStyle());
+                GUILayout.Label(line, TerminalGUIStyle.DefaultStyle());
             }
 
             // Input field inline with output
             GUILayout.BeginHorizontal();
             
-            GUILayout.Label(">", ConsoleGUIStyle.Prompt(), GUILayout.ExpandWidth(false));
+            GUILayout.Label("> ", TerminalGUIStyle.Prompt(), GUILayout.ExpandWidth(false));
             GUI.SetNextControlName("TerminalInputField");
-            _inputBuffer = GUILayout.TextField(_inputBuffer, ConsoleGUIStyle.InputField());
+            _inputBuffer = GUILayout.TextField(_inputBuffer, TerminalGUIStyle.InputField());
             
-            //if (_needsFocus) 
             GUI.FocusControl("TerminalInputField");
             
             GUILayout.EndHorizontal();
@@ -59,8 +65,8 @@ namespace DeveloperConsole
 
             if (current.keyCode == KeyCode.UpArrow)
             {
-                _historyIndexFromEnd = Mathf.Min(_consoleState.CommandHistory.Count, _historyIndexFromEnd + 1);
-                if (_consoleState.TryGetHistory(_historyIndexFromEnd, out string history))
+                _historyIndexFromEnd = Mathf.Min(_session.CommandHistory.Count, _historyIndexFromEnd + 1);
+                if (_session.TryGetHistory(_historyIndexFromEnd, out string history))
                 {
                     _inputBuffer = history;
                 }
@@ -71,7 +77,7 @@ namespace DeveloperConsole
                 if (_historyIndexFromEnd == 0) return;
                 
                 _historyIndexFromEnd = Mathf.Max(1, _historyIndexFromEnd - 1);
-                if (_consoleState.TryGetHistory(_historyIndexFromEnd, out string history))
+                if (_session.TryGetHistory(_historyIndexFromEnd, out string history))
                 {
                     _inputBuffer = history;
                 }
@@ -79,8 +85,8 @@ namespace DeveloperConsole
             }
             else if (current.keyCode is KeyCode.Return or KeyCode.KeypadEnter) 
             {
-                InputSubmitted?.Invoke(new TextInput(default, _inputBuffer));
-                if (!string.IsNullOrEmpty(_inputBuffer)) _consoleState.AddCommandHistory(_inputBuffer);
+                InputSubmitted?.Invoke(new TextInput(_session, _inputBuffer));
+                if (!string.IsNullOrEmpty(_inputBuffer)) _session.AddCommandHistory(_inputBuffer);
                 _inputBuffer = "";
                 _historyIndexFromEnd = 0;
                 current.Use();
@@ -89,17 +95,25 @@ namespace DeveloperConsole
 
         public void OnShow()
         {
-            throw new NotImplementedException();
+            _shown = true;
         }
 
         public void OnHide()
         {
-            throw new NotImplementedException();
+            _shown = false;
         }
 
         public void ReceiveOutput(IOutputMessage message)
         {
-            throw new NotImplementedException();
+            string strMessage = message switch
+            {
+                ShellOutputMessage output => output.CommandOutput.Message,
+                SimpleOutputMessage output => output.Message,
+                InputMirrorMessage output => $"{output.Prompt} {output.Message}",
+                _ => "<empty message>"
+            };
+            
+            _session.AddOutput(strMessage);
         }
     }
 }

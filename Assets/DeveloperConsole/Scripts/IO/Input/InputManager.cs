@@ -13,6 +13,13 @@ namespace DeveloperConsole.IO
         public List<IInputSource> InputSources { get; } = new();
         public Action<CommandRequest> OnCommandInput { get; set; }
 
+        private IOutputManager _outputManager;
+        
+        public InputManager(IOutputManager outputManager)
+        {
+            _outputManager = outputManager;
+        }
+        
         public void RegisterInputSource(IInputSource inputSource)
         {
             if (InputSources.Contains(inputSource)) return;
@@ -40,7 +47,7 @@ namespace DeveloperConsole.IO
             }
             
             // If a session is waiting for input, send it if it is text, otherwise ignore it.
-            if (session.WaitingForInput())
+            if (session.WaitingForInput)
             {
                 if (input is TextInput textInput)
                 {
@@ -48,7 +55,7 @@ namespace DeveloperConsole.IO
                 }
                 else
                 {
-                    // TODO: May need to tweak this to be supressable
+                    // TODO: May need to tweak this to be suppressable
                     Log.Warning($"Ignored input of type {input.GetType().Name} while waiting for text input.");
                 }
                 return;
@@ -57,6 +64,15 @@ namespace DeveloperConsole.IO
             var commandRequest = input.GetCommandRequest();
             if (commandRequest != null)
             {
+                if (input is TextInput textInput)
+                {
+                    _outputManager.Emit(new InputMirrorMessage(
+                        session,
+                        session.CurrentPrompt,
+                        textInput.Input)
+                    );
+                }
+                
                 OnCommandInput?.Invoke(commandRequest);
             }
             else

@@ -26,18 +26,15 @@ namespace DeveloperConsole.Command
         /// </summary>
         public Status Status;
         
-        
         /// <summary>
         /// An error message if there was one.
         /// </summary>
         public string ErrorMessage;
         
-        
         /// <summary>
         /// The output from the command.
         /// </summary>
         public CommandOutput CommandOutput;
-
         
         /// <summary>
         /// Creates a failed result.

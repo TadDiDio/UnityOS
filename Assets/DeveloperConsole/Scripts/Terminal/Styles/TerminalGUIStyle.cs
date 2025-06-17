@@ -3,7 +3,7 @@ using UnityEngine;
 namespace DeveloperConsole
 {
     // TODO: Move some of this to user configs
-    public static class ConsoleGUIStyle
+    public static class TerminalGUIStyle
     {
         private static GUIStyle _default;
         private static GUIStyle _prompt;

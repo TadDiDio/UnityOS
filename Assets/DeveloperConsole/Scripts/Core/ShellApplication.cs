@@ -10,28 +10,28 @@ namespace DeveloperConsole.Core
     public sealed class ShellApplication : IShellApplication
     {
         private ICommandExecutor _executor;
-        private IInputManager _inputManager;
-        private IOutputManager _outputManager;
-        
+        public IInputManager InputManager { get; }
+        public IOutputManager OutputManager { get; }
         
         /// <summary>
         /// Creates a new shell application.
         /// </summary>
         /// <param name="executor">The command executor.</param>
-        /// <param name="inputManager">The input maanger.</param>
+        /// <param name="inputManager">The input manager.</param>
         /// <param name="outputManager">The output manager.</param>
         public ShellApplication(ICommandExecutor executor, IInputManager inputManager, IOutputManager outputManager)
         {
             _executor = executor;
-            _inputManager = inputManager;
-            _outputManager = outputManager;
-            _inputManager.OnCommandInput += HandleCommandRequestAsync;
+            InputManager = inputManager;
+            OutputManager = outputManager;
+            InputManager.OnCommandInput += HandleCommandRequestAsync;
         }
         
-        // TODO: 
+        
+        // TODO:
         public ShellSession CreateSession()
         {
-            return null;
+            return new ShellSession();
         }
 
         
@@ -43,27 +43,34 @@ namespace DeveloperConsole.Core
                 CommandExecutionRequest executionRequest = new()
                 {
                     Request = request,
-                    Output = _outputManager,
+                    Shell = this,
                 };
                 
                 var executionResult = await _executor.ExecuteCommand(executionRequest);
                 
-                // 2. Output
+                // 2. Output result
                 IOutputMessage output;
                 if (executionResult.Status is not Status.Success)
                 {
-                    output = new SimpleOutputMessage(request.ShellSession, executionResult.ErrorMessage);
+                    output = string.IsNullOrWhiteSpace(executionResult.ErrorMessage) ?
+                        null :
+                        new SimpleOutputMessage(request.ShellSession, executionResult.ErrorMessage);
                 }
                 else
                 {
-                    output = new ShellOutputMessage
+                    output = string.IsNullOrWhiteSpace(executionResult.CommandOutput.Message) ?
+                    null :
+                    new ShellOutputMessage
                     (
                         request.ShellSession,
                         executionResult.CommandOutput
                     );
                 }
-                
-                _outputManager.Emit(output);
+
+                if (output is not null)
+                {
+                    OutputManager.Emit(output);
+                }
             }
             catch (Exception e)
             {
@@ -75,7 +82,7 @@ namespace DeveloperConsole.Core
 
         public void Dispose()
         {
-            _inputManager.OnCommandInput -= HandleCommandRequestAsync;
+            InputManager.OnCommandInput -= HandleCommandRequestAsync;
         }
     }
 }

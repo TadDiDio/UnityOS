@@ -16,7 +16,7 @@ namespace DeveloperConsole
     public static class KernelBootstrapper
     {
         private static bool _commonElementsInitialized;
-        private static RuntimeDependenciesFactory _configurationOverride;
+        private static DependenciesFactory _configurationOverride;
         
         #region AUTO BOOTSTRAP
 #if UNITY_EDITOR
@@ -83,7 +83,7 @@ namespace DeveloperConsole
         /// Sets an override configuration to inject custom dependencies.
         /// </summary>
         /// <param name="config"></param>
-        public static void SetConfigurationOverride(RuntimeDependenciesFactory config)
+        public static void SetConfigurationOverride(DependenciesFactory config)
         {
             _configurationOverride = config;
         }
@@ -92,15 +92,15 @@ namespace DeveloperConsole
         {
             if (_commonElementsInitialized) return;
             
-            RuntimeDependenciesFactory config = GetConfiguration();
+            DependenciesFactory config = GetConfiguration();
             Kernel.Initialize(() => new Kernel(config));
             
             _commonElementsInitialized = true;
         }
         
-        private static RuntimeDependenciesFactory GetConfiguration()
+        private static DependenciesFactory GetConfiguration()
         {
-            return _configurationOverride ?? new RuntimeDependenciesFactory();
+            return _configurationOverride ?? new DependenciesFactory();
         }
     }
 }

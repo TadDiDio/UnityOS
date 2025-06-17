@@ -1,4 +1,4 @@
-using DeveloperConsole.IO;
+using DeveloperConsole.Core;
 
 namespace DeveloperConsole.Command
 {
@@ -13,8 +13,8 @@ namespace DeveloperConsole.Command
         public CommandRequest Request;
         
         /// <summary>
-        /// An output manager for sending output.
+        /// The execution shell.
         /// </summary>
-        public IOutputManager Output;
+        public ShellApplication Shell;
     }
 }

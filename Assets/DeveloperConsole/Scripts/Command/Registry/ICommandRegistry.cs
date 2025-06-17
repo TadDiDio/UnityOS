@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace DeveloperConsole.Command
@@ -36,5 +37,20 @@ namespace DeveloperConsole.Command
         /// <param name="schema">The output command schema.</param>
         /// <returns>True if a match was found for the given tokens.</returns>
         public bool TryResolveCommandSchema(List<string> tokens, out CommandSchema schema);
+
+
+        /// <summary>
+        /// Registers a command to the kernel's registry. Only persists until the domain is reloaded.
+        /// </summary>
+        /// <param name="type">The type of the command to register. Must inherit from ICommand.</param>
+        public void RegisterCommand(Type type);
+
+        
+        /// <summary>
+        /// Gets the fully qualified name for a command.
+        /// </summary>
+        /// <param name="commandType">The command type to get the name of.</param>
+        /// <returns>The fully qualified name.</returns>
+        public string GetFullyQualifiedCommandName(Type commandType);
     }
 }

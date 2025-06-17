@@ -12,7 +12,7 @@ namespace DeveloperConsole.Command
         /// </summary>
         /// <param name="session">The session executing this command.</param>
         /// <returns>The result.</returns>
-        public CommandResolutionResult Resolve(ShellSession session);
+        public CommandResolutionResult Resolve(IShellSession session);
     }
 
     

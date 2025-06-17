@@ -2,8 +2,10 @@ using System;
 using UnityEngine;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Linq;
 using DeveloperConsole.Bindings;
 using DeveloperConsole.Command;
+using DeveloperConsole.IO;
 using DeveloperConsole.Parsing;
 using DeveloperConsole.Windowing;
 
@@ -16,7 +18,7 @@ namespace DeveloperConsole.Core
     /// </summary>
     public class Kernel : Singleton<Kernel>, IDisposable
     {
-        private ConsoleRuntimeDependencies _dependencies;
+        private DependenciesContainer _dependencies;
         private List<IKernelApplication> _applications = new();
         private readonly Dictionary<Type, object> _proxies = new();
         private readonly Dictionary<Type, object> _serviceMap = new();
@@ -26,20 +28,40 @@ namespace DeveloperConsole.Core
         /// Creates a new kernel.
         /// </summary>
         /// <param name="config">The injected dependency container.</param>
-        public Kernel(RuntimeDependenciesFactory config)
+        public Kernel(DependenciesFactory config)
         {
             _dependencies = config.Create();
             
-            if (!_serviceMap.TryAdd(typeof(IWindowManager), _dependencies.WindowManager) ||
-                !_serviceMap.TryAdd(typeof(ITypeParserRegistryProvider), _dependencies.TypeParserRegistry) ||
-                !_serviceMap.TryAdd(typeof(ICommandRegistry), _dependencies.CommandRegistry) ||
-                !_serviceMap.TryAdd(typeof(IParser), _dependencies.Parser) ||
-                !_serviceMap.TryAdd(typeof(IObjectBindingsManager), _dependencies.ObjectBindingsManager))
+            RegisterCoreServices(_dependencies);
+            RegisterCoreApplications(_dependencies);
+        }
+
+        private void RegisterCoreServices(DependenciesContainer dependencies)
+        {
+            TryAddService(typeof(IShellApplication), dependencies.Shell);
+            TryAddService(typeof(IInputManager), dependencies.InputManager);
+            TryAddService(typeof(IOutputManager), dependencies.OutputManager);
+            TryAddService(typeof(ICommandExecutor), dependencies.CommandExecutor);
+            TryAddService(typeof(ICommandRegistry), dependencies.CommandRegistry);
+            TryAddService(typeof(ITypeParserRegistryProvider), dependencies.TypeParserRegistry);
+            TryAddService(typeof(IParser), dependencies.Parser);
+            TryAddService(typeof(IObjectBindingsManager), dependencies.ObjectBindingsManager);
+            TryAddService(typeof(IWindowManager), dependencies.WindowManager);
+        }
+
+        private void TryAddService(Type type, object service)
+        {
+            if (!_serviceMap.TryAdd(type, service))
             {
-                Log.Warning("Service already existed and will not be replaced.");
+                Log.Warning($"Service for {type.Name} already existed and will not be replaced.");
             }
         }
         
+        private void RegisterCoreApplications(DependenciesContainer dependencies)
+        {
+            // TODO: Will probably include window manager here.
+            RegisterApplication(dependencies.Shell);
+        }
         
         /// <summary>
         /// Registers an application for consistent ticking.
@@ -49,7 +71,7 @@ namespace DeveloperConsole.Core
         {
             if (_applications.Contains(kernelApplication))
             {
-                // TODO: Console error
+                Log.Error($"Attempted to register a duplicate kernel application: {kernelApplication.GetType().Name}");
                 return; 
             }
             _applications.Add(kernelApplication);
@@ -62,11 +84,6 @@ namespace DeveloperConsole.Core
         /// <param name="kernelApplication">The application.</param>
         public void UnregisterApplication(IKernelApplication kernelApplication)
         {
-            if (!_applications.Contains(kernelApplication))
-            {
-                // TODO: Console error
-                return; 
-            }
             _applications.Remove(kernelApplication);
         }
 
@@ -147,6 +164,7 @@ namespace DeveloperConsole.Core
         /// </summary>
         public void Dispose()
         {
+            foreach (var application in _applications.ToList()) UnregisterApplication(application);
             foreach (var application in _applications) application.Dispose();
             _dependencies = null;
             _proxies.Clear();

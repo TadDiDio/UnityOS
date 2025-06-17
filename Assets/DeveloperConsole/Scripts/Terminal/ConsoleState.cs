@@ -5,6 +5,7 @@ using DeveloperConsole.Persistence;
 namespace DeveloperConsole
 {
     [Serializable]
+    // TODO: This will simply become a struct for file IO, all actual session state is migrating to ShellSession
     public class ConsoleState
     {
         public List<string> OutputBuffer = new();

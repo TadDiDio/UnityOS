@@ -8,7 +8,7 @@ namespace DeveloperConsole.IO
     /// </summary>
     public class ShellOutputMessage : IOutputMessage
     {
-        public ShellSession Session { get; }
+        public IShellSession Session { get; }
         
         
         /// <summary>
@@ -22,7 +22,7 @@ namespace DeveloperConsole.IO
         /// </summary>
         /// <param name="session">The session this output came from.</param>
         /// <param name="commandOutput">The output of the executed command.</param>
-        public ShellOutputMessage(ShellSession session, CommandOutput commandOutput)
+        public ShellOutputMessage(IShellSession session, CommandOutput commandOutput)
         {
             Session = session;
             CommandOutput = commandOutput;

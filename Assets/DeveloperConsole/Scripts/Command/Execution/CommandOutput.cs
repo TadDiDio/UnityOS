@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+
 namespace DeveloperConsole.Command
 {
     /// <summary>
@@ -28,6 +31,13 @@ namespace DeveloperConsole.Command
         /// </summary>
         /// <param name="message">The message</param>
         public CommandOutput(string message) => Message = message;
+        
+        
+        /// <summary>
+        /// Creates an output message with each line on a new line.
+        /// </summary>
+        /// <param name="lines">The lines.</param>
+        public CommandOutput(List<string> lines) => Message = string.Join(Environment.NewLine, lines);
     }
 
     /// <summary>

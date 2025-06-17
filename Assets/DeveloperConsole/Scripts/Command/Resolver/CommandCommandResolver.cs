@@ -18,6 +18,6 @@ namespace DeveloperConsole.Command
             _command = command;
         }
         
-        public CommandResolutionResult Resolve(ShellSession session) => CommandResolutionResult.Success(_command);
+        public CommandResolutionResult Resolve(IShellSession session) => CommandResolutionResult.Success(_command);
     }
 }

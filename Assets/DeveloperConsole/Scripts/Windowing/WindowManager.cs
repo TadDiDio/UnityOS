@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using DeveloperConsole.Core;
 using UnityEngine;
 
 namespace DeveloperConsole.Windowing
 {
+    // TODO: This class will need major refactoring. For now it just spawns a terminal.
     /// <summary>
     /// Manages and updates windows.
     /// </summary>
@@ -11,7 +13,20 @@ namespace DeveloperConsole.Windowing
         private List<IWindow> _windows = new();
         
         private bool _visible;
-        private bool _wasVisiable;
+        private bool _wasVisible;
+
+        private IShellApplication _shell;
+        
+        public WindowManager(IShellApplication shell)
+        {
+            _shell = shell;
+
+            var terminal = new TerminalApplication(shell.CreateSession());
+            _shell.InputManager.RegisterInputSource(terminal);
+            _shell.OutputManager.RegisterOutputSink(terminal);
+            
+            RegisterWindow(terminal);
+        }
         
         public void RegisterWindow(IWindow window)
         {
@@ -38,20 +53,20 @@ namespace DeveloperConsole.Windowing
                 Event.current.Use();
                 return;
             }
-            
+
             foreach (var window in _windows) window.OnInput(Event.current);
         }
         
         
         public void OnGUI(Rect fullScreen)
         {
-            if (_visible != _wasVisiable)
+            if (_visible != _wasVisible)
             {
                 if (_visible) foreach (var window in _windows) window.OnShow();
                 else foreach (var window in _windows) window.OnHide();
             }
             
-            _wasVisiable = _visible;
+            _wasVisible = _visible;
             if (!_visible) return;
             
             fullScreen = new Rect(fullScreen.x, fullScreen.y, fullScreen.width * 0.9f, fullScreen.height);
