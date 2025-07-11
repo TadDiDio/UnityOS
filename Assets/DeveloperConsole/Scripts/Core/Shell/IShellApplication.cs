@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core.Kernel;
 using DeveloperConsole.IO;
@@ -9,20 +12,28 @@ namespace DeveloperConsole.Core.Shell
     /// </summary>
     public interface IShellApplication : IKernelApplication
     {
-        public IInputManager InputManager { get; }
-        public IOutputManager OutputManager { get; }
-        
         /// <summary>
-        /// Creates a new, unique session.
+        /// Creates a new shell session.
         /// </summary>
-        /// <returns>The session.</returns>
-        public ShellSession CreateSession();
-        
-        
+        /// <param name="client">The client attached to this session.</param>
+        /// <param name="extraInputs">Any input channels in addition to the client.</param>
+        /// <param name="extraOutputs">Any output channels in addition to the client.</param>
+        /// <returns>The session id.</returns>
+        public Guid CreateSession(IShellClient client, List<IInputChannel> extraInputs = null, List<IOutputChannel> extraOutputs = null);
+
+
         /// <summary>
         /// Handles a command request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public void HandleCommandRequestAsync(CommandRequest request);
+        public Task<CommandExecutionResult> HandleCommandRequestAsync(ShellRequest request);
+
+
+        /// <summary>
+        /// Gets the session matching the id.
+        /// </summary>
+        /// <param name="sessionId">The id.</param>
+        /// <returns>The session.</returns>
+        public ShellSession GetSession(Guid sessionId);
     }
 }

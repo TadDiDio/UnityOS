@@ -10,31 +10,29 @@ namespace DeveloperConsole.Command
     /// </summary>
     public class CommandExecutor : ICommandExecutor
     {
-        public async Task<CommandExecutionResult> ExecuteCommand(CommandExecutionRequest executionRequest)
+        public async Task<CommandExecutionResult> ExecuteCommand(CommandExecutionRequest request)
         {
             // 1. Resolve
-            CommandRequest request = executionRequest.Request;
-            var resolveResult = request.CommandResolver.Resolve(request.ShellSession);
-            if (resolveResult.Status is not Status.Success)
+            var resolution = request.Input.GetResolver().Resolve(request.ShellSession);
+            if (resolution.Status is not Status.Success)
             {
-                return CommandExecutionResult.Fail(resolveResult.ErrorMessage);
+                return CommandExecutionResult.Fail(resolution.ErrorMessage);
             }
-            
+
             // 2. Build context
             var context = new CommandContext
             {
-                Session = executionRequest.Request.ShellSession,
-                Shell = executionRequest.Shell,
-                Output = executionRequest.Shell.OutputManager
+                Shell = request.Shell,
+                Session = request.ShellSession
             };
 #if UNITY_EDITOR
             context.Environment = Application.isPlaying ? UnityEnvironment.PlayMode : UnityEnvironment.EditMode;
 #else
             context.Environment = UnityEnvironment.BuildMode;
 #endif
-            
+
             // 3. Pre-execution validation
-            ICommand command = resolveResult.Command;
+            ICommand command = resolution.Command;
             var validators = command.GetType().GetCustomAttributes<PreExecutionValidatorAttribute>();
 
             foreach (var validator in validators)
@@ -42,10 +40,10 @@ namespace DeveloperConsole.Command
                 if (await validator.Validate(context)) continue;
                 return CommandExecutionResult.Fail(validator.OnValidationFailedMessage());
             }
-            
+
             // 4. Register any unique type parsers
             command.RegisterTypeParsers();
-            
+
             // 5. Execute
             try
             {
@@ -56,7 +54,7 @@ namespace DeveloperConsole.Command
             {
                 string commandName = command.GetType().Name;
                 string message = $"Command '{commandName}' threw an exception during execution: {e.Message}";
-                
+
                 return CommandExecutionResult.Fail(message);
             }
         }

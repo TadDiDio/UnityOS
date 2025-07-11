@@ -1,17 +1,17 @@
 namespace DeveloperConsole.Command
 {
-    public class RequiredAttribute : ValidatedAttribute
+    public class RequiredAttribute : ArgumentAttribute, IValidatedAttribute
     {
         private string _name;
         private bool _wasSet;
-        
-        public override bool Validate(ArgumentSpecification spec)
+
+        public bool Validate(ArgumentSpecification spec)
         {
             _name = spec?.Name;
             return _wasSet;
         }
 
-        public override void Record(RecordingContext context) => _wasSet = true;
-        public override string ErrorMessage() => $"Argument '{_name ?? "unknown"}' must be explicitly set.";
+        public void Record(RecordingContext context) => _wasSet = true;
+        public string ErrorMessage() => $"Argument '{_name ?? "unknown"}' must be explicitly set.";
     }
 }

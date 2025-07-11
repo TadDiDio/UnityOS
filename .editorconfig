@@ -1,0 +1,102 @@
+﻿# Top-most EditorConfig file
+root = true
+
+[*.cs]
+# Basic formatting settings
+indent_style = space
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+max_line_length = 120
+
+# Naming conventions
+
+# Interfaces should be prefixed with 'I' and use PascalCase
+dotnet_naming_rule.interfaces_should_be_prefixed_with_I.severity = warning
+dotnet_naming_rule.interfaces_should_be_prefixed_with_I.symbols = interface_symbols
+dotnet_naming_rule.interfaces_should_be_prefixed_with_I.style = interface_style
+
+dotnet_naming_symbols.interface_symbols.applicable_kinds = interface
+dotnet_naming_symbols.interface_symbols.applicable_accessibilities = *
+dotnet_naming_symbols.interface_symbols.required_modifiers =
+
+dotnet_naming_style.interface_style.capitalization = pascal_case
+dotnet_naming_style.interface_style.required_prefix = I
+dotnet_naming_style.interface_style.required_suffix =
+
+# Classes, structs, enums, and delegates should use PascalCase
+dotnet_naming_rule.types_should_use_pascal_case.severity = warning
+dotnet_naming_rule.types_should_use_pascal_case.symbols = type_symbols
+dotnet_naming_rule.types_should_use_pascal_case.style = pascal_case_style
+
+dotnet_naming_symbols.type_symbols.applicable_kinds = class, struct, enum, delegate
+dotnet_naming_symbols.type_symbols.applicable_accessibilities = *
+dotnet_naming_symbols.type_symbols.required_modifiers =
+
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+dotnet_naming_style.pascal_case_style.required_prefix =
+dotnet_naming_style.pascal_case_style.required_suffix =
+
+# Methods should use PascalCase
+dotnet_naming_rule.methods_should_use_pascal_case.severity = warning
+dotnet_naming_rule.methods_should_use_pascal_case.symbols = method_symbols
+dotnet_naming_rule.methods_should_use_pascal_case.style = pascal_case_style
+
+dotnet_naming_symbols.method_symbols.applicable_kinds = method
+dotnet_naming_symbols.method_symbols.applicable_accessibilities = *
+dotnet_naming_symbols.method_symbols.required_modifiers =
+
+# Properties should use PascalCase
+dotnet_naming_rule.properties_should_use_pascal_case.severity = warning
+dotnet_naming_rule.properties_should_use_pascal_case.symbols = property_symbols
+dotnet_naming_rule.properties_should_use_pascal_case.style = pascal_case_style
+
+dotnet_naming_symbols.property_symbols.applicable_kinds = property
+dotnet_naming_symbols.property_symbols.applicable_accessibilities = *
+dotnet_naming_symbols.property_symbols.required_modifiers =
+
+# Events should use PascalCase
+dotnet_naming_rule.events_should_use_pascal_case.severity = warning
+dotnet_naming_rule.events_should_use_pascal_case.symbols = event_symbols
+dotnet_naming_rule.events_should_use_pascal_case.style = pascal_case_style
+
+dotnet_naming_symbols.event_symbols.applicable_kinds = event
+dotnet_naming_symbols.event_symbols.applicable_accessibilities = *
+dotnet_naming_symbols.event_symbols.required_modifiers =
+
+# Constants should use PascalCase
+dotnet_naming_rule.constants_should_use_pascal_case.severity = warning
+dotnet_naming_rule.constants_should_use_pascal_case.symbols = constant_symbols
+dotnet_naming_rule.constants_should_use_pascal_case.style = pascal_case_style
+
+dotnet_naming_symbols.constant_symbols.applicable_kinds = field
+dotnet_naming_symbols.constant_symbols.applicable_accessibilities = *
+dotnet_naming_symbols.constant_symbols.required_modifiers = const
+
+# Private fields should use _camelCase
+dotnet_naming_rule.private_fields_should_use_camel_case_with_underscore.severity = warning
+dotnet_naming_rule.private_fields_should_use_camel_case_with_underscore.symbols = private_field_symbols
+dotnet_naming_rule.private_fields_should_use_camel_case_with_underscore.style = camel_case_with_underscore_style
+
+dotnet_naming_symbols.private_field_symbols.applicable_kinds = field
+dotnet_naming_symbols.private_field_symbols.applicable_accessibilities = private
+dotnet_naming_symbols.private_field_symbols.required_modifiers =
+
+dotnet_naming_style.camel_case_with_underscore_style.capitalization = camel_case
+dotnet_naming_style.camel_case_with_underscore_style.required_prefix = _
+dotnet_naming_style.camel_case_with_underscore_style.required_suffix =
+# Parameters should use camelCase
+dotnet_naming_rule.parameters_should_use_camel_case.severity = warning
+dotnet_naming_rule.parameters_should_use_camel_case.symbols = parameter_symbols
+dotnet_naming_rule.parameters_should_use_camel_case.style = camel_case_style
+
+dotnet_naming_symbols.parameter_symbols.applicable_kinds = parameter
+dotnet_naming_symbols.parameter_symbols.applicable_accessibilities = *
+dotnet_naming_symbols.parameter_symbols.required_modifiers =
+
+dotnet_naming_style.camel_case_style.capitalization = camel_case
+dotnet_naming_style.camel_case_style.required_prefix =
+dotnet_naming_style.camel_case_style.required_suffix =
+

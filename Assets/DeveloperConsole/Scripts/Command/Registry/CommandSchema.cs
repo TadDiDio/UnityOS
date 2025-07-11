@@ -14,33 +14,33 @@ namespace DeveloperConsole.Command
         /// The command name.
         /// </summary>
         public string Name;
-        
+
         /// <summary>
         /// The command description.
         /// </summary>
         public string Description;
-        
+
         /// <summary>
         /// The command type.
         /// </summary>
         public Type CommandType;
-        
+
         /// <summary>
         /// The parent of this command if it has one.
         /// </summary>
         public CommandSchema ParentSchema;
-        
+
         /// <summary>
         /// A set of all subcommands.
         /// </summary>
         public HashSet<CommandSchema> Subcommands;
-        
+
         /// <summary>
         /// A set of all args this command takes.
         /// </summary>
         public HashSet<ArgumentSpecification> ArgumentSpecifications;
     }
-    
+
 
     /// <summary>
     /// Defines how a command parameter will behave.
@@ -51,22 +51,17 @@ namespace DeveloperConsole.Command
         /// The name of the arg.
         /// </summary>
         public readonly string Name;
-        
+
         /// <summary>
         /// The description of the arg.
         /// </summary>
         public string Description;
 
         /// <summary>
-        /// The default value of this argument.
-        /// </summary>
-        public object DefaultValue;
-        
-        /// <summary>
         /// The field representing this arg.
         /// </summary>
         public readonly FieldInfo FieldInfo;
-        
+
         /// <summary>
         /// A list of all attributes on this argument.
         /// </summary>
@@ -80,23 +75,13 @@ namespace DeveloperConsole.Command
         public ArgumentSpecification(FieldInfo fieldInfo)
         {
             Attributes = fieldInfo.GetCustomAttributes<ArgumentAttribute>().ToList();
-            var info = Attributes.OfType<InformativeAttribute>().FirstOrDefault();
-            
+            var declaration = Attributes.OfType<ArgumentDeclarationAttribute>().FirstOrDefault();
+
             FieldInfo = fieldInfo;
-            Name = info?.Name ?? fieldInfo.Name;
-            Description = info?.Description ?? "Missing description.";
+            Name = declaration?.Name ?? fieldInfo.Name;
+            Description = declaration?.Description ?? "Missing description.";
         }
 
-        
-        /// <summary>
-        /// Sets the default value of this argument.
-        /// </summary>
-        /// <param name="defaultValue">The value.</param>
-        public void SetDefault(object defaultValue)
-        {
-            
-        }
-        
         /// <summary>
         /// Gets all argument specifications from a type.
         /// </summary>
@@ -106,8 +91,8 @@ namespace DeveloperConsole.Command
         {
             return GetAllFromType(typeof(T));
         }
-        
-        
+
+
         /// <summary>
         /// Gets all argument specifications from a type.
         /// </summary>
@@ -119,7 +104,7 @@ namespace DeveloperConsole.Command
             var allFields = type.GetFields(flags);
 
             HashSet<ArgumentSpecification> specs = new();
-            
+
             foreach (var field in allFields)
             {
                 var attributes = field.GetCustomAttributes<ArgumentAttribute>().ToList();
@@ -127,7 +112,7 @@ namespace DeveloperConsole.Command
 
                 specs.Add(new ArgumentSpecification(field));
             }
-            
+
             return specs;
         }
     }

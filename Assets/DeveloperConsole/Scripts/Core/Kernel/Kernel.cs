@@ -6,14 +6,13 @@ using System.Linq;
 using DeveloperConsole.Bindings;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core.Shell;
-using DeveloperConsole.IO;
 using DeveloperConsole.Parsing;
 using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole.Core.Kernel
 {
     // TODO: Make this not a singleton, inject it only where classes need it, everything else goes through the API.
-    
+
     /// <summary>
     /// The kernel and center of the entire system. Handles distributing ticks, inputs, and draw calls.
     /// </summary>
@@ -24,7 +23,7 @@ namespace DeveloperConsole.Core.Kernel
         private readonly Dictionary<Type, object> _proxies = new();
         private readonly Dictionary<Type, object> _serviceMap = new();
 
-        
+
         /// <summary>
         /// Creates a new kernel.
         /// </summary>
@@ -32,7 +31,7 @@ namespace DeveloperConsole.Core.Kernel
         public Kernel(DependenciesFactory config)
         {
             _dependencies = config.Create();
-            
+
             RegisterCoreServices(_dependencies);
             RegisterCoreApplications(_dependencies);
         }
@@ -40,8 +39,6 @@ namespace DeveloperConsole.Core.Kernel
         private void RegisterCoreServices(DependenciesContainer dependencies)
         {
             TryAddService(typeof(IShellApplication), dependencies.Shell);
-            TryAddService(typeof(IInputManager), dependencies.InputManager);
-            TryAddService(typeof(IOutputManager), dependencies.OutputManager);
             TryAddService(typeof(ICommandExecutor), dependencies.CommandExecutor);
             TryAddService(typeof(ICommandRegistry), dependencies.CommandRegistry);
             TryAddService(typeof(ITypeParserRegistryProvider), dependencies.TypeParserRegistry);
@@ -57,13 +54,19 @@ namespace DeveloperConsole.Core.Kernel
                 Log.Warning($"Service for {type.Name} already existed and will not be replaced.");
             }
         }
-        
+
         private void RegisterCoreApplications(DependenciesContainer dependencies)
         {
             // TODO: Will probably include window manager here.
             RegisterApplication(dependencies.Shell);
+
+            // TODO: Instantiate terminal and other clients in a better spot. Make sure that its done
+            // after kernel constructor completes so Kernel.IsInitialized is true for external use
+            var terminal = new TerminalClient();
+            _dependencies.Shell.CreateSession(terminal);
+            _dependencies.WindowManager.RegisterWindow(terminal);
         }
-        
+
         /// <summary>
         /// Registers an application for consistent ticking.
         /// </summary>
@@ -73,12 +76,12 @@ namespace DeveloperConsole.Core.Kernel
             if (_applications.Contains(kernelApplication))
             {
                 Log.Error($"Attempted to register a duplicate kernel application: {kernelApplication.GetType().Name}");
-                return; 
+                return;
             }
             _applications.Add(kernelApplication);
         }
-        
-        
+
+
         /// <summary>
         /// Removes an application from being consistently ticked.
         /// </summary>
@@ -88,7 +91,7 @@ namespace DeveloperConsole.Core.Kernel
             _applications.Remove(kernelApplication);
         }
 
-        
+
         // Client-facing: wraps services in dynamically created interfaces to avoid reference caching problems.
         // This ensures that when the kernel dies, so do all its systems even if clients cache references.
         /// <summary>
@@ -125,16 +128,16 @@ namespace DeveloperConsole.Core.Kernel
             return null;
         }
 
-        
+
         /// <summary>
-        /// Makes the kernel tick all applications. 
+        /// Makes the kernel tick all applications.
         /// </summary>
         public void Tick()
         {
             foreach (var application in _applications) application.Tick();
         }
 
-        
+
         /// <summary>
         /// Makes the kernel distribute an input event.
         /// </summary>
@@ -144,8 +147,8 @@ namespace DeveloperConsole.Core.Kernel
             // TODO: Send this only to input consumers
             _dependencies.WindowManager.OnInput(current);
         }
-        
-        
+
+
         /// <summary>
         /// Makes the kernel distribute a draw call.
         /// </summary>
@@ -158,8 +161,8 @@ namespace DeveloperConsole.Core.Kernel
             Rect screenRect = new(padding, padding, screenWidth - 2 * padding, screenHeight - 2 * padding);
             _dependencies.WindowManager.OnGUI(screenRect);
         }
-        
-        
+
+
         /// <summary>
         /// Destroys all applications and services.
         /// </summary>

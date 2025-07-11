@@ -6,14 +6,14 @@ namespace DeveloperConsole.Command
     /// Determines if an argument value is within a range.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class InRangeAttribute : ValidatedAttribute
+    public class InRangeAttribute : ArgumentAttribute, IValidatedAttribute
     {
         public readonly float Min;
         public readonly float Max;
-        
+
         private object _setValue;
         private float _numericalValue;
-        
+
         /// <summary>
         /// Creates a ranged arg.
         /// </summary>
@@ -25,12 +25,12 @@ namespace DeveloperConsole.Command
             Max = max;
         }
 
-        public override void Record(RecordingContext context)
+        public void Record(RecordingContext context)
         {
             _setValue = context.ArgumentValue;
         }
 
-        public override bool Validate(ArgumentSpecification _)
+        public bool Validate(ArgumentSpecification _)
         {
             try
             {
@@ -44,6 +44,6 @@ namespace DeveloperConsole.Command
             }
         }
 
-        public override string ErrorMessage() => $"Value {_numericalValue} is not in the range [{Min}, {Max}].";
+        public string ErrorMessage() => $"Value {_numericalValue} is not in the range [{Min}, {Max}].";
     }
 }

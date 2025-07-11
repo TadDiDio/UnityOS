@@ -74,6 +74,9 @@ NOTES FOR DOCS
 - If adding more than one field to a test type, give them distinct names or they will all default to "test"
 - Safe to return null for none matches in IParseRules
 - If I add an option for auto killing commands when play mode exits, change the async docs at the bottom of Custom Commands to reflect it.
+- How to make validated attributes and new arg declaration attributes
+- Remember to reset the next input type after using it from a PromptedFor in a shellclient.
+
 
 COMMAND IDEAS
 bind

@@ -9,7 +9,12 @@ namespace DeveloperConsole
     {
         public override async Task<CommandOutput> ExecuteAsync(CommandContext context)
         {
-            await Task.Delay(3000);
+            context.Session.WriteOutputLine("Beginning timer");
+            for (int i = 3; i > 0; i--)
+            {
+                context.Session.WriteOutputLine(i);
+                await Task.Delay(1000);
+            }
             return new CommandOutput("Finished");
         }
     }

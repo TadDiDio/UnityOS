@@ -1,13 +1,11 @@
-using System;
 using DeveloperConsole.Parsing;
 
 namespace DeveloperConsole.Command
 {
     /// <summary>
-    /// Base class for all synchronous argument attributes which must be validated.
+    /// Synchronous argument attributes which must be validated.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Field)]
-    public abstract class ValidatedAttribute : ArgumentAttribute
+    public interface IValidatedAttribute
     {
         /// <summary>
         /// Runs the validation for this attribute. Once this is called,
@@ -24,8 +22,8 @@ namespace DeveloperConsole.Command
         /// </summary>
         /// <param name="context">The context of this recording.</param>
         public abstract void Record(RecordingContext context);
-        
-        
+
+
         /// <summary>
         /// Gets an error message when this validator fails.
         /// </summary>

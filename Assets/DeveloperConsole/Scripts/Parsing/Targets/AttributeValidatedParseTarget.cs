@@ -23,7 +23,7 @@ namespace DeveloperConsole.Parsing
         public void SetArgument(ArgumentSpecification argument, object argValue)
         {
             SetArgumentValue(argument, argValue);
-            foreach (var validator in argument.Attributes.OfType<ValidatedAttribute>())
+            foreach (var validator in argument.Attributes.OfType<IValidatedAttribute>())
             {
                 validator.Record(new RecordingContext
                 {
@@ -41,7 +41,7 @@ namespace DeveloperConsole.Parsing
             
             foreach (var arg in GetArguments())
             {
-                var validated = arg.Attributes.OfType<ValidatedAttribute>();
+                var validated = arg.Attributes.OfType<IValidatedAttribute>();
                 foreach (var attr in validated)
                 {
                     if (attr.Validate(arg)) continue;

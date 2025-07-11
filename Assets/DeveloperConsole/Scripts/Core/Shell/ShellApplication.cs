@@ -1,6 +1,8 @@
 using System;
-using DeveloperConsole.IO;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using DeveloperConsole.Command;
+using DeveloperConsole.IO;
 
 namespace DeveloperConsole.Core.Shell
 {
@@ -10,79 +12,68 @@ namespace DeveloperConsole.Core.Shell
     public sealed class ShellApplication : IShellApplication
     {
         private ICommandExecutor _executor;
-        public IInputManager InputManager { get; }
-        public IOutputManager OutputManager { get; }
-        
+
+        private Dictionary<Guid, ShellSession> _sessions = new();
+
+
         /// <summary>
         /// Creates a new shell application.
         /// </summary>
         /// <param name="executor">The command executor.</param>
-        /// <param name="inputManager">The input manager.</param>
-        /// <param name="outputManager">The output manager.</param>
-        public ShellApplication(ICommandExecutor executor, IInputManager inputManager, IOutputManager outputManager)
+        public ShellApplication(ICommandExecutor executor)
         {
             _executor = executor;
-            InputManager = inputManager;
-            OutputManager = outputManager;
-            InputManager.OnCommandInput += HandleCommandRequestAsync;
-        }
-        
-        
-        // TODO:
-        public ShellSession CreateSession()
-        {
-            return new ShellSession();
         }
 
-        
-        public async void HandleCommandRequestAsync(CommandRequest request)
+
+        public Guid CreateSession(IShellClient client,
+            List<IInputChannel> extraInputs = null,
+            List<IOutputChannel> extraOutputs = null)
+        {
+            Guid sessionId = Guid.NewGuid();
+            ShellSession session = new(this, client, extraInputs, extraOutputs);
+            _sessions.Add(sessionId, session);
+            return sessionId;
+        }
+
+
+        public ShellSession GetSession(Guid sessionId)
+        {
+            return _sessions.GetValueOrDefault(sessionId);
+        }
+
+
+        public async Task<CommandExecutionResult> HandleCommandRequestAsync(ShellRequest request)
         {
             try
             {
-                // 1. Execute
+                // TODO: Handle windowed here.
+
                 CommandExecutionRequest executionRequest = new()
                 {
-                    Request = request,
                     Shell = this,
+                    Input = request.Input,
+                    ShellSession = request.Session
                 };
-                
-                var executionResult = await _executor.ExecuteCommand(executionRequest);
-                
-                // 2. Output result
-                IOutputMessage output;
-                if (executionResult.Status is not Status.Success)
-                {
-                    output = string.IsNullOrWhiteSpace(executionResult.ErrorMessage) ?
-                        null :
-                        new SimpleOutputMessage(request.ShellSession, executionResult.ErrorMessage);
-                }
-                else
-                {
-                    output = string.IsNullOrWhiteSpace(executionResult.CommandOutput.Message) ?
-                    null :
-                    new ShellOutputMessage
-                    (
-                        request.ShellSession,
-                        executionResult.CommandOutput
-                    );
-                }
 
-                if (output is not null)
-                {
-                    OutputManager.Emit(output);
-                }
+                return await _executor.ExecuteCommand(executionRequest);
             }
             catch (Exception e)
             {
-                Log.Error($"Shell had an unexpected error while executing: {e}");
+                string error = $"Shell had an unexpected error while executing: {e}";
+                Log.Error(error);
+                return CommandExecutionResult.Fail(error);
             }
         }
-        
+
         public void Tick() { /* TODO */ }
 
         public void Dispose()
         {
-            InputManager.OnCommandInput -= HandleCommandRequestAsync;
+            foreach (var session in _sessions.Values)
+            {
+                session.Dispose();
+            }
         }
     }
 }

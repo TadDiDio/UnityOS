@@ -1,4 +1,5 @@
 using DeveloperConsole.Core.Shell;
+using DeveloperConsole.IO;
 
 namespace DeveloperConsole.Command
 {
@@ -8,10 +9,16 @@ namespace DeveloperConsole.Command
     public class CommandExecutionRequest
     {
         /// <summary>
-        /// The requested command and it's context.
+        /// The session submitting this.
         /// </summary>
-        public CommandRequest Request;
-        
+        public ShellSession ShellSession;
+
+
+        /// <summary>
+        /// The input to be run.
+        /// </summary>
+        public ICommandInput Input;
+
         /// <summary>
         /// The execution shell.
         /// </summary>

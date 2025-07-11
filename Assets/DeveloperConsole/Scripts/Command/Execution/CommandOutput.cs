@@ -12,41 +12,32 @@ namespace DeveloperConsole.Command
         /// The message.
         /// </summary>
         public string Message;
-        
-        
-        /// <summary>
-        /// The level of this output.
-        /// </summary>
-        public CommandOutputLogLevel Level;
-        
-        
+
+
         /// <summary>
         /// Creates an empty output.
         /// </summary>
-        public CommandOutput() => Message = ""; 
-        
-        
+        public CommandOutput() => Message = "";
+
+
         /// <summary>
         /// Creates an output with a message.
         /// </summary>
         /// <param name="message">The message</param>
         public CommandOutput(string message) => Message = message;
-        
-        
+
+
         /// <summary>
         /// Creates an output message with each line on a new line.
         /// </summary>
         /// <param name="lines">The lines.</param>
         public CommandOutput(List<string> lines) => Message = string.Join(Environment.NewLine, lines);
-    }
 
-    /// <summary>
-    /// Defines possible command output log levels.
-    /// </summary>
-    public enum CommandOutputLogLevel
-    {
-        Info,
-        Warning,
-        Error
+
+        /// <summary>
+        /// Creates on output message from a result.
+        /// </summary>
+        /// <param name="result"></param>
+        public CommandOutput(object result) => Message = result.ToString();
     }
 }

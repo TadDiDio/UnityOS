@@ -1,27 +1,18 @@
 using System;
 using System.Reflection;
 using DeveloperConsole.Command;
-using DeveloperConsole.Core.Shell;
 using NUnit.Framework;
 
 namespace DeveloperConsole.Tests.Command.Resolvers
 {
     public class TextCommandResolverTest : ConsoleTest
     {
-        private ShellSession session;
-
-        [SetUp]
-        public void Setup()
-        {
-            session = new ShellSession();
-        }
-
         [Test]
         public void Resolve_ShouldFail_OnEmptyInput()
         {
             var resolver = new TextCommandResolver("");
 
-            var result = resolver.Resolve(session);
+            var result = resolver.Resolve(null);
 
             Assert.AreEqual(Status.Fail, result.Status);
             Assert.AreEqual("", result.ErrorMessage);
@@ -32,7 +23,7 @@ namespace DeveloperConsole.Tests.Command.Resolvers
         {
             var resolver = new TextCommandResolver("notarealcommand");
 
-            var result = resolver.Resolve(session);
+            var result = resolver.Resolve(null);
 
             Assert.AreEqual(Status.Fail, result.Status);
             Assert.IsTrue(result.ErrorMessage.Contains("Could not find a command"));
@@ -44,12 +35,12 @@ namespace DeveloperConsole.Tests.Command.Resolvers
             Type mock = new CommandBuilder()
                 .WithName("mock")
                 .BuildType();
-            
+
             ConsoleAPI.Commands.RegisterCommand(mock);
-            
+
             var resolver = new TextCommandResolver("mock unexpected_token");
-            
-            var result = resolver.Resolve(session);
+
+            var result = resolver.Resolve(null);
 
             Assert.AreEqual(Status.Fail, result.Status);
             Assert.IsTrue(result.ErrorMessage.Contains("unexpected token"));
@@ -62,12 +53,12 @@ namespace DeveloperConsole.Tests.Command.Resolvers
                 .WithName("greet")
                 .WithPositional("name", typeof(string))
                 .BuildType();
-            
+
             ConsoleAPI.Commands.RegisterCommand(mock);
 
             var resolver = new TextCommandResolver("greet Alice");
 
-            var result = resolver.Resolve(session);
+            var result = resolver.Resolve(null);
 
             Assert.AreEqual(Status.Success, result.Status);
             Assert.IsNotNull(result.Command);

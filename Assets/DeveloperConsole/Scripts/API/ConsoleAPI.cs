@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using DeveloperConsole.Bindings;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core.Kernel;
+using DeveloperConsole.Core.Shell;
+using DeveloperConsole.IO;
 using DeveloperConsole.Parsing;
 using DeveloperConsole.Parsing.Tokenizing;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace DeveloperConsole
@@ -14,12 +17,12 @@ namespace DeveloperConsole
     /// </summary>
     public static class ConsoleAPI
     {
-        private static TResult WithService<TService, TResult>(Func<TService, TResult> func, TResult fallback = default)
+        private static TResult WithService<TService, TResult>(Func<TService, TResult> func)
         where TService : class
         {
-            if (!Kernel.IsInitialized) return fallback;
+            if (!Kernel.IsInitialized) throw new InvalidOperationException("Kernel is not initialized yet a service was requested from it.");
             if (!typeof(TService).IsInterface) throw new InvalidOperationException("TService must be an interface.");
-            
+
             try
             {
                 var service = Kernel.Instance.Get<TService>();
@@ -28,14 +31,14 @@ namespace DeveloperConsole
             catch (Exception e)
             {
                 Log.Exception(e);
-                return fallback;
+                return default;
             }
         }
 
         private static void WithService<TService>(Action<TService> action)
         where TService : class
         {
-            if (!Kernel.IsInitialized) return;
+            if (!Kernel.IsInitialized) throw new InvalidOperationException("Kernel is not initialized yet a service was requested from it.");
             if (!typeof(TService).IsInterface) throw new InvalidOperationException("TService must be an interface.");
 
             try
@@ -48,9 +51,7 @@ namespace DeveloperConsole
                 Log.Exception(e);
             }
         }
-        
-        // TODO: Convert all these to use WithService helper and also check that errors but not exceptions
-        // return the correct defaults.
+
         public static class Bindings
         {
              /// <summary>
@@ -63,23 +64,13 @@ namespace DeveloperConsole
             /// <returns>True if a bound object was found in the cache or scene.</returns>
             public static bool TryGetBinding(Type type, string name, string tag, out Object obj)
             {
-                obj = null;
-                if (!Kernel.IsInitialized) return false;
-                var bindingsProvider = Kernel.Instance.Get<IObjectBindingsManager>();
-                
-                try
-                {
-                    var result = bindingsProvider.TryGetBinding(type, name, tag, out obj);
-                    return result;
-                }
-                catch (Exception e)
-                {
-                    Log.Exception(e);
-                    return false;
-                }
+                Object result = null;
+                var success = WithService<IObjectBindingsManager, bool>(m => m.TryGetBinding(type, name, tag, out result));
+                obj = result;
+                return success;
             }
-            
-            
+
+
             /// <summary>
             /// Binds an object for commands to reference.
             /// </summary>
@@ -89,43 +80,20 @@ namespace DeveloperConsole
             /// <returns>The bound object or null if one wasn't found.</returns>
             public static Object ResolveBinding(Type objType, string name, string tag)
             {
-                if (!Kernel.IsInitialized) return null;
-                var bindingsProvider = Kernel.Instance.Get<IObjectBindingsManager>();
-                
-                try
-                {
-                    var result = bindingsProvider.ResolveBinding(objType, name, tag);
-                    return result;
-                }
-                catch (Exception e)
-                {
-                    Log.Exception(e);
-                    return null;
-                }
+                return WithService<IObjectBindingsManager, Object>(m => m.ResolveBinding(objType, name, tag));
             }
 
-            
+
             /// <summary>
             /// Gets all current bindings.
             /// </summary>
             /// <returns>The bindings table.</returns>
             public static Dictionary<Type, Object> GetAllBindings()
             {
-                if (!Kernel.IsInitialized) return null;
-                var bindingsProvider = Kernel.Instance.Get<IObjectBindingsManager>();
-                
-                try
-                {
-                    return bindingsProvider.GetAllBindings();
-                }
-                catch (Exception e)
-                {
-                    Log.Exception(e);
-                    return null;
-                }
-            }   
+                return WithService<IObjectBindingsManager, Dictionary<Type, Object>>(m => m.GetAllBindings());
+            }
         }
-        
+
 
         /// <summary>
         /// A container for parsing related API calls.
@@ -141,8 +109,8 @@ namespace DeveloperConsole
             {
                 return WithService<IParser, TokenizationResult>(p => p.Tokenize(input));
             }
-            
-            
+
+
             /// <summary>
             /// Parses a token stream into the target.
             /// </summary>
@@ -153,8 +121,8 @@ namespace DeveloperConsole
             {
                 return WithService<IParser, ParseResult>(p => p.Parse(stream, target));
             }
-            
-            
+
+
             /// <summary>
             /// Tries to parse a stream of tokens into a specific type.
             /// Only tokens which are parsed correctly are consumed.
@@ -168,8 +136,8 @@ namespace DeveloperConsole
                 return WithService<ITypeParserRegistryProvider, TypeParseResult>
                     (r => r.TryParse(targetType, stream));
             }
-            
-            
+
+
             /// <summary>
             /// Registers a new type parser.
             /// </summary>
@@ -181,7 +149,7 @@ namespace DeveloperConsole
             }
         }
 
-        
+
         /// <summary>
         /// A container for command related API calls.
         /// </summary>
@@ -201,8 +169,8 @@ namespace DeveloperConsole
                 schema = commandSchema;
                 return success;
             }
-          
-            
+
+
             /// <summary>
             /// Tries to resolve a list of tokens to the deepest valid schema in a nested hierarchy.
             /// </summary>
@@ -228,8 +196,8 @@ namespace DeveloperConsole
             {
                 return WithService<ICommandRegistry, string>(r => r.GetFullyQualifiedCommandName(commandType));
             }
-            
-            
+
+
             // TODO: Make this follow the Try pattern the others all use in this class
             /// <summary>
             /// Gets a command description from a name.
@@ -252,8 +220,8 @@ namespace DeveloperConsole
             {
                 RegisterCommand(typeof(T));
             }
-            
-            
+
+
             /// <summary>
             /// Registers a command to the kernel's registry. Only persists until the domain is reloaded.
             /// </summary>
@@ -265,11 +233,11 @@ namespace DeveloperConsole
                     Log.Error($"Cannot register type {type.Name} because it is not an ICommand.");
                     return;
                 }
-                
+
                 WithService<ICommandRegistry>(r => r.RegisterCommand(type));
             }
-            
-            
+
+
             // TODO: No longer accurate
             /// <summary>
             /// Gets all command names.
@@ -284,7 +252,22 @@ namespace DeveloperConsole
 
         public static class Shell
         {
-            // TODO: Interface to easily make and destroy new shell clients
+            /// <summary>
+            /// Creates a new shell session for a client.
+            /// </summary>
+            /// <param name="client">The client to create.</param>
+            /// <param name="extraInputs">Any peripheral inputs.</param>
+            /// <param name="extraOutputs">Any peripheral outputs.</param>
+            /// <returns>The sessionId.</returns>
+            public static Guid CreateShellSession(IShellClient client, List<IInputChannel> extraInputs = null, List<IOutputChannel> extraOutputs = null)
+            {
+                return WithService<IShellApplication, Guid>(s => s.CreateSession(client, extraInputs, extraOutputs));
+            }
+
+            public static ShellSession GetShellSession(Guid sessionId)
+            {
+                return WithService<IShellApplication, ShellSession>(s => s.GetSession(sessionId));
+            }
         }
     }
 }
