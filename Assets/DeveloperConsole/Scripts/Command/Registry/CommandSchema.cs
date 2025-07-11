@@ -56,8 +56,15 @@ namespace DeveloperConsole.Command
         /// The description of the arg.
         /// </summary>
         public string Description;
+
+        /// <summary>
+        /// The default value of this argument.
+        /// </summary>
+        public object DefaultValue;
         
-        // The field representing this arg.
+        /// <summary>
+        /// The field representing this arg.
+        /// </summary>
         public readonly FieldInfo FieldInfo;
         
         /// <summary>
@@ -80,6 +87,15 @@ namespace DeveloperConsole.Command
             Description = info?.Description ?? "Missing description.";
         }
 
+        
+        /// <summary>
+        /// Sets the default value of this argument.
+        /// </summary>
+        /// <param name="defaultValue">The value.</param>
+        public void SetDefault(object defaultValue)
+        {
+            
+        }
         
         /// <summary>
         /// Gets all argument specifications from a type.

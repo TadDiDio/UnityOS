@@ -1,13 +1,14 @@
 using System;
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Shell;
 using UnityEngine;
 using DeveloperConsole.IO;
 using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole
 {
-    public class TerminalApplication : IWindow, IInputSource, IOutputSink
+    public class TerminalApplication : IWindow, IShellClient
     {
+        public Guid ShellSessionId { get; }
         public event Action<IInput> InputSubmitted;
 
         private ShellSession _session;
@@ -93,27 +94,18 @@ namespace DeveloperConsole
             }
         }
 
-        public void OnShow()
-        {
-            _shown = true;
-        }
+        public void OnShow()=> _shown = true;
 
-        public void OnHide()
-        {
-            _shown = false;
-        }
+        public void OnHide() => _shown = false;
 
         public void ReceiveOutput(IOutputMessage message)
         {
-            string strMessage = message switch
-            {
-                ShellOutputMessage output => output.CommandOutput.Message,
-                SimpleOutputMessage output => output.Message,
-                InputMirrorMessage output => $"{output.Prompt} {output.Message}",
-                _ => "<empty message>"
-            };
+            _session.AddOutput(message.Message());
+        }
+
+        public void Prompt(PromptContext context)
+        {
             
-            _session.AddOutput(strMessage);
         }
     }
 }

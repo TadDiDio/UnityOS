@@ -8,7 +8,7 @@ namespace DeveloperConsole
         protected override CommandOutput Execute(CommandContext context)
         {
             context.Session.OutputBuffer.Clear();
-            return new();
+            return new CommandOutput();
         }
     }
 }

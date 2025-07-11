@@ -1,4 +1,4 @@
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Kernel;
 using NUnit.Framework;
 
 namespace DeveloperConsole.Tests.Core

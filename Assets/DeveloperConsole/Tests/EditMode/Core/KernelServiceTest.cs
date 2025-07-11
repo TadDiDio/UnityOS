@@ -1,5 +1,6 @@
 using System;
 using DeveloperConsole.Core;
+using DeveloperConsole.Core.Kernel;
 using DeveloperConsole.Parsing;
 using NUnit.Framework;
 

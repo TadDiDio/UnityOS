@@ -1,6 +1,7 @@
 using System.Reflection;
 using Codice.Client.BaseCommands;
 using DeveloperConsole.Core;
+using DeveloperConsole.Core.Shell;
 using DeveloperConsole.Parsing;
 using DeveloperConsole.Parsing.Tokenizing;
 
@@ -19,7 +20,7 @@ namespace DeveloperConsole.Command
         /// <param name="rawInput">The raw text.</param>
         public TextCommandResolver(string rawInput) => _rawInput = rawInput;
         
-        public CommandResolutionResult Resolve(IShellSession session)
+        public CommandResolutionResult Resolve(ShellSession session)
         {
             // Tokenize input
             var tokenizeResult = ConsoleAPI.Parsing.Tokenize(_rawInput);

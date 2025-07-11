@@ -1,5 +1,5 @@
 using System.Collections;
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Kernel;
 using NUnit.Framework;
 using UnityEngine.TestTools;
 

@@ -1,4 +1,4 @@
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Shell;
 
 namespace DeveloperConsole.IO
 {
@@ -7,24 +7,25 @@ namespace DeveloperConsole.IO
     /// </summary>
     public class SimpleOutputMessage : IOutputMessage
     {
-        public IShellSession Session { get; }
+        public ShellSession Session { get; }
         
         
         /// <summary>
         /// The string message.
         /// </summary>
-        public string Message;
-        
+        private string _message;
         
         /// <summary>
         /// Creates a new simple message.
         /// </summary>
         /// <param name="session">The session this output came from.</param>
         /// <param name="message">The message.</param>
-        public SimpleOutputMessage(IShellSession session, string message)
+        public SimpleOutputMessage(ShellSession session, string message)
         {
             Session = session;
-            Message = message;
+            _message = message;
         }
+
+        public string Message() => _message;
     }
 }

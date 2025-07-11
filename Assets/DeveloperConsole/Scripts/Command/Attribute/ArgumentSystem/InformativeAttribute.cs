@@ -5,13 +5,13 @@ namespace DeveloperConsole.Command
         /// <summary>
         /// The override for an argument name. If not set, the field's name will be used.
         /// </summary>
-        public string Name;
+        public readonly string Name;
         
         
         /// <summary>
         /// The argument's description.
         /// </summary>
-        public string Description => CommandMetaProcessor.Description(_rawDescription);
+        public  string Description => CommandMetaProcessor.Description(_rawDescription);
         private string _rawDescription;
         
         

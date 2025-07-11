@@ -1,3 +1,8 @@
+Gonna need to probably restructure some IO things to make this all more manageable. Probably consolidate the idea of a 
+shell client some and route things more consistently. also input manager really shouldnt be sending output, that is 
+possibly the shell sessions job to do things like mirror input to output.
+
+
 ROSLYN:
 Check attributes on bad types, i.e. Subcommand only allowed on ICommand objects
 Check that positional indexes are different
@@ -7,8 +12,10 @@ Required is only for switch, all positional are always required
 Making a switch with the same long or short name
 Missing Command attribute on command class
 preserve attribute for anything with Command on it
+mutual exclusion between command and subcommand attributes
 
 THINGS TO TEST
+optional parse rule
 command executor
 Command Meta processor
 shell application
@@ -24,19 +31,13 @@ MAKE SURE ALL TESTS INHERIT FROM CONSOLE TEST
 
 
 NEXT UP:
-Argument validators are not being used right now
-Resgister type parsers is not being called right now.
-Multiple command input via ;
-Add overrideable info message to beginning of all repl commands.
-windowing system for multiple terminals or custom windowed commands
-Maintain consistency per environment (editor, build), not across both
-multi console state tracking via files
+Multiple command input via ; and similar dividers
+Add support for nested REPL style commands in shell sessions
+Windowing system for multiple terminals or custom windowed commands
+Maintain session state consistency per environment (editor, build), not across both, multi console state tracking via files
 permissions system (hooked via precommand validator)
 Choice functionality in shell to help common input choices that are limited to range. Should support modal GUI later too.
 Auto completion system with rich typed positional arg hints in CLI
-
-BUGS
-
 
 FEATURES TO GET TO
 Template script for making new commands
@@ -69,10 +70,10 @@ NOTES FOR DOCS
 - When a session is waiting for input, it expects a text input and everything else will be ignored.
 - All inputs can be promoted to command requests.
 - To use the test system, you must make sure to register a custom attribute builder if you are testing it. Note how this works with empty and non empty constructors.
-- recommand inheriting test classes from ConsoleTest since it reboots the system before and after the test runs.
+- recommend inheriting test classes from ConsoleTest since it reboots the system before and after the test runs.
 - If adding more than one field to a test type, give them distinct names or they will all default to "test"
 - Safe to return null for none matches in IParseRules
-
+- If I add an option for auto killing commands when play mode exits, change the async docs at the bottom of Custom Commands to reflect it.
 
 COMMAND IDEAS
 bind

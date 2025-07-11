@@ -121,21 +121,6 @@ namespace DeveloperConsole.Parsing
             };
         }
 
-        
-        /// <summary>
-        /// Creates a no args set result.
-        /// </summary>
-        /// <param name="rule">The offending rule.</param>
-        /// <returns>The result.</returns>
-        public static ParseResult NoArgSet(IParseRule rule)
-        {
-            return new ParseResult
-            {
-                Status = Status.Fail,
-                ErrorMessage = $"No args were set by '{rule.GetType().Name}' despite parsing returing success."
-            };
-        }
-        
         /// <summary>
         /// Creates a too many args result.
         /// </summary>
@@ -146,6 +131,19 @@ namespace DeveloperConsole.Parsing
             {
                 Status = Status.Fail,
                 ErrorMessage = "Too many arguments attempting to set while applying long bool switch rule."
+            };
+        }
+
+
+        /// <summary>
+        /// Creates a null parse result which indicates no work to do.
+        /// </summary>
+        /// <returns>The result.</returns>
+        public static ParseResult Null()
+        {
+            return new ParseResult
+            {
+                Status = Status.Success
             };
         }
     }

@@ -1,7 +1,7 @@
 using System;
 using System.Reflection;
 
-namespace DeveloperConsole.Core
+namespace DeveloperConsole.Core.Kernel
 {
     /// <summary>
     /// A proxy to a kernel service that gives weak references.

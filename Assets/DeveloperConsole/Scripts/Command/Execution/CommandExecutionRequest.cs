@@ -1,4 +1,4 @@
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Shell;
 
 namespace DeveloperConsole.Command
 {

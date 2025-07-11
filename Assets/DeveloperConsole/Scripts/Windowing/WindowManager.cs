@@ -1,10 +1,12 @@
 using System.Collections.Generic;
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Shell;
 using UnityEngine;
 
 namespace DeveloperConsole.Windowing
 {
     // TODO: This class will need major refactoring. For now it just spawns a terminal.
+    // I think eventually the / toggle should only affect the terminal, while all other windows are persistent
+    // until explicitly minimized or closed.
     /// <summary>
     /// Manages and updates windows.
     /// </summary>

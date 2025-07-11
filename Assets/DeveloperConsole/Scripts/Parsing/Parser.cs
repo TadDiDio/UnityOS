@@ -31,6 +31,7 @@ namespace DeveloperConsole.Parsing
                 new LongSwitchParseRule(),
                 new ShortSwitchParseRule(),
                 new PositionalParseRule(),
+                new OptionalParseRule(),
                 new VariadicParseRule()
             };
             
@@ -59,7 +60,7 @@ namespace DeveloperConsole.Parsing
             // Iterate over tokens in order
             while (stream.HasMore())
             {
-                bool tokensConsumed = false;
+                bool validParse = false;
                 string token = stream.Peek();
                 
                 // Find the first rule that matches and get the list of args it should set - 
@@ -76,27 +77,29 @@ namespace DeveloperConsole.Parsing
                     var parseResult = rule.Apply(stream, argsToSet);
                     
                     if (parseResult.Status is not Status.Success) return parseResult;
-                    if (parseResult.Values == null || parseResult.Values.Count == 0) ParseResult.NoArgSet(rule);
                     
-                    // Check for consumed tokens
-                    if (stream.Count() == remainingTokens)
+                    validParse = true;
+                    if (parseResult.Values is { Count: > 0 })
                     {
-                        return ParseResult.TokenNotConsumed(token, argsToSet[0]);
-                    }
-                    tokensConsumed = true;
+                        // Check for consumed tokens
+                        if (stream.Count() == remainingTokens)
+                        {
+                            return ParseResult.TokenNotConsumed(token, argsToSet[0]);
+                        }
 
-                    // Update iterations and target
-                    foreach (var (arg, value) in parseResult.Values!)
-                    {
-                        unsetArgs.Remove(arg);
-                        target.SetArgument(arg, value);
+                        // Update iterations and target
+                        foreach (var (arg, value) in parseResult.Values!)
+                        {
+                            unsetArgs.Remove(arg);
+                            target.SetArgument(arg, value);
+                        }
                     }
 
                     // Only apply a single rule per token.
                     break;
                 }
 
-                if (!tokensConsumed)
+                if (!validParse)
                 {
                     return ParseResult.UnexpectedToken(token);
                 }

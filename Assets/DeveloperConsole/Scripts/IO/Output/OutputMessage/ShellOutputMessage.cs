@@ -1,5 +1,5 @@
-using DeveloperConsole.Core;
 using DeveloperConsole.Command;
+using DeveloperConsole.Core.Shell;
 
 namespace DeveloperConsole.IO
 {
@@ -8,7 +8,7 @@ namespace DeveloperConsole.IO
     /// </summary>
     public class ShellOutputMessage : IOutputMessage
     {
-        public IShellSession Session { get; }
+        public ShellSession Session { get; }
         
         
         /// <summary>
@@ -22,10 +22,12 @@ namespace DeveloperConsole.IO
         /// </summary>
         /// <param name="session">The session this output came from.</param>
         /// <param name="commandOutput">The output of the executed command.</param>
-        public ShellOutputMessage(IShellSession session, CommandOutput commandOutput)
+        public ShellOutputMessage(ShellSession session, CommandOutput commandOutput)
         {
             Session = session;
             CommandOutput = commandOutput;
         }
+
+        public string Message() => CommandOutput.Message;
     }
 }

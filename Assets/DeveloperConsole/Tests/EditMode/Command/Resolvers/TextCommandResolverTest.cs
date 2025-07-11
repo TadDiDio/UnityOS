@@ -1,9 +1,8 @@
 using System;
 using System.Reflection;
 using DeveloperConsole.Command;
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Shell;
 using NUnit.Framework;
-using UnityEngine;
 
 namespace DeveloperConsole.Tests.Command.Resolvers
 {

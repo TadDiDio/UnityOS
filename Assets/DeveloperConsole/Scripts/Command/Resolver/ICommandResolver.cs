@@ -1,4 +1,4 @@
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Shell;
 
 namespace DeveloperConsole.Command
 {
@@ -12,7 +12,7 @@ namespace DeveloperConsole.Command
         /// </summary>
         /// <param name="session">The session executing this command.</param>
         /// <returns>The result.</returns>
-        public CommandResolutionResult Resolve(IShellSession session);
+        public CommandResolutionResult Resolve(ShellSession session);
     }
 
     

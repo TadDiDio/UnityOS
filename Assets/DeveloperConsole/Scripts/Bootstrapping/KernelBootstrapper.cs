@@ -4,6 +4,7 @@ using UnityEditor;
 
 using UnityEngine;
 using DeveloperConsole.Core;
+using DeveloperConsole.Core.Kernel;
 
 namespace DeveloperConsole
 {

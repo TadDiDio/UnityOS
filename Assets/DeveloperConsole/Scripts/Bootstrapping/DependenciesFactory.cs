@@ -2,12 +2,11 @@ using System;
 using DeveloperConsole.IO;
 using DeveloperConsole.Command;
 using DeveloperConsole.Bindings;
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Shell;
 using DeveloperConsole.Parsing;
 using DeveloperConsole.Windowing;
 using DeveloperConsole.Parsing.Tokenizing;
 
-// TODO: Instantiate all componentes
 namespace DeveloperConsole
 {
     /// <summary>

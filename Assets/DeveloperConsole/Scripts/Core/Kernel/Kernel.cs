@@ -5,11 +5,12 @@ using System.Collections.Generic;
 using System.Linq;
 using DeveloperConsole.Bindings;
 using DeveloperConsole.Command;
+using DeveloperConsole.Core.Shell;
 using DeveloperConsole.IO;
 using DeveloperConsole.Parsing;
 using DeveloperConsole.Windowing;
 
-namespace DeveloperConsole.Core
+namespace DeveloperConsole.Core.Kernel
 {
     // TODO: Make this not a singleton, inject it only where classes need it, everything else goes through the API.
     

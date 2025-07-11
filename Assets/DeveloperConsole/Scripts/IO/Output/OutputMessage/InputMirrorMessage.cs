@@ -1,18 +1,21 @@
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Shell;
 
 namespace DeveloperConsole.IO
 {
     public class InputMirrorMessage : IOutputMessage
     {
-        public IShellSession Session { get; }
-        public string Prompt;
-        public string Message;
+        public ShellSession Session { get; }
+        public string _prompt;
+        
+        private string _message;
 
-        public InputMirrorMessage(IShellSession session, string prompt, string message)
+        public InputMirrorMessage(ShellSession session, string prompt, string message)
         {
             Session = session;
-            Prompt = prompt;
-            Message = message;
+            _prompt = prompt;
+            _message = message;
         }
+        
+        public string Message() => $"{_prompt} {_message}";
     }
 }

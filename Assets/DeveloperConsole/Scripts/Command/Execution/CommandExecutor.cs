@@ -1,6 +1,7 @@
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using UnityEngine;
 
 namespace DeveloperConsole.Command
 {
@@ -20,11 +21,17 @@ namespace DeveloperConsole.Command
             }
             
             // 2. Build context
-            // TODO: Finish
-            var context = new CommandContext();
-            context.Session = executionRequest.Request.ShellSession;
-            context.Shell = executionRequest.Shell;
-            context.Output = executionRequest.Shell.OutputManager;
+            var context = new CommandContext
+            {
+                Session = executionRequest.Request.ShellSession,
+                Shell = executionRequest.Shell,
+                Output = executionRequest.Shell.OutputManager
+            };
+#if UNITY_EDITOR
+            context.Environment = Application.isPlaying ? UnityEnvironment.PlayMode : UnityEnvironment.EditMode;
+#else
+            context.Environment = UnityEnvironment.BuildMode;
+#endif
             
             // 3. Pre-execution validation
             ICommand command = resolveResult.Command;
@@ -36,7 +43,10 @@ namespace DeveloperConsole.Command
                 return CommandExecutionResult.Fail(validator.OnValidationFailedMessage());
             }
             
-            // 4. Execute
+            // 4. Register any unique type parsers
+            command.RegisterTypeParsers();
+            
+            // 5. Execute
             try
             {
                var output = await command.ExecuteAsync(context);

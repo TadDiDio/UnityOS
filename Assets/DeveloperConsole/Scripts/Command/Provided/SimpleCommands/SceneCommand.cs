@@ -13,7 +13,7 @@ namespace DeveloperConsole
     public class SceneCommand : SimpleCommand
     {
         [Positional(0, "The name of the scene to load.")] private string sceneName;
-        
+
         [Switch('a', "Should the scene be loaded additively?")]
         private bool additive;
         

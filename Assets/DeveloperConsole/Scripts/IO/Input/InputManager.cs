@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core;
+using DeveloperConsole.Core.Shell;
 
 namespace DeveloperConsole.IO
 {
@@ -39,28 +40,40 @@ namespace DeveloperConsole.IO
         private void OnSourceInput(IInput input)
         {
             ShellSession session = input.ShellSession;
-
+            
             if (session == null)
             {
                 Log.Error("No shell session found");
                 return;
             }
             
-            // If a session is waiting for input, send it if it is text, otherwise ignore it.
             if (session.WaitingForInput)
             {
-                if (input is TextInput textInput)
-                {
-                    session.ReceiveInput(textInput);
-                }
-                else
-                {
-                    // TODO: May need to tweak this to be suppressable
-                    Log.Warning($"Ignored input of type {input.GetType().Name} while waiting for text input.");
-                }
+                SendToSession(input, session);
                 return;
             }
 
+            SendToShell(input, session);
+        }
+
+        private void SendToSession(IInput input, ShellSession session)
+        {
+            Type requestedType = session.RequestedInputType;
+            if (!typeof(IInput).IsAssignableFrom(requestedType))
+            {
+                Log.Error($"Session is waiting on {requestedType} which is not an input type.");
+                return;
+            }
+            
+            if (input.GetType() == requestedType)
+            {
+                session.ReceiveInput(input);
+            }
+        }
+        
+        
+        private void SendToShell(IInput input, ShellSession session)
+        {
             var commandRequest = input.GetCommandRequest();
             if (commandRequest != null)
             {

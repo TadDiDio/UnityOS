@@ -1,4 +1,4 @@
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Shell;
 
 namespace DeveloperConsole.IO
 {
@@ -13,6 +13,12 @@ namespace DeveloperConsole.IO
         /// <summary>
         /// The session this output came from.
         /// </summary>
-        public IShellSession Session { get; }
+        public ShellSession Session { get; }
+
+        /// <summary>
+        /// Gets the text message.
+        /// </summary>
+        /// <returns>The message.</returns>
+        public string Message();
     }
 }

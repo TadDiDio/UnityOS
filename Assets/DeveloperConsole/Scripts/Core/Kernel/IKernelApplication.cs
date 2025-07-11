@@ -1,6 +1,6 @@
 using System;
 
-namespace DeveloperConsole.Core
+namespace DeveloperConsole.Core.Kernel
 {    
     /// <summary>
     /// Interface for tickable kernel applications.

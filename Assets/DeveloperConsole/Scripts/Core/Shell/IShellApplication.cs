@@ -1,7 +1,8 @@
 using DeveloperConsole.Command;
+using DeveloperConsole.Core.Kernel;
 using DeveloperConsole.IO;
 
-namespace DeveloperConsole.Core
+namespace DeveloperConsole.Core.Shell
 {
     /// <summary>
     /// Interface for shell applications.

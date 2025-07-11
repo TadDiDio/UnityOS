@@ -1,5 +1,5 @@
 using DeveloperConsole.Command;
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Shell;
 
 namespace DeveloperConsole.IO
 {

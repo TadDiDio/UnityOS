@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using DeveloperConsole.Bindings;
 using DeveloperConsole.Command;
-using DeveloperConsole.Core;
+using DeveloperConsole.Core.Kernel;
 using DeveloperConsole.Parsing;
 using DeveloperConsole.Parsing.Tokenizing;
 using Object = UnityEngine.Object;
@@ -279,6 +279,12 @@ namespace DeveloperConsole
             {
                 return WithService<ICommandRegistry, List<string>>(r => r.AllCommandNames());
             }
+        }
+
+
+        public static class Shell
+        {
+            // TODO: Interface to easily make and destroy new shell clients
         }
     }
 }

@@ -2,7 +2,7 @@ using System;
 using DeveloperConsole.IO;
 using DeveloperConsole.Command;
 
-namespace DeveloperConsole.Core
+namespace DeveloperConsole.Core.Shell
 {
     /// <summary>
     /// Routes input to the command executor and execution results to the output manager.
