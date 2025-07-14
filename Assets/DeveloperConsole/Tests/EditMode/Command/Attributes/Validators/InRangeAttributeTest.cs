@@ -25,7 +25,7 @@ namespace DeveloperConsole.Tests.Command.Attributes
             {
                 ArgumentValue = value,
                 ArgumentSpecification = spec,
-                ParseTarget = null // Not needed for validation tests
+                CommandParseTarget = null // Not needed for validation tests
             };
         }
 

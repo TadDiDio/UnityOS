@@ -9,14 +9,14 @@ namespace DeveloperConsole.Tests.EditMode.Integration
 {
     public class ParserIntegrationTest
     {
-        private IParser _parser;
-        private MockParseTarget _parseTarget;
+        private ICommandParser _commandParser;
+        private MockCommandParseTarget _commandParseTarget;
         
         [SetUp]
         public void SetUp()
         {
-            _parser = new Parser(new DefaultTokenizer());
-            _parseTarget = null;
+            _commandParser = new CommandParser(new DefaultTokenizer());
+            _commandParseTarget = null;
         }
         
         [Test]
@@ -30,9 +30,9 @@ namespace DeveloperConsole.Tests.EditMode.Integration
                 .BuildType();
         
             var specs = ArgumentSpecification.GetAllFromType(commandType);
-            _parseTarget = new MockParseTarget(specs);
+            _commandParseTarget = new MockCommandParseTarget(specs);
         
-            var result = _parser.Parse(stream, _parseTarget);
+            var result = _commandParser.Parse(stream, _commandParseTarget);
             
             Assert.AreEqual(Status.Success, result.Status);
         }
@@ -49,12 +49,12 @@ namespace DeveloperConsole.Tests.EditMode.Integration
                 .BuildType();
         
             var specs = ArgumentSpecification.GetAllFromType(commandType);
-            _parseTarget = new MockParseTarget(specs);
+            _commandParseTarget = new MockCommandParseTarget(specs);
         
-            var result = _parser.Parse(stream, _parseTarget);
+            var result = _commandParser.Parse(stream, _commandParseTarget);
             
             Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(true, _parseTarget.GetArg("flag"));
+            Assert.AreEqual(true, _commandParseTarget.GetArg("flag"));
         }
 
         [Test]
@@ -71,14 +71,14 @@ namespace DeveloperConsole.Tests.EditMode.Integration
                 .BuildType();
         
             var specs = ArgumentSpecification.GetAllFromType(commandType);
-            _parseTarget = new MockParseTarget(specs);
+            _commandParseTarget = new MockCommandParseTarget(specs);
         
-            var result = _parser.Parse(stream, _parseTarget);
+            var result = _commandParser.Parse(stream, _commandParseTarget);
             
             Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(true, _parseTarget.GetArg("flag"));
-            Assert.AreEqual("filename", _parseTarget.GetArg("file"));
-            CollectionAssert.AreEqual(new List<int> {-1, 0, 1}, (List<int>)_parseTarget.GetArg("nums"));
+            Assert.AreEqual(true, _commandParseTarget.GetArg("flag"));
+            Assert.AreEqual("filename", _commandParseTarget.GetArg("file"));
+            CollectionAssert.AreEqual(new List<int> {-1, 0, 1}, (List<int>)_commandParseTarget.GetArg("nums"));
         }
         
         [Test]
@@ -96,14 +96,14 @@ namespace DeveloperConsole.Tests.EditMode.Integration
         
             var specs = ArgumentSpecification.GetAllFromType(commandType);
         
-            _parseTarget = new MockParseTarget(specs);
+            _commandParseTarget = new MockCommandParseTarget(specs);
         
-            var result = _parser.Parse(stream, _parseTarget);
+            var result = _commandParser.Parse(stream, _commandParseTarget);
             
             Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(false, _parseTarget.GetArg("flag"));
-            Assert.AreEqual("filename", _parseTarget.GetArg("file"));
-            CollectionAssert.AreEqual(new List<int> {-1, 0, 1}, (List<int>)_parseTarget.GetArg("nums"));
+            Assert.AreEqual(false, _commandParseTarget.GetArg("flag"));
+            Assert.AreEqual("filename", _commandParseTarget.GetArg("file"));
+            CollectionAssert.AreEqual(new List<int> {-1, 0, 1}, (List<int>)_commandParseTarget.GetArg("nums"));
         }
         
         [Test]
@@ -121,15 +121,15 @@ namespace DeveloperConsole.Tests.EditMode.Integration
                 .BuildType();
 
             var specs = ArgumentSpecification.GetAllFromType(commandType);
-            _parseTarget = new MockParseTarget(specs);
+            _commandParseTarget = new MockCommandParseTarget(specs);
 
-            var result = _parser.Parse(stream, _parseTarget);
+            var result = _commandParser.Parse(stream, _commandParseTarget);
             
             Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(false, _parseTarget.GetArg("flag"));
-            Assert.AreEqual("filename", _parseTarget.GetArg("file"));
-            Assert.AreEqual("freddo", _parseTarget.GetArg("name"));
-            CollectionAssert.AreEqual(new List<int> {-1, 0, 1}, (List<int>)_parseTarget.GetArg("nums"));
+            Assert.AreEqual(false, _commandParseTarget.GetArg("flag"));
+            Assert.AreEqual("filename", _commandParseTarget.GetArg("file"));
+            Assert.AreEqual("freddo", _commandParseTarget.GetArg("name"));
+            CollectionAssert.AreEqual(new List<int> {-1, 0, 1}, (List<int>)_commandParseTarget.GetArg("nums"));
         }
         
         [Test]
@@ -153,21 +153,21 @@ namespace DeveloperConsole.Tests.EditMode.Integration
                 .BuildType();
         
             var specs = ArgumentSpecification.GetAllFromType(commandType);
-            _parseTarget = new MockParseTarget(specs);
+            _commandParseTarget = new MockCommandParseTarget(specs);
         
-            var result = _parser.Parse(stream, _parseTarget);
+            var result = _commandParser.Parse(stream, _commandParseTarget);
             
             Assert.AreEqual(Status.Success, result.Status);
-            Assert.AreEqual(false, _parseTarget.GetArg("flag"));
-            Assert.AreEqual(new Vector2(1, 0), _parseTarget.GetArg("position"));
-            Assert.AreEqual(false, _parseTarget.GetArg("help"));
-            Assert.AreEqual(true, _parseTarget.GetArg("act"));
-            Assert.AreEqual(true, _parseTarget.GetArg("a"));
-            Assert.AreEqual(true, _parseTarget.GetArg("b"));
-            Assert.AreEqual("filename", _parseTarget.GetArg("file"));
-            Assert.AreEqual("freddo", _parseTarget.GetArg("name"));
-            Assert.AreEqual(0, _parseTarget.GetArg("count"));
-            CollectionAssert.AreEqual(new List<int> {-1, 0, 1}, (List<int>)_parseTarget.GetArg("nums"));
+            Assert.AreEqual(false, _commandParseTarget.GetArg("flag"));
+            Assert.AreEqual(new Vector2(1, 0), _commandParseTarget.GetArg("position"));
+            Assert.AreEqual(false, _commandParseTarget.GetArg("help"));
+            Assert.AreEqual(true, _commandParseTarget.GetArg("act"));
+            Assert.AreEqual(true, _commandParseTarget.GetArg("a"));
+            Assert.AreEqual(true, _commandParseTarget.GetArg("b"));
+            Assert.AreEqual("filename", _commandParseTarget.GetArg("file"));
+            Assert.AreEqual("freddo", _commandParseTarget.GetArg("name"));
+            Assert.AreEqual(0, _commandParseTarget.GetArg("count"));
+            CollectionAssert.AreEqual(new List<int> {-1, 0, 1}, (List<int>)_commandParseTarget.GetArg("nums"));
         }
         
         
@@ -194,24 +194,24 @@ namespace DeveloperConsole.Tests.EditMode.Integration
             List<List<string>> tokenLists = new() { tokens, tokens1, tokens2, tokens3 };
             for (int i = 0; i < 4; i++)
             {
-                _parser = new Parser(new DefaultTokenizer());
+                _commandParser = new CommandParser(new DefaultTokenizer());
                 var specs = ArgumentSpecification.GetAllFromType(commandType);
-                _parseTarget = new MockParseTarget(specs);
+                _commandParseTarget = new MockCommandParseTarget(specs);
         
                 TokenStream stream = new TokenStream(tokenLists[i]);
-                var result = _parser.Parse(stream, _parseTarget);
+                var result = _commandParser.Parse(stream, _commandParseTarget);
                 
                 if (result.Status != Status.Success) Log.Info(result.ErrorMessage);
                 
                 Assert.AreEqual(Status.Success, result.Status);
-                Assert.AreEqual(false, _parseTarget.GetArg("flag"));
-                Assert.AreEqual(new Vector2(1, 0), _parseTarget.GetArg("position"));
-                Assert.AreEqual(false, _parseTarget.GetArg("help"));
-                Assert.AreEqual(true, _parseTarget.GetArg("act"));
-                Assert.AreEqual("filename", _parseTarget.GetArg("file"));
-                Assert.AreEqual("freddo", _parseTarget.GetArg("name"));
-                Assert.AreEqual(0, _parseTarget.GetArg("count"));
-                CollectionAssert.AreEqual(new List<int> {-1, 0, 1}, (List<int>)_parseTarget.GetArg("nums"));
+                Assert.AreEqual(false, _commandParseTarget.GetArg("flag"));
+                Assert.AreEqual(new Vector2(1, 0), _commandParseTarget.GetArg("position"));
+                Assert.AreEqual(false, _commandParseTarget.GetArg("help"));
+                Assert.AreEqual(true, _commandParseTarget.GetArg("act"));
+                Assert.AreEqual("filename", _commandParseTarget.GetArg("file"));
+                Assert.AreEqual("freddo", _commandParseTarget.GetArg("name"));
+                Assert.AreEqual(0, _commandParseTarget.GetArg("count"));
+                CollectionAssert.AreEqual(new List<int> {-1, 0, 1}, (List<int>)_commandParseTarget.GetArg("nums"));
             }
         }
         
@@ -227,9 +227,9 @@ namespace DeveloperConsole.Tests.EditMode.Integration
                 .BuildType();
 
             var specs = ArgumentSpecification.GetAllFromType(commandType);
-            _parseTarget = new MockParseTarget(specs);
+            _commandParseTarget = new MockCommandParseTarget(specs);
 
-            var result = _parser.Parse(stream, _parseTarget);
+            var result = _commandParser.Parse(stream, _commandParseTarget);
             
             Assert.AreEqual(Status.Fail, result.Status);
             Assert.AreEqual($"Saw an unexpected token: 'invalid'", result.ErrorMessage);
@@ -247,9 +247,9 @@ namespace DeveloperConsole.Tests.EditMode.Integration
                 .BuildType();
         
             var specs = ArgumentSpecification.GetAllFromType(commandType);
-            _parseTarget = new MockParseTarget(specs);
+            _commandParseTarget = new MockCommandParseTarget(specs);
         
-            var result = _parser.Parse(stream, _parseTarget);
+            var result = _commandParser.Parse(stream, _commandParseTarget);
             
             Assert.AreEqual(Status.Fail, result.Status);
             Assert.IsTrue(result.ErrorMessage.Contains("Parsing 'num' as a int failed"));
@@ -267,20 +267,20 @@ namespace DeveloperConsole.Tests.EditMode.Integration
                 .BuildType();
         
             var specs = ArgumentSpecification.GetAllFromType(commandType);
-            _parseTarget = new MockParseTarget(specs);
+            _commandParseTarget = new MockCommandParseTarget(specs);
         
-            var result = _parser.Parse(stream, _parseTarget);
+            var result = _commandParser.Parse(stream, _commandParseTarget);
             
             Assert.AreEqual(Status.Fail, result.Status);
             Assert.IsTrue(result.ErrorMessage.Contains("Parsing"));
         }
         
-        private class MockParseTarget : IParseTarget
+        private class MockCommandParseTarget : ICommandParseTarget
         {
             private HashSet<ArgumentSpecification> _specs;
             private Dictionary<string, object> _args = new();
             
-            public MockParseTarget(HashSet<ArgumentSpecification> args) => _specs = args;
+            public MockCommandParseTarget(HashSet<ArgumentSpecification> args) => _specs = args;
             public HashSet<ArgumentSpecification> GetArguments() => _specs;
 
             public bool Validate(out string errorMessage)

@@ -1,11 +1,11 @@
 using System;
-using DeveloperConsole.IO;
 using DeveloperConsole.Command;
 using DeveloperConsole.Bindings;
 using DeveloperConsole.Core.Shell;
 using DeveloperConsole.Parsing;
 using DeveloperConsole.Windowing;
 using DeveloperConsole.Parsing.Tokenizing;
+using DeveloperConsole.Parsing.TypeAdapting;
 
 namespace DeveloperConsole
 {
@@ -27,7 +27,7 @@ namespace DeveloperConsole
         /// <summary>
         /// The parser.
         /// </summary>
-        public IParser Parser;
+        public ICommandParser CommandParser;
 
         /// <summary>
         /// The command registry.
@@ -35,9 +35,9 @@ namespace DeveloperConsole
         public ICommandRegistry CommandRegistry;
 
         /// <summary>
-        /// The type parser registry.
+        /// The type adapter registry.
         /// </summary>
-        public ITypeParserRegistryProvider TypeParserRegistry;
+        public ITypeAdapterRegistry TypeAdapterRegistry;
 
         /// <summary>
         /// The object bindings manager.
@@ -71,9 +71,9 @@ namespace DeveloperConsole
         public Func<IWindowManager> WindowManagerFactory;
 
         /// <summary>
-        /// Creates a type parser registry.
+        /// Creates a type adapter registry.
         /// </summary>
-        public Func<ITypeParserRegistryProvider> TypeParserRegistryFactory;
+        public Func<ITypeAdapterRegistry> TypeAdapterRegistryFactory;
 
         /// <summary>
         /// Creates a command registry.
@@ -83,7 +83,7 @@ namespace DeveloperConsole
         /// <summary>
         /// Creates a parser.
         /// </summary>
-        public Func<IParser> ConsoleParserFactory;
+        public Func<ICommandParser> ConsoleParserFactory;
 
         /// <summary>
         /// Creates an object bindings manager.
@@ -100,9 +100,9 @@ namespace DeveloperConsole
             var container = new DependenciesContainer
             {
                 CommandExecutor = CommandExecutorFactory?.Invoke() ?? new CommandExecutor(),
-                Parser = ConsoleParserFactory?.Invoke() ?? new Parser(new DefaultTokenizer()),
+                CommandParser = ConsoleParserFactory?.Invoke() ?? new CommandParser(new DefaultTokenizer()),
                 CommandRegistry = CommandRegistryFactory?.Invoke() ?? new CommandRegistry(new ReflectionCommandDiscovery()),
-                TypeParserRegistry = TypeParserRegistryFactory?.Invoke() ?? new TypeParserRegistry(),
+                TypeAdapterRegistry = TypeAdapterRegistryFactory?.Invoke() ?? new TypeAdapterRegistry(),
                 ObjectBindingsManager = ObjectBindingsFactory?.Invoke() ?? new ObjectBindingsManager(),
                 WindowManager = WindowManagerFactory?.Invoke() ?? new WindowManager()
             };

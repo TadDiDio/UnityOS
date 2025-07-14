@@ -8,7 +8,7 @@ namespace DeveloperConsole.Parsing.Rules
     public class LongSwitchParseRule : SingleMatchParseRule
     {
         public override int Priority() => 200;
-        
+
         protected override ArgumentSpecification FindMatchingArg(string token, ArgumentSpecification[] allArgs, ParseContext context)
         {
             if (!token.StartsWith("--") || token.Length <= 2) return null;
@@ -22,14 +22,14 @@ namespace DeveloperConsole.Parsing.Rules
         {
             // Peel off switch name before parsing
             tokenStream.Next();
-            
-            var result = ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream);
+
+            var result = ConsoleAPI.Parsing.AdaptTypeFromStream(argument.FieldInfo.FieldType, tokenStream);
 
             if (!result.Success)
             {
                 return ParseResult.TypeParsingFailed(result.ErrorMessage, argument);
             }
-            
+
             var value = new Dictionary<ArgumentSpecification, object> {{argument , result.Value}};
             return ParseResult.Success(value);
         }

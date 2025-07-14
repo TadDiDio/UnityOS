@@ -26,13 +26,13 @@ namespace DeveloperConsole
                 not null when type == typeof(short) => "short",
                 not null when type == typeof(byte) => "byte",
                 not null when type == typeof(char) => "char",
-                _ => type.Name
+                _ => type.Name.ToLowerInvariant()
             };
         }
-        
-        
+
+
         /// <summary>
-        /// Converts a friendly name to a type.
+        /// Converts a friendly name to a type. Name must be fully qualified if not primitive.
         /// </summary>
         /// <param name="name">The common or friendly name.</param>
         /// <returns>The type.</returns>
@@ -41,7 +41,7 @@ namespace DeveloperConsole
             if (string.IsNullOrEmpty(name)) return null;
 
             string normalized = name.Trim().ToLower();
-            
+
             return normalized switch
             {
                 "int" => typeof(int),

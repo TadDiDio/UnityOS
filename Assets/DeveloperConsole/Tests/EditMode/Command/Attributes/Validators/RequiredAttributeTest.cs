@@ -36,7 +36,7 @@ namespace DeveloperConsole.Tests.Command.Attributes
             {
                 ArgumentSpecification = argumentSpec,
                 ArgumentValue = false,
-                ParseTarget = null
+                CommandParseTarget = null
             };
 
             attr.Record(context);

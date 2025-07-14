@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Tokenizing;
 
@@ -15,7 +14,7 @@ namespace DeveloperConsole.Parsing.Rules
         /// <returns>The priority.</returns>
         public int Priority();
 
-        
+
         /// <summary>
         /// Filters which arguments this token can and should set. Normally this is only one, but some rules may
         /// wish to allow a single token to set multiple args, -abc for instance.
@@ -25,8 +24,8 @@ namespace DeveloperConsole.Parsing.Rules
         /// <param name="context">The parse context.</param>
         /// <returns>True if it can apply.</returns>
         public ArgumentSpecification[] Filter(string token, ArgumentSpecification[] allArgs, ParseContext context);
-        
-        
+
+
         /// <summary>
         /// Tries to parse the token stream to the given args.
         /// </summary>

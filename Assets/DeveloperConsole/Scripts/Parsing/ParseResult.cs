@@ -13,20 +13,20 @@ namespace DeveloperConsole.Parsing
         /// The failure status.
         /// </summary>
         public Status Status;
-        
-        
+
+
         /// <summary>
         /// The parse values.
         /// </summary>
         public Dictionary<ArgumentSpecification, object> Values;
-        
-        
+
+
         /// <summary>
         /// The error message if failed.
         /// </summary>
         public string ErrorMessage;
-        
-        
+
+
         /// <summary>
         /// Creates a successful parse result.
         /// </summary>
@@ -41,8 +41,8 @@ namespace DeveloperConsole.Parsing
                 ErrorMessage = null
             };
         }
-        
-        
+
+
         /// <summary>
         /// Creates a finished parse result.
         /// </summary>
@@ -55,25 +55,25 @@ namespace DeveloperConsole.Parsing
                 ErrorMessage = null
             };
         }
-        
-        
+
+
         /// <summary>
         /// Creates a result reflecting a failed type parsing.
         /// </summary>
-        /// <param name="errorToken">The token that caused the error.</param>
+        /// <param name="specificTypeParseError">The specific error when type parsing.</param>
         /// <param name="arg">The current arg.</param>
         /// <returns>The result.</returns>
-        public static ParseResult TypeParsingFailed(string errorToken, ArgumentSpecification arg)
+        public static ParseResult TypeParsingFailed(string specificTypeParseError, ArgumentSpecification arg)
         {
             return new ParseResult
             {
                 Status = Status.Fail,
                 ErrorMessage = $"Parsing '{arg.Name}' as a {TypeFriendlyNames.TypeToName(arg.FieldInfo.FieldType)}" +
-                               $" failed at '{errorToken}'"
+                               $" failed: '{specificTypeParseError}'"
             };
         }
-        
-        
+
+
         /// <summary>
         /// Creates a result reflecting a token not consumed error.
         /// </summary>
@@ -90,8 +90,8 @@ namespace DeveloperConsole.Parsing
                                $"should have been.",
             };
         }
-        
-        
+
+
         /// <summary>
         /// Creates a failed parse result.
         /// </summary>
@@ -105,8 +105,8 @@ namespace DeveloperConsole.Parsing
                 ErrorMessage = message
             };
         }
-        
-        
+
+
         /// <summary>
         /// Creates a failed parse result.
         /// </summary>

@@ -7,6 +7,7 @@ using DeveloperConsole.Bindings;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core.Shell;
 using DeveloperConsole.Parsing;
+using DeveloperConsole.Parsing.TypeAdapting;
 using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole.Core.Kernel
@@ -41,8 +42,8 @@ namespace DeveloperConsole.Core.Kernel
             TryAddService(typeof(IShellApplication), dependencies.Shell);
             TryAddService(typeof(ICommandExecutor), dependencies.CommandExecutor);
             TryAddService(typeof(ICommandRegistry), dependencies.CommandRegistry);
-            TryAddService(typeof(ITypeParserRegistryProvider), dependencies.TypeParserRegistry);
-            TryAddService(typeof(IParser), dependencies.Parser);
+            TryAddService(typeof(ITypeAdapterRegistry), dependencies.TypeAdapterRegistry);
+            TryAddService(typeof(ICommandParser), dependencies.CommandParser);
             TryAddService(typeof(IObjectBindingsManager), dependencies.ObjectBindingsManager);
             TryAddService(typeof(IWindowManager), dependencies.WindowManager);
         }

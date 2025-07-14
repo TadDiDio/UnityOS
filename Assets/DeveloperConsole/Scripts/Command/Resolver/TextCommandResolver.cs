@@ -45,16 +45,16 @@ namespace DeveloperConsole.Command
             
             // Parse command
             TokenStream stream = new(tokenizeResult.Tokens);
-            CommandParseTarget parseTarget = new(schema);
+            CommandCommandParseTarget commandParseTarget = new(schema);
             
-            var parseResult = ConsoleAPI.Parsing.Parse(stream, parseTarget);
+            var parseResult = ConsoleAPI.Parsing.ParseCommand(stream, commandParseTarget);
             
             if (parseResult.Status is not Status.Success)
             {
                 return CommandResolutionResult.Failed(parseResult.ErrorMessage);
             }
             
-            return CommandResolutionResult.Success(parseTarget.Command);
+            return CommandResolutionResult.Success(commandParseTarget.Command);
         }
     }
 }

@@ -16,19 +16,19 @@ namespace DeveloperConsole
         public static Color Red => Color.red;
         public static Color White => Color.white;
 
-        
+
         /// <summary>
         /// A standard bar: --------
         /// </summary>
         public static readonly string Bar = $"──────────────────────────────";
-        
+
         private static string ColorToHex(Color color)
         {
             Color32 c = color;
             return $"#{c.r:X2}{c.g:X2}{c.b:X2}";
         }
 
-        
+
         /// <summary>
         /// Adds a color to a string.
         /// </summary>
@@ -39,8 +39,8 @@ namespace DeveloperConsole
         {
             return $"<color={ColorToHex(color)}>{input}</color>";
         }
-        
-        
+
+
         /// <summary>
         /// Creates an error message.
         /// </summary>
@@ -52,7 +52,7 @@ namespace DeveloperConsole
             return $"{tag} {message}";
         }
 
-        
+
         /// <summary>
         /// Creates a warning message.
         /// </summary>
@@ -64,7 +64,7 @@ namespace DeveloperConsole
             return $"{tag} {message}";
         }
 
-        
+
         /// <summary>
         /// Adds bold weighting to a string.
         /// </summary>
@@ -74,8 +74,8 @@ namespace DeveloperConsole
         {
             return $"<b>{message}</b>";
         }
-        
-        
+
+
         /// <summary>
         /// A quick title template.
         /// </summary>
@@ -86,8 +86,8 @@ namespace DeveloperConsole
         {
             return $"{AddColor(title, color)}{Environment.NewLine}{Bar}{Environment.NewLine}";
         }
-        
-        
+
+
         /// <summary>
         /// Pads a list of lines so that the second words of each all align.
         /// </summary>
@@ -95,8 +95,7 @@ namespace DeveloperConsole
         /// <returns>The padded lines.</returns>
         public static string PadFirstWordRight(IEnumerable<string> lines)
         {
-            var splitLines = new List<(string First, string Remaining
-                )>();
+            var splitLines = new List<(string First, string Remaining)>();
 
             int maxFirstWordLength = 0;
 

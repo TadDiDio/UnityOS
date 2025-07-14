@@ -17,6 +17,10 @@ namespace DeveloperConsole
         private TerminalInputBuffer _inputBuffer = new();
         private List<string> _outputBuffer = new();
 
+        public TerminalClient()
+        {
+            WriteLine("Welcome to the developer console 9000! To view a list of available commands, type 'reg'.");
+        }
 
         public void Draw(Rect areaRect)
         {

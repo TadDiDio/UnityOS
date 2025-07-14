@@ -24,15 +24,15 @@ namespace DeveloperConsole.Parsing.Rules
             Type listType = typeof(List<>).MakeGenericType(elementType);
             object listInstance = Activator.CreateInstance(listType);
             MethodInfo addMethod = listType.GetMethod("Add");
-            
+
             while (tokenStream.HasMore())
             {
-                var result = ConsoleAPI.Parsing.TryParseType(elementType, tokenStream);
+                var result = ConsoleAPI.Parsing.AdaptTypeFromStream(elementType, tokenStream);
                 if (!result.Success)
                 {
                     return ParseResult.TypeParsingFailed(result.ErrorMessage, argument);
                 }
-                
+
                 addMethod!.Invoke(listInstance, new[] { result.Value });
             }
 

@@ -22,12 +22,12 @@ namespace DeveloperConsole.Parsing.Rules
         {
             // Peel off switch name before parsing
             tokenStream.Next();
-            
-            var result = ConsoleAPI.Parsing.TryParseType(typeof(bool), tokenStream);
+
+            var result = ConsoleAPI.Parsing.AdaptTypeFromStream(typeof(bool), tokenStream);
 
             // If parsing failed, we assume it is an implied true flag with no value
             var value = new Dictionary<ArgumentSpecification, object> {{argument , result.Success && !(bool)result.Value}};
-            
+
             return ParseResult.Success(value);
         }
     }

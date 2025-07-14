@@ -21,6 +21,9 @@ namespace DeveloperConsole.Core.Shell
         private Type _waitingForInputType;
         private TaskCompletionSource<IInput> _inputTaskSource;
 
+        // TODO: Temp, remove this when proper prompt system is setup
+        private bool _isExecutingCommand;
+
         public ShellSession(IShellApplication shell,
                             IShellClient client,
                             List<IInputChannel> extraInputs = null,
@@ -54,11 +57,16 @@ namespace DeveloperConsole.Core.Shell
             if (input is not ICommandInput commandInput) return;
 
             // Route to shell otherwise
-            _ = SubmitInputAsync(commandInput);
+            if (!_isExecutingCommand)
+            {
+                _ = SubmitInputAsync(commandInput);
+            }
         }
 
         private async Task SubmitInputAsync(ICommandInput input)
         {
+            _isExecutingCommand = true;
+
             // TODO: Set windowed properly here
             var request = new ShellRequest
             {
@@ -71,6 +79,8 @@ namespace DeveloperConsole.Core.Shell
 
             string message = output.Status is Status.Success ? output.CommandOutput.Message : output.ErrorMessage;
             WriteOutputLine(message);
+
+            _isExecutingCommand = false;
         }
 
         public async Task<bool> Confirm(string message)

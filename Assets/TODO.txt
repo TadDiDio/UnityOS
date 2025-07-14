@@ -15,6 +15,7 @@ preserve attribute for anything with Command on it
 mutual exclusion between command and subcommand attributes
 
 THINGS TO TEST
+adaptFromString for each adapter
 optional parse rule
 command executor
 Command Meta processor
@@ -40,6 +41,7 @@ Choice functionality in shell to help common input choices that are limited to r
 Auto completion system with rich typed positional arg hints in CLI
 
 FEATURES TO GET TO
+Need to make a system wide Isready event before accessing resources or running commands to give users a chance to register stuff before commands are run.
 Template script for making new commands
 Allow users to apply/override global command name and description processing for consistency
 Allow command groups for better output in reg command
@@ -76,7 +78,8 @@ NOTES FOR DOCS
 - If I add an option for auto killing commands when play mode exits, change the async docs at the bottom of Custom Commands to reflect it.
 - How to make validated attributes and new arg declaration attributes
 - Remember to reset the next input type after using it from a PromptedFor in a shellclient.
-
+- When making type adapters make sure to consume all tokens used (or read to be safe). Changes you make are isolated and will only be applied on a success.
+- Inputting types from CLI must use fully qualified name (verify this).
 
 COMMAND IDEAS
 bind

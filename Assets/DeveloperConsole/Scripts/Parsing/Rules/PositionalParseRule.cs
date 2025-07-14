@@ -8,9 +8,9 @@ namespace DeveloperConsole.Parsing.Rules
     public class PositionalParseRule : SingleMatchParseRule
     {
         public static readonly string PositionalIndexKey = "positional_index";
-        
+
         public override int Priority() => 600;
-        
+
         protected override ArgumentSpecification FindMatchingArg(string token, ArgumentSpecification[] allArgs, ParseContext context)
         {
             if (!context.TryGetData(PositionalIndexKey, out int index))
@@ -20,29 +20,29 @@ namespace DeveloperConsole.Parsing.Rules
             }
 
             var arg = allArgs
-                .FirstOrDefault(arg => 
+                .FirstOrDefault(arg =>
                     arg.Attributes.OfType<PositionalAttribute>().Any(attr => attr.Index == index));
             PositionalAttribute attribute = arg?
                 .Attributes.OfType<PositionalAttribute>()
                 .FirstOrDefault(attr => attr.Index == index);
 
             if (attribute == null) return null;
-            
+
             context.SetData(PositionalIndexKey, index + 1);
             return arg;
         }
 
         protected override ParseResult ApplyToArg(TokenStream tokenStream, ArgumentSpecification argument)
         {
-            var result = ConsoleAPI.Parsing.TryParseType(argument.FieldInfo.FieldType, tokenStream);
-            
+            var result = ConsoleAPI.Parsing.AdaptTypeFromStream(argument.FieldInfo.FieldType, tokenStream);
+
             if (!result.Success)
             {
                 return ParseResult.TypeParsingFailed(result.ErrorMessage, argument);
             }
-            
+
             var value = new Dictionary<ArgumentSpecification, object> {{argument , result.Value}};
-            
+
             return ParseResult.Success(value);
         }
     }

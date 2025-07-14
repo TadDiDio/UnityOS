@@ -7,6 +7,7 @@ using DeveloperConsole.Core.Shell;
 using DeveloperConsole.IO;
 using DeveloperConsole.Parsing;
 using DeveloperConsole.Parsing.Tokenizing;
+using DeveloperConsole.Parsing.TypeAdapting;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -107,45 +108,36 @@ namespace DeveloperConsole
             /// <returns>The result.</returns>
             public static TokenizationResult Tokenize(string input)
             {
-                return WithService<IParser, TokenizationResult>(p => p.Tokenize(input));
+                return WithService<ICommandParser, TokenizationResult>(p => p.Tokenize(input));
             }
 
 
             /// <summary>
-            /// Parses a token stream into the target.
+            /// Parses a token stream into the command target.
             /// </summary>
             /// <param name="stream">The stream to parse.</param>
             /// <param name="target">The target to parse to.</param>
             /// <returns>The result.</returns>
-            public static ParseResult Parse(TokenStream stream, IParseTarget target)
+            public static ParseResult ParseCommand(TokenStream stream, ICommandParseTarget target)
             {
-                return WithService<IParser, ParseResult>(p => p.Parse(stream, target));
+                return WithService<ICommandParser, ParseResult>(p => p.Parse(stream, target));
+            }
+
+
+            public static TypeAdaptResult AdaptTypeFromStream(Type type, TokenStream stream)
+            {
+                return WithService<ITypeAdapterRegistry, TypeAdaptResult>(r => r.AdaptFromStream(type, stream));
             }
 
 
             /// <summary>
-            /// Tries to parse a stream of tokens into a specific type.
-            /// Only tokens which are parsed correctly are consumed.
+            /// Registers a type adapter. Safe to call multiple times.
             /// </summary>
-            /// <param name="targetType"></param>
-            /// <param name="stream"></param>
-            /// <param name="obj"></param>
-            /// <returns></returns>
-            public static TypeParseResult TryParseType(Type targetType, TokenStream stream)
+            /// <param name="adapter">The adapter.</param>
+            /// <typeparam name="T">The type the adapter adapts to.</typeparam>
+            public static void RegisterTypeParser<T>(ITypeAdapter adapter)
             {
-                return WithService<ITypeParserRegistryProvider, TypeParseResult>
-                    (r => r.TryParse(targetType, stream));
-            }
-
-
-            /// <summary>
-            /// Registers a new type parser.
-            /// </summary>
-            /// <param name="parser">The parser to register.</param>
-            /// <typeparam name="T">The type it parses.</typeparam>
-            public static void RegisterTypeParser<T>(BaseTypeParser parser)
-            {
-                WithService<ITypeParserRegistryProvider>(r => r.RegisterTypeParser<T>(parser));
+                WithService<ITypeAdapterRegistry>(r => r.RegisterAdapter<T>(adapter));
             }
         }
 

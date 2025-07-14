@@ -35,6 +35,6 @@ namespace DeveloperConsole.Command
     {
         public object ArgumentValue;
         public ArgumentSpecification ArgumentSpecification;
-        public IParseTarget ParseTarget;
+        public ICommandParseTarget CommandParseTarget;
     }
 }

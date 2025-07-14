@@ -14,7 +14,7 @@ namespace DeveloperConsole.Command
 
         private Type _type;
 
-        private IParseTarget _parseTarget;
+        private ICommandParseTarget _commandParseTarget;
 
         /// <summary>
         /// Injects an object of this type if one is or can be bound.
@@ -30,7 +30,7 @@ namespace DeveloperConsole.Command
 
         public void Record(RecordingContext context)
         {
-            _parseTarget = context.ParseTarget;
+            _commandParseTarget = context.CommandParseTarget;
         }
 
 
@@ -41,7 +41,7 @@ namespace DeveloperConsole.Command
 
             if (!success) return false;
 
-            _parseTarget.SetArgument(spec, obj);
+            _commandParseTarget.SetArgument(spec, obj);
             return true;
         }
 
