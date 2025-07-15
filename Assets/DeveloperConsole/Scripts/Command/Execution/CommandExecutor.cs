@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -10,7 +11,7 @@ namespace DeveloperConsole.Command
     /// </summary>
     public class CommandExecutor : ICommandExecutor
     {
-        public async Task<CommandExecutionResult> ExecuteCommand(CommandExecutionRequest request)
+        public async Task<CommandExecutionResult> ExecuteCommand(CommandExecutionRequest request, CancellationToken cancellationToken)
         {
             // 1. Resolve
             var resolution = request.Resolver.Resolve(request.ShellSession);
@@ -37,18 +38,27 @@ namespace DeveloperConsole.Command
 
             foreach (var validator in validators)
             {
-                if (await validator.Validate(context)) continue;
+                if (await validator.Validate(context, cancellationToken)) continue;
                 return CommandExecutionResult.Fail(validator.OnValidationFailedMessage());
             }
 
-            // 4. Register any unique type parsers
-            command.RegisterTypeParsers();
-
-            // 5. Execute
+            // 4. Execute
             try
             {
-               var output = await command.ExecuteAsync(context);
-               return CommandExecutionResult.Success(output);
+                var output = await command.ExecuteAsync(context, cancellationToken);
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    output.Message =
+                        MessageFormatter.Warning(
+                            "Command exited without throwing after a cancellation was requested. ") + output.Message;
+                }
+
+                return CommandExecutionResult.Success(output);
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception e)
             {

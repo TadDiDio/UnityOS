@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Core.Shell;
 using DeveloperConsole.Parsing.TypeAdapting.Types;
@@ -9,13 +10,13 @@ namespace DeveloperConsole.Command
     /// </summary>
     public class ConfirmBeforeExecuting : PreExecutionValidatorAttribute
     {
-        public override async Task<bool> Validate(CommandContext context)
+        public override async Task<bool> Validate(CommandContext context, CancellationToken cancellationToken)
         {
             var prompt = Prompt.Confirmation("Are you sure you want to proceed?");
-            var result = await context.Session.PromptAsync<ConfirmationResult>(prompt);
+            var result = await context.Session.PromptAsync<ConfirmationResult>(prompt, cancellationToken);
             return result.Success;
         }
 
-        public override string OnValidationFailedMessage() => "Operation cancelled";
+        public override string OnValidationFailedMessage() => "Operation canceled";
     }
 }

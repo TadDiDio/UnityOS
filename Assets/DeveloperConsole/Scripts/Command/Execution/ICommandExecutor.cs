@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DeveloperConsole.Command
@@ -11,11 +12,12 @@ namespace DeveloperConsole.Command
         /// Executes a command.
         /// </summary>
         /// <param name="executionRequest">The request.</param>
+        /// <param name="cancellationToken">The command's cancellation token.</param>
         /// <returns>The execution result.</returns>
-        public Task<CommandExecutionResult> ExecuteCommand(CommandExecutionRequest executionRequest);
+        public Task<CommandExecutionResult> ExecuteCommand(CommandExecutionRequest executionRequest, CancellationToken cancellationToken);
     }
 
-    
+
     /// <summary>
     /// The result of trying to execute a command.
     /// </summary>
@@ -25,17 +27,17 @@ namespace DeveloperConsole.Command
         /// Whether it succeeded.
         /// </summary>
         public Status Status;
-        
+
         /// <summary>
         /// An error message if there was one.
         /// </summary>
         public string ErrorMessage;
-        
+
         /// <summary>
         /// The output from the command.
         /// </summary>
         public CommandOutput CommandOutput;
-        
+
         /// <summary>
         /// Creates a failed result.
         /// </summary>

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using NUnit;
 using UnityEngine;
 
 namespace DeveloperConsole
@@ -89,55 +91,62 @@ namespace DeveloperConsole
 
 
         /// <summary>
-        /// Pads a list of lines so that the second words of each all align.
+        /// Pads a list of (label, description) pairs so that all descriptions align,
+        /// based on the maximum label width.
         /// </summary>
-        /// <param name="lines">The lines.</param>
-        /// <returns>The padded lines.</returns>
-        public static string PadFirstWordRight(IEnumerable<string> lines)
+        /// <param name="lines">The lines as (label, description) pairs.</param>
+        /// <returns>The padded, aligned string.</returns>
+        public static string PadLeft(IEnumerable<(string Label, string Description)> lines)
         {
-            var splitLines = new List<(string First, string Remaining)>();
+            var enumerable = lines as (string Label, string Description)[] ?? lines.ToArray();
+            enumerable = enumerable.Where(l => l is { Label: not null, Description: not null }).ToArray();
 
-            int maxFirstWordLength = 0;
+            if (!enumerable.Any()) return string.Empty;
 
-            // First pass: split lines and find max first word length
-            foreach (var line in lines)
+            // Find the maximum width of the first column (Label)
+            int maxLabelLength = enumerable.Max(pair => pair.Label?.Length ?? 0);
+
+            var builder = new StringBuilder();
+            foreach (var (label, description) in enumerable)
             {
-                if (string.IsNullOrWhiteSpace(line))
+                if (string.IsNullOrWhiteSpace(label) && string.IsNullOrWhiteSpace(description))
                 {
-                    splitLines.Add((string.Empty, string.Empty));
-                    continue;
-                }
-
-                int firstSpace = line.IndexOf(' ');
-                if (firstSpace == -1)
-                {
-                    splitLines.Add((line, string.Empty));
-                    maxFirstWordLength = Math.Max(maxFirstWordLength, line.Length);
+                    builder.AppendLine();
                 }
                 else
                 {
-                    string first = line.Substring(0, firstSpace);
-                    string rest = line.Substring(firstSpace + 1).TrimStart();
-                    splitLines.Add((first, rest));
-                    maxFirstWordLength = Math.Max(maxFirstWordLength, first.Length);
+                    builder.AppendLine($"{label!.PadRight(maxLabelLength + 2)}{description}");
                 }
             }
 
-            // Second pass: align
-            StringBuilder sb = new StringBuilder();
-            foreach (var (first, rest) in splitLines)
-            {
-                if (string.IsNullOrEmpty(first) && string.IsNullOrEmpty(rest))
-                {
-                    sb.AppendLine();
-                }
-                else
-                {
-                    sb.AppendLine($"{first.PadRight(maxFirstWordLength + 2)}{rest}");
-                }
-            }
+            return builder.ToString();
+        }
 
-            return sb.ToString();
+        /// <summary>
+        /// Indents every line of the given text by the specified number of spaces.
+        /// </summary>
+        /// <param name="text">The full multiline text to indent.</param>
+        /// <param name="indent">The number of spaces to indent.</param>
+        /// <returns>The indented text.</returns>
+        public static string IndentLines(string text, int indent)
+        {
+            if (string.IsNullOrEmpty(text)) return text;
+
+            var lines = text.Split(Environment.NewLine);
+            return IndentLines(lines, indent);
+        }
+
+
+        /// <summary>
+        /// Indents every line in the collection by the specified number of spaces.
+        /// </summary>
+        /// <param name="lines">The individual lines to indent.</param>
+        /// <param name="indent">The number of spaces to indent.</param>
+        /// <returns>The indented text as a single string.</returns>
+        public static string IndentLines(IEnumerable<string> lines, int indent)
+        {
+            var indentString = new string(' ', indent);
+            return string.Join(Environment.NewLine, lines.Select(line => indentString + line.TrimEnd()));
         }
     }
 }

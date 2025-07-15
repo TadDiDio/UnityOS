@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DeveloperConsole.Command
@@ -11,23 +12,8 @@ namespace DeveloperConsole.Command
         /// Defines the asynchronous execution logic for this command.
         /// </summary>
         /// <param name="context">The context of this execution.</param>
+        /// <param name="cancellationToken">A cancellation token to stop execution.</param>
         /// <returns>The command's output.</returns>
-        public Task<CommandOutput> ExecuteAsync(CommandContext context);
-        
-        
-        /// <summary>
-        /// Registers any type parsers the command needs.
-        /// </summary>
-        public void RegisterTypeParsers();
-    }
-    
-
-    /// <summary>
-    /// Base class for all commands.
-    /// </summary>
-    public abstract class CommandBase : ICommand
-    {
-        public virtual void RegisterTypeParsers() { }
-        public abstract Task<CommandOutput> ExecuteAsync(CommandContext context);
+        public Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken);
     }
 }

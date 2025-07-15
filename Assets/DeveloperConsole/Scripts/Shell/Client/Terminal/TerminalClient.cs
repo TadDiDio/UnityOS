@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Core.Shell;
 
@@ -21,9 +22,10 @@ namespace DeveloperConsole
         private TerminalHistoryBuffer _historyBuffer = new();
 
         // Processing related state
+        private PromptChoice[] _choices;
         private TerminalState _state = TerminalState.General;
         private TaskCompletionSource<object> _promptResponseSource;
-        private PromptChoice[] _choices;
+        private CancellationTokenSource _cancellationSource;
 
         public TerminalClient()
         {
@@ -115,6 +117,10 @@ namespace DeveloperConsole
                 SubmitInput();
                 current.Use();
             }
+            else if (current.keyCode is KeyCode.C && current.modifiers.HasFlag(EventModifiers.Control))
+            {
+                _cancellationSource?.Cancel();
+            }
         }
 
 
@@ -148,7 +154,7 @@ namespace DeveloperConsole
         }
 
 
-        public async Task<object> HandlePrompt(Prompt prompt)
+        public async Task<object> HandlePrompt(Prompt prompt, CancellationToken cancellationToken)
         {
             if (_promptResponseSource != null)
             {
@@ -162,14 +168,30 @@ namespace DeveloperConsole
                 _ => TerminalState.General
             };
 
-            _promptResponseSource = new TaskCompletionSource<object>();
+
+            var tcs = new TaskCompletionSource<object>();
+            _promptResponseSource = tcs;
+
+            await using var reg = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
 
             DisplayPromptOnce(prompt);
 
-            var result = await _promptResponseSource.Task;
-            _promptResponseSource = null;
-            _state = TerminalState.Busy;
-            return result;
+            try
+            {
+                var result = await tcs.Task;
+                return result;
+            }
+            finally
+            {
+                _promptResponseSource = null;
+                _state = TerminalState.Busy;
+            }
+        }
+
+        public CancellationToken GetCommandCancellationToken()
+        {
+            _cancellationSource = new CancellationTokenSource();
+            return _cancellationSource.Token;
         }
 
 

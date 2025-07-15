@@ -8,10 +8,10 @@ namespace DeveloperConsole
     {
         [Optional(0, "Searches only the command tree for a specific command.")]
         private string command = null;
-            
+
         [Switch('n', "Shows nested commands as well", "nested")]
         private bool _nested;
-        
+
         protected override CommandOutput Execute(CommandContext context)
         {
             var names = ConsoleAPI.Commands.GetAllCommandNames();
@@ -22,14 +22,14 @@ namespace DeveloperConsole
                 names = names.Where(n => n.StartsWith(command)).ToList();
                 _nested = true;
             }
-            
+
             if (!_nested)
             {
                 names = names.Where(n => !n.Contains(".")).ToList();
             }
-            
-            var lines = names.Select(name => $"{name}: {ConsoleAPI.Commands.GetCommandDescription(name)}").ToList();
-            var padded = MessageFormatter.PadFirstWordRight(lines);
+
+            var lines = names.Select(name => ($"{name}:", $"{ConsoleAPI.Commands.GetCommandDescription(name)}")).ToList();
+            var padded = MessageFormatter.PadLeft(lines);
 
             return new CommandOutput(padded);
         }

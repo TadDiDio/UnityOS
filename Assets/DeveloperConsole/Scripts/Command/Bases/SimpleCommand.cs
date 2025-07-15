@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DeveloperConsole.Command
@@ -5,14 +6,14 @@ namespace DeveloperConsole.Command
     /// <summary>
     /// A simple command which exhibits one-shot behavior.
     /// </summary>
-    public abstract class SimpleCommand : CommandBase
+    public abstract class SimpleCommand : AsyncCommand
     {
-        public override async Task<CommandOutput> ExecuteAsync(CommandContext context)
+        public override async Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
         {
             return await Task.FromResult(Execute(context));
         }
-        
-        
+
+
         /// <summary>
         /// Defines the synchronous execution logic for this command.
         /// </summary>

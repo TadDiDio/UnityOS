@@ -82,7 +82,9 @@ NOTES FOR DOCS
 - When making type adapters make sure to consume all tokens used (or read to be safe). Changes you make are isolated and will only be applied on a success.
 - Inputting types from CLI must use fully qualified name (verify this).
 - If making own client, responses to a choice prompt should either be adaptable to one from the list or directly one from the list.
-- When using variadic args, make sure to initialize the list using new(). If you don't the system will only initialize it when you provide varaidic args on the command line.
+- When using variadic args, make sure to initialize the list using new(). If you don't the system will only initialize it when you provide variadic args on the command line.
+- You can make flags true by default and disabled with --no-flag or -no-f by simply setting bool to true like [...] private bool flag = true;
+- Make sure to allow OperationCancelledExceptions to propagate in commands or else unexpected things may happen.
 
 COMMAND IDEAS
 bind

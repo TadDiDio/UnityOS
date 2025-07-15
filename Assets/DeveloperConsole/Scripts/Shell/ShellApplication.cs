@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
 using DeveloperConsole.IO;
@@ -60,7 +61,7 @@ namespace DeveloperConsole.Core.Shell
         }
 
 
-        public async Task<CommandExecutionResult> HandleCommandRequestAsync(ShellRequest request)
+        public async Task<CommandExecutionResult> HandleCommandRequestAsync(ShellRequest request, CancellationToken userToken)
         {
             try
             {
@@ -73,7 +74,13 @@ namespace DeveloperConsole.Core.Shell
                     ShellSession = request.Session
                 };
 
-                return await _executor.ExecuteCommand(executionRequest);
+                CancellationTokenSource tokenSource = CancellationTokenSource.CreateLinkedTokenSource(userToken);
+
+                return await _executor.ExecuteCommand(executionRequest, tokenSource.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return CommandExecutionResult.Fail("Command execution was canceled.");
             }
             catch (Exception e)
             {

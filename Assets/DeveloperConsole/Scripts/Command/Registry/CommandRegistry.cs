@@ -43,12 +43,15 @@ namespace DeveloperConsole.Command
             }
 
             var attribute = type.GetCustomAttribute<CommandAttribute>();
+            var hiddenAttribute = type.GetCustomAttribute<ExcludeFromCmdRegistry>();
+            bool hidden = hiddenAttribute is { IncludeButDontList: true };
 
             var thisSchema = new CommandSchema
             {
                 Name = attribute.Name,
                 Description = attribute.Description,
                 CommandType = type,
+                HiddenInRegistry = hidden,
                 Subcommands = new HashSet<CommandSchema>()
             };
 
@@ -124,7 +127,7 @@ namespace DeveloperConsole.Command
         }
         #endregion
 
-        public List<string> AllCommandNames() => SchemaTable.Keys.ToList();
+        public List<string> AllCommandNames() => SchemaTable.Keys.Where(k => !SchemaTable[k].HiddenInRegistry).ToList();
 
 
         public void RegisterCommand(Type type)

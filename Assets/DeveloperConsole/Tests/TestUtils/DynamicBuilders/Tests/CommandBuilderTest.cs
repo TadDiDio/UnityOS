@@ -1,9 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
 using NUnit.Framework;
+using Unity.Hierarchy;
 using UnityEngine;
 
 namespace DeveloperConsole.Tests.TestUtils
@@ -102,18 +104,18 @@ namespace DeveloperConsole.Tests.TestUtils
         public void CommandBuilder_WithBadPreExecutionValidator()
         {
             using SilentLogCapture log = new();
-            
+
             var validator = new DummyPreExecutionValidatorAttribute();
             var builder = new CommandBuilder()
                 .WithPrevalidator(validator);
 
             var type = builder.BuildType();
-            
+
             Assert.Null(type);
             Assert.AreEqual(log.Count(LogType.Error), 1);
             Assert.True(log.HasLog(LogType.Error, "Pre-execution validator"));
         }
-        
+
         [Test]
         public void CommandBuilder_WithInstantiation()
         {
@@ -130,7 +132,7 @@ namespace DeveloperConsole.Tests.TestUtils
     }
     public class DummyPreExecutionValidatorAttribute : PreExecutionValidatorAttribute
     {
-        public override Task<bool> Validate(CommandContext context)
+        public override Task<bool> Validate(CommandContext context, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

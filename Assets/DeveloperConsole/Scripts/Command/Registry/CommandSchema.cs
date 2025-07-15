@@ -20,6 +20,12 @@ namespace DeveloperConsole.Command
         /// </summary>
         public string Description;
 
+
+        /// <summary>
+        /// Whether this command shows in the registry or not.
+        /// </summary>
+        public bool HiddenInRegistry = true;
+
         /// <summary>
         /// The command type.
         /// </summary>

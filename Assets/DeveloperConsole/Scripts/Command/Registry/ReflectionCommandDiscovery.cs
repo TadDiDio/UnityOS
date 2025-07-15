@@ -19,14 +19,23 @@ namespace DeveloperConsole.Command
                                    !assembly.IsDynamic)
                 .SelectMany(assembly =>
                 {
-                    try { return assembly.GetTypes(); }
-                    catch (ReflectionTypeLoadException e) { return e.Types.Where(t => t != null); }
+                    try
+                    {
+                        return assembly.GetTypes();
+                    }
+                    catch (ReflectionTypeLoadException e)
+                    {
+                        return e.Types.Where(t => t != null);
+                    }
                 })
                 .Where(t =>
-                    typeof(ICommand).IsAssignableFrom(t) &&
-                    !t.IsAbstract &&
-                    !t.IsInterface &&
-                    t.GetCustomAttribute<ExcludeFromCmdRegistry>() == null)
+                {
+                    var excludeAttribute = t.GetCustomAttribute<ExcludeFromCmdRegistry>();
+                    return typeof(ICommand).IsAssignableFrom(t) &&
+                           !t.IsAbstract &&
+                           !t.IsInterface &&
+                           (excludeAttribute == null || excludeAttribute.IncludeButDontList);
+                })
                 .ToList();
         }
     }

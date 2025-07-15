@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core.Kernel;
@@ -34,7 +35,8 @@ namespace DeveloperConsole.Core.Shell
         /// Handles a command request.
         /// </summary>
         /// <param name="request">The request.</param>
-        public Task<CommandExecutionResult> HandleCommandRequestAsync(ShellRequest request);
+        /// <param name="userToken">The commands cancellation token.</param>
+        public Task<CommandExecutionResult> HandleCommandRequestAsync(ShellRequest request, CancellationToken userToken);
 
 
         /// <summary>

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
 using DeveloperConsole.IO;
-using UnityEngine;
 
 namespace DeveloperConsole.Core.Shell
 {
@@ -67,26 +67,42 @@ namespace DeveloperConsole.Core.Shell
         {
             while (true)
             {
-                var resolver = await PromptAsync<ICommandResolver>(Shell.Prompt.Command());
+                try
+                {
+                    var token = _promptResponder.GetCommandCancellationToken();
+                    var resolver = await PromptAsync<ICommandResolver>(Prompt.Command(), token);
 
-                // TODO: Set windowed properly here
-                var request = new ShellRequest { Session = this, Windowed = false, CommandResolver = resolver };
-                var output = await _shell.HandleCommandRequestAsync(request);
+                    // TODO: Set windowed properly here
+                    var request = new ShellRequest { Session = this, Windowed = false, CommandResolver = resolver };
+                    var output = await _shell.HandleCommandRequestAsync(request, token);
 
-                string message = output.Status is Status.Success ? output.CommandOutput.Message : output.ErrorMessage;
-                WriteLine(message);
+                    string message = output.Status is Status.Success
+                        ? output.CommandOutput.Message
+                        : output.ErrorMessage;
+                    WriteLine(message);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Ignored: This case happens when a user cancels a command request prompt which is not an issue.
+                }
+                catch (Exception e)
+                {
+                    Log.Exception(e);
+                }
             }
             // ReSharper disable once FunctionNeverReturns
         }
 
 
-        public async Task<T> PromptAsync<T>(Prompt prompt)
+        public async Task<T> PromptAsync<T>(Prompt prompt, CancellationToken cancellationToken)
         {
             try
             {
                 while (true)
                 {
-                    var response = await _promptResponder.HandlePrompt(prompt);
+                    var response = await _promptResponder.HandlePrompt(prompt, cancellationToken);
+
+                    cancellationToken.ThrowIfCancellationRequested();
 
                     if (response is T typed)
                     {
@@ -96,7 +112,10 @@ namespace DeveloperConsole.Core.Shell
                         continue;
                     }
 
-                    if (response is not string stringResponse) throw new InvalidOperationException($"{_promptResponder.GetType().Name} responded with {response.GetType().Name}" + $"when asked for {prompt.RequestedType.Name}!");
+                    if (response is not string stringResponse)
+                        throw new InvalidOperationException(
+                            $"{_promptResponder.GetType().Name} responded with {response.GetType().Name}" +
+                            $"when asked for {prompt.RequestedType.Name}!");
 
                     if (!ConsoleAPI.Parsing.CanAdaptType(typeof(T)))
                     {
@@ -114,6 +133,10 @@ namespace DeveloperConsole.Core.Shell
                     if (prompt.Validator.Invoke(result.As<T>())) return result.As<T>();
                     WriteLine(MessageFormatter.Error("Invalid response entered."));
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception e)
             {
