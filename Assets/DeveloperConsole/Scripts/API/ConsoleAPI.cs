@@ -8,7 +8,6 @@ using DeveloperConsole.IO;
 using DeveloperConsole.Parsing;
 using DeveloperConsole.Parsing.Tokenizing;
 using DeveloperConsole.Parsing.TypeAdapting;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace DeveloperConsole
@@ -124,11 +123,36 @@ namespace DeveloperConsole
             }
 
 
+            /// <summary>
+            /// Adapts a stream to a type.
+            /// </summary>
+            /// <param name="type">The target type.</param>
+            /// <param name="stream">The input stream.</param>
+            /// <returns>The adaptation result.</returns>
             public static TypeAdaptResult AdaptTypeFromStream(Type type, TokenStream stream)
             {
                 return WithService<ITypeAdapterRegistry, TypeAdaptResult>(r => r.AdaptFromStream(type, stream));
             }
 
+
+            /// <summary>
+            /// Adapts a string to a type.
+            /// </summary>
+            /// <param name="type">The target type.</param>
+            /// <param name="input">The input string.</param>
+            /// <param name="tokenizer">An optional tokenizer override.</param>
+            /// <returns>The adaptation result.</returns>
+            public static TypeAdaptResult AdaptTypeFromString(Type type, string input, ITokenizer tokenizer = null)
+            {
+                return WithService<ITypeAdapterRegistry, TypeAdaptResult>(r =>
+                    r.AdaptFromString(type, input, tokenizer));
+            }
+
+
+            public static bool CanAdaptType(Type type)
+            {
+                return WithService<ITypeAdapterRegistry, bool>(r => r.CanAdaptType(type));
+            }
 
             /// <summary>
             /// Registers a type adapter. Safe to call multiple times.
@@ -247,15 +271,31 @@ namespace DeveloperConsole
             /// <summary>
             /// Creates a new shell session for a client.
             /// </summary>
-            /// <param name="client">The client to create.</param>
-            /// <param name="extraInputs">Any peripheral inputs.</param>
-            /// <param name="extraOutputs">Any peripheral outputs.</param>
-            /// <returns>The sessionId.</returns>
-            public static Guid CreateShellSession(IShellClient client, List<IInputChannel> extraInputs = null, List<IOutputChannel> extraOutputs = null)
+            /// <param name="promptResponder">The client to create.</param>
+            /// <param name="outputs">0 or more outputs associated with this session.</param>
+            /// <returns>The session id.</returns>
+            public static Guid CreateShellSession(IPromptResponder promptResponder, List<IOutputChannel> outputs = null)
             {
-                return WithService<IShellApplication, Guid>(s => s.CreateSession(client, extraInputs, extraOutputs));
+                return WithService<IShellApplication, Guid>(s => s.CreateSession(promptResponder, outputs));
             }
 
+
+            /// <summary>
+            /// Creates a new session for a human interface.
+            /// </summary>
+            /// <param name="humanInterface">The human interface.</param>
+            /// <returns>The session id.</returns>
+            public static Guid CreateShellSession(IHumanInterface humanInterface)
+            {
+                return WithService<IShellApplication, Guid>(s => s.CreateSession(humanInterface));
+            }
+
+
+            /// <summary>
+            /// Gets a session by its id.
+            /// </summary>
+            /// <param name="sessionId">The id.</param>
+            /// <returns>The session.</returns>
             public static ShellSession GetShellSession(Guid sessionId)
             {
                 return WithService<IShellApplication, ShellSession>(s => s.GetSession(sessionId));

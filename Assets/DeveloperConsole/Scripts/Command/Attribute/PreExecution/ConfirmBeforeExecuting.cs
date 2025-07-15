@@ -1,4 +1,6 @@
 using System.Threading.Tasks;
+using DeveloperConsole.Core.Shell;
+using DeveloperConsole.Parsing.TypeAdapting.Types;
 
 namespace DeveloperConsole.Command
 {
@@ -9,7 +11,9 @@ namespace DeveloperConsole.Command
     {
         public override async Task<bool> Validate(CommandContext context)
         {
-            return await context.Session.Confirm("Are you sure you want to continue?");
+            var prompt = Prompt.Confirmation("Are you sure you want to proceed?");
+            var result = await context.Session.PromptAsync<ConfirmationResult>(prompt);
+            return result.Success;
         }
 
         public override string OnValidationFailedMessage() => "Operation cancelled";

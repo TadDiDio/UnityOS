@@ -15,7 +15,7 @@ namespace DeveloperConsole.Command
         /// </summary>
         public Dictionary<string, CommandSchema> SchemaTable { get; } = new();
 
-        
+
         /// <summary>
         /// Creates a new registry.
         /// </summary>
@@ -23,7 +23,7 @@ namespace DeveloperConsole.Command
         public CommandRegistry(ICommandDiscoveryStrategy commandDiscoveryStrategy)
         {
             var commandTypes = commandDiscoveryStrategy.GetAllCommandTypes();
-            
+
             var lookup = commandTypes
                 .Where(t => t.GetCustomAttribute<CommandAttribute>() != null)
                 .ToLookup(t => t.GetCustomAttribute<CommandAttribute>().GetType() == typeof(CommandAttribute));
@@ -32,7 +32,7 @@ namespace DeveloperConsole.Command
             foreach (var rootCommand in lookup[true]) RegisterType(rootCommand);
             foreach (var subCommand in lookup[false]) RegisterType(subCommand);
         }
-        
+
         #region SETUP
         private void RegisterType(Type type)
         {
@@ -43,7 +43,7 @@ namespace DeveloperConsole.Command
             }
 
             var attribute = type.GetCustomAttribute<CommandAttribute>();
-            
+
             var thisSchema = new CommandSchema
             {
                 Name = attribute.Name,
@@ -60,7 +60,7 @@ namespace DeveloperConsole.Command
                     Log.Error($"Parent command '{parentName}' not found for subcommand '{subcommand.Name}'!");
                     return;
                 }
-                
+
                 parentSchema.Subcommands.Add(thisSchema);
                 thisSchema.ParentSchema = parentSchema;
                 SchemaTable.Add($"{parentName}.{subcommand.Name}", thisSchema);
@@ -69,7 +69,7 @@ namespace DeveloperConsole.Command
             {
                 SchemaTable.Add(attribute.Name, thisSchema);
             }
-            
+
             thisSchema.ArgumentSpecifications = ArgumentSpecification.GetAllFromType(type);
         }
 
@@ -123,10 +123,10 @@ namespace DeveloperConsole.Command
             return string.Join(".", names);
         }
         #endregion
-        
+
         public List<string> AllCommandNames() => SchemaTable.Keys.ToList();
 
-        
+
         public void RegisterCommand(Type type)
         {
             RegisterType(type);
@@ -139,13 +139,13 @@ namespace DeveloperConsole.Command
                 Log.Error($"Command '{commandType.Name}' is not a command.");
                 return null;
             }
-            
+
             if (commandType.GetCustomAttribute<CommandAttribute>() == null)
             {
                 Log.Error($"Command '{commandType.Name}' is missing a command attribute.");
                 return null;
             }
-            
+
             return DeriveNameFromType(commandType);
         }
 
@@ -155,13 +155,13 @@ namespace DeveloperConsole.Command
             return SchemaTable.TryGetValue(fullyQualifiedName, out schema);
         }
 
-        
+
         public bool TryResolveCommandSchema(List<string> tokens, out CommandSchema schema)
         {
             schema = null;
             if (tokens == null || tokens.Count == 0) return false;
             if (!TryResolveCommandSchema(tokens[0], out schema)) return false;
-            
+
             // No cycles are possible here because the registry will detect that when constructing
             int index = 1;
             while (index < tokens.Count)

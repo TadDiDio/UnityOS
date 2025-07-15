@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Tokenizing;
+using DeveloperConsole.Parsing.TypeAdapting.Types;
 using UnityEngine;
 
 namespace DeveloperConsole.Parsing.TypeAdapting
@@ -21,6 +23,8 @@ namespace DeveloperConsole.Parsing.TypeAdapting
             RegisterAdapter<Type>(new TypeAdapter());
             RegisterAdapter<Vector2>(new Vector2Adapter());
             RegisterAdapter<Vector3>(new Vector3Adapter());
+            RegisterAdapter<ConfirmationResult>(new ConfirmationResultAdapter());
+            RegisterAdapter<ICommandResolver>(new TextCommandResolverAdapter());
         }
 
         public void RegisterAdapter<T>(ITypeAdapter adapter)
@@ -45,6 +49,11 @@ namespace DeveloperConsole.Parsing.TypeAdapting
                 throw new InvalidOperationException($"No type adapter registered for type {type.Name}");
             }
             return adapter;
+        }
+
+        public bool CanAdaptType(Type type)
+        {
+            return _adapters.ContainsKey(type);
         }
     }
 }

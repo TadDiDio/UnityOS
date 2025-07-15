@@ -8,5 +8,6 @@ namespace DeveloperConsole.Parsing.TypeAdapting
         public TypeAdaptResult AdaptFromStream(Type type, TokenStream stream);
         public TypeAdaptResult AdaptFromString(Type type, string value, ITokenizer tokenizer = null);
         public void RegisterAdapter<T>(ITypeAdapter adapter);
+        public bool CanAdaptType(Type type);
     }
 }

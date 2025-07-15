@@ -9,10 +9,10 @@ namespace DeveloperConsole
     {
         public override async Task<CommandOutput> ExecuteAsync(CommandContext context)
         {
-            context.Session.WriteOutputLine("Beginning timer");
+            context.Session.WriteLine("Beginning timer");
             for (int i = 3; i > 0; i--)
             {
-                context.Session.WriteOutputLine(i);
+                context.Session.WriteLine(i);
                 await Task.Delay(1000);
             }
             return new CommandOutput("Finished");

@@ -1,5 +1,4 @@
 using DeveloperConsole.Core.Shell;
-using DeveloperConsole.IO;
 
 namespace DeveloperConsole.Command
 {
@@ -15,9 +14,9 @@ namespace DeveloperConsole.Command
 
 
         /// <summary>
-        /// The input to be run.
+        /// The command resolver for this input.
         /// </summary>
-        public ICommandInput Input;
+        public ICommandResolver Resolver;
 
         /// <summary>
         /// The execution shell.

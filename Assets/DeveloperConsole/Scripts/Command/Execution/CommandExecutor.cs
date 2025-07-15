@@ -13,7 +13,7 @@ namespace DeveloperConsole.Command
         public async Task<CommandExecutionResult> ExecuteCommand(CommandExecutionRequest request)
         {
             // 1. Resolve
-            var resolution = request.Input.GetResolver().Resolve(request.ShellSession);
+            var resolution = request.Resolver.Resolve(request.ShellSession);
             if (resolution.Status is not Status.Success)
             {
                 return CommandExecutionResult.Fail(resolution.ErrorMessage);

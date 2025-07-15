@@ -36,7 +36,8 @@ Multiple command input via ; and similar dividers
 Add support for nested REPL style commands in shell sessions
 Windowing system for multiple terminals or custom windowed commands
 Maintain session state consistency per environment (editor, build), not across both, multi console state tracking via files
-permissions system (hooked via precommand validator)
+Permissions system (hooked via precommand validator)
+If you make a abstract UI system, do an abstract input system too.
 Choice functionality in shell to help common input choices that are limited to range. Should support modal GUI later too.
 Auto completion system with rich typed positional arg hints in CLI
 
@@ -80,6 +81,8 @@ NOTES FOR DOCS
 - Remember to reset the next input type after using it from a PromptedFor in a shellclient.
 - When making type adapters make sure to consume all tokens used (or read to be safe). Changes you make are isolated and will only be applied on a success.
 - Inputting types from CLI must use fully qualified name (verify this).
+- If making own client, responses to a choice prompt should either be adaptable to one from the list or directly one from the list.
+- When using variadic args, make sure to initialize the list using new(). If you don't the system will only initialize it when you provide varaidic args on the command line.
 
 COMMAND IDEAS
 bind
