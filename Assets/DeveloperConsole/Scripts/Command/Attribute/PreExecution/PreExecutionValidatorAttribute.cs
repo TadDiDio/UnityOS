@@ -20,6 +20,6 @@ namespace DeveloperConsole.Command
         /// The message to show if the validation fails.
         /// </summary>
         /// <returns>The error message.</returns>
-        public virtual string OnValidationFailedMessage() => "";
+        public abstract string OnValidationFailedMessage();
     }
 }

@@ -10,13 +10,22 @@ namespace DeveloperConsole.Command
     /// </summary>
     public class ConfirmBeforeExecuting : PreExecutionValidatorAttribute
     {
+        private string _message;
+        public ConfirmBeforeExecuting(string message)
+        {
+            _message = message;
+        }
+
         public override async Task<bool> Validate(CommandContext context, CancellationToken cancellationToken)
         {
-            var prompt = Prompt.Confirmation("Are you sure you want to proceed?");
+            var prompt = Prompt.Confirmation(_message);
             var result = await context.Session.PromptAsync<ConfirmationResult>(prompt, cancellationToken);
             return result.Success;
         }
 
-        public override string OnValidationFailedMessage() => "Operation canceled";
+        public override string OnValidationFailedMessage()
+        {
+            return "Operation cancelled";
+        }
     }
 }

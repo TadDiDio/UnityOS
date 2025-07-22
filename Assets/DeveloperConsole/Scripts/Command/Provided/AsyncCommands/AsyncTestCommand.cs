@@ -4,7 +4,6 @@ using DeveloperConsole.Command;
 
 namespace DeveloperConsole
 {
-    [ConfirmBeforeExecuting]
     [Command("async", "Test async command")]
     public class AsyncTestCommand : AsyncCommand
     {

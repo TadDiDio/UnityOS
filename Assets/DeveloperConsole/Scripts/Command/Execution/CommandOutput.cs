@@ -31,7 +31,7 @@ namespace DeveloperConsole.Command
         /// Creates an output message with each line on a new line.
         /// </summary>
         /// <param name="lines">The lines.</param>
-        public CommandOutput(List<string> lines) => Message = string.Join(Environment.NewLine, lines);
+        public CommandOutput(IEnumerable<string> lines) => Message = string.Join(Environment.NewLine, lines);
 
 
         /// <summary>

@@ -32,6 +32,7 @@ MAKE SURE ALL TESTS INHERIT FROM CONSOLE TEST
 
 
 NEXT UP:
+Remove Subcommand attribute and allow nesting in parent commands.
 Multiple command input via ; and similar dividers
 Add support for nested REPL style commands in shell sessions
 Windowing system for multiple terminals or custom windowed commands

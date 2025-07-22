@@ -1,5 +1,8 @@
 using System;
+using System.IO;
+using System.Linq;
 using DeveloperConsole.Command;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 #if UNITY_EDITOR
@@ -9,69 +12,215 @@ using UnityEditor.SceneManagement;
 
 namespace DeveloperConsole
 {
+    /// <summary>
+    /// Command to manage scenes: open, close, list, reload.
+    /// Supports both editor and runtime modes.
+    /// </summary>
     [Command("scene", "Manages scenes.")]
     public class SceneCommand : SimpleCommand
     {
-        [Positional(0, "The name of the scene to load.")] private string sceneName;
+        [Positional(0, "The name of the scene to load.")]
+        private string sceneName;
 
         [Switch('a', "Should the scene be loaded additively?")]
         private bool additive;
-        
+
         protected override CommandOutput Execute(CommandContext context)
         {
-            // If in the editor, use the editor scene tool
+            if (string.IsNullOrWhiteSpace(sceneName))
+                return new CommandOutput("Scene name cannot be empty.");
+
             if (context.Environment is UnityEnvironment.EditMode)
             {
 #if UNITY_EDITOR
-                string scenePath = FindScenePathByName();
-                if (!string.IsNullOrEmpty(scenePath))
+                string scenePath = FindScenePathByName(sceneName);
+                if (string.IsNullOrEmpty(scenePath))
                 {
-                    EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
-                    return new CommandOutput($"Opened scene: {scenePath}");
+                    return new CommandOutput($"Failed to open scene: {sceneName}. Scene not found in Assets.");
                 }
-                return new CommandOutput($"Failed to open scene: {scenePath}. Ensure that this scene exists.");
+
+                OpenSceneMode mode = additive ? OpenSceneMode.Additive : OpenSceneMode.Single;
+                EditorSceneManager.OpenScene(scenePath, mode);
+                return new CommandOutput($"Opened scene: {sceneName}");
+#else
+                return new CommandOutput("Scene loading in Edit Mode is only supported inside the Unity Editor.");
 #endif
             }
-            
-            // Else use the regular scene manager
-            try
+            else
             {
+                if (!IsSceneInBuildSettings(sceneName))
+                {
+                    return new CommandOutput($"Failed to open scene: {sceneName}. Scene not included in Build Settings.");
+                }
+
                 LoadSceneMode mode = additive ? LoadSceneMode.Additive : LoadSceneMode.Single;
-                SceneManager.LoadScene(sceneName, mode);
-                return new CommandOutput($"Opened scene: {sceneName}");
-            }
-            catch (Exception)
-            {
-                return new CommandOutput($"Failed to open scene: {sceneName}. Ensure that this scene exists and is in the build list.");
+                try
+                {
+                    SceneManager.LoadScene(sceneName, mode);
+                    return new CommandOutput($"Opened scene: {sceneName}");
+                }
+                catch (Exception ex)
+                {
+                    return new CommandOutput($"Failed to open scene: {sceneName}. Exception: {ex.Message}");
+                }
             }
         }
-        
-        private string FindScenePathByName()
+
+        /// <summary>
+        /// Finds the full asset path of a scene in the Assets folder by its name.
+        /// Editor only.
+        /// </summary>
+        private static string FindScenePathByName(string sceneName)
         {
-            foreach (var scene in EditorBuildSettings.scenes)
+#if UNITY_EDITOR
+            foreach (var guid in AssetDatabase.FindAssets("t:Scene", new[] { "Assets" }))
             {
-                if (scene.path.EndsWith($"{sceneName}.unity", StringComparison.OrdinalIgnoreCase))
-                    return scene.path;
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                if (string.Equals(Path.GetFileNameWithoutExtension(path), sceneName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return path;
+                }
             }
+#endif
             return null;
         }
-    }
-    
-    [Subcommand("list", "Lists the scenes available.", typeof(SceneCommand))]
-    public class ListScenesCommand : SimpleCommand
-    {
-        protected override CommandOutput Execute(CommandContext context)
+
+        /// <summary>
+        /// Checks if the scene is included in Build Settings (runtime).
+        /// </summary>
+        private static bool IsSceneInBuildSettings(string sceneName)
         {
-            throw new NotImplementedException();
+            int sceneCount = SceneManager.sceneCountInBuildSettings;
+            for (int i = 0; i < sceneCount; i++)
+            {
+                string path = SceneUtility.GetScenePathByBuildIndex(i);
+                string name = Path.GetFileNameWithoutExtension(path);
+                if (string.Equals(name, sceneName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
-    }
-    
-    [Subcommand("reload", "Reloads the active scene.", typeof(SceneCommand))]
-    public class ReloadSceneCommand : SimpleCommand
-    {
-        protected override CommandOutput Execute(CommandContext context)
+
+        /// <summary>
+        /// Lists available scenes in the project (edit mode) or build (runtime).
+        /// </summary>
+        [Subcommand("list", "Lists the scenes available.", typeof(SceneCommand))]
+        public class ListScenesCommand : SimpleCommand
         {
-            throw new NotImplementedException();
+            protected override CommandOutput Execute(CommandContext context)
+            {
+                string[] sceneNames;
+
+                if (context.Environment is UnityEnvironment.EditMode)
+                {
+#if UNITY_EDITOR
+                    sceneNames = AssetDatabase.FindAssets("t:Scene", new[] { "Assets" })
+                        .Select(guid => Path.GetFileNameWithoutExtension(AssetDatabase.GUIDToAssetPath(guid)))
+                        .Distinct()
+                        .ToArray();
+#else
+                    sceneNames = Array.Empty<string>();
+#endif
+                }
+                else
+                {
+                    int count = SceneManager.sceneCountInBuildSettings;
+                    sceneNames = new string[count];
+                    for (int i = 0; i < count; i++)
+                    {
+                        string path = SceneUtility.GetScenePathByBuildIndex(i);
+                        sceneNames[i] = Path.GetFileNameWithoutExtension(path);
+                    }
+                }
+
+                return new CommandOutput(sceneNames);
+            }
+        }
+
+        /// <summary>
+        /// Reloads the active scene.
+        /// </summary>
+        [Restrict(UnityEnvironment.Runtime)]
+        [Subcommand("reload", "Reloads the active scene.", typeof(SceneCommand))]
+        public class ReloadSceneCommand : SimpleCommand
+        {
+            [Switch('a', "Loads the scene additively.")]
+            private bool additive;
+
+            protected override CommandOutput Execute(CommandContext context)
+            {
+                string activeSceneName = SceneManager.GetActiveScene().name;
+                LoadSceneMode mode = additive ? LoadSceneMode.Additive : LoadSceneMode.Single;
+
+                try
+                {
+                    SceneManager.LoadScene(activeSceneName, mode);
+                    return new CommandOutput($"Scene '{activeSceneName}' reloaded.");
+                }
+                catch (Exception ex)
+                {
+                    return new CommandOutput($"Failed to reload scene '{activeSceneName}'. Exception: {ex.Message}");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Closes an open scene.
+        /// </summary>
+        [Subcommand("close", "Closes an open scene.", typeof(SceneCommand))]
+        public class CloseCommand : SimpleCommand
+        {
+            [Positional(0, "The name of the scene to close.")]
+            private string sceneName;
+
+            protected override CommandOutput Execute(CommandContext context)
+            {
+                if (string.IsNullOrWhiteSpace(sceneName))
+                    return new CommandOutput("Scene name cannot be empty.");
+
+                Scene sceneToClose = default;
+                bool found = false;
+
+                for (int i = 0; i < SceneManager.sceneCount; i++)
+                {
+                    Scene openScene = SceneManager.GetSceneAt(i);
+                    if (string.Equals(openScene.name, sceneName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        sceneToClose = openScene;
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (!found)
+                {
+                    return new CommandOutput($"Could not close scene: {sceneName}. Ensure that this scene is currently open.");
+                }
+
+                if (Application.isPlaying)
+                {
+                    SceneManager.UnloadSceneAsync(sceneToClose);
+                    return new CommandOutput($"Unloading scene: {sceneName}");
+                }
+                else
+                {
+#if UNITY_EDITOR
+                    bool closed = EditorSceneManager.CloseScene(sceneToClose, true);
+                    if (closed)
+                    {
+                        return new CommandOutput($"Closed scene: {sceneName}");
+                    }
+                    else
+                    {
+                        return new CommandOutput($"Could not close the scene {sceneName}. Possibly the only open scene.");
+                    }
+#else
+                    return new CommandOutput("Scene closing in edit mode is only supported inside the Unity Editor.");
+#endif
+                }
+            }
         }
     }
 }

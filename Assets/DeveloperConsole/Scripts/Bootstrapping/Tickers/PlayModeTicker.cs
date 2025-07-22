@@ -8,15 +8,16 @@ namespace DeveloperConsole
     public class PlayModeTicker : MonoBehaviour
     {
         private KernelUpdater _updater;
-        
+
         /// <summary>
         /// Sets the kernel updater.
         /// </summary>
         /// <param name="updater">The updater.</param>
-        public void SetUpdater(KernelUpdater updater) => _updater = updater;    
-        
+        public void SetUpdater(KernelUpdater updater) => _updater = updater;
+
         private void Update() => _updater.Tick();
 
+        private int sd;
         private void OnGUI()
         {
             _updater.Input(Event.current);

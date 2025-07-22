@@ -29,7 +29,7 @@ namespace DeveloperConsole.Command
 #if UNITY_EDITOR
             context.Environment = Application.isPlaying ? UnityEnvironment.PlayMode : UnityEnvironment.EditMode;
 #else
-            context.Environment = UnityEnvironment.BuildMode;
+            context.Environment = UnityEnvironment.Build;
 #endif
 
             // 3. Pre-execution validation

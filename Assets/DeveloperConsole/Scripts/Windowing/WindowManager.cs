@@ -45,7 +45,6 @@ namespace DeveloperConsole.Windowing
             foreach (var window in _windows) window.OnInput(Event.current);
         }
 
-
         public void OnGUI(Rect fullScreen)
         {
             if (!_visible) return;

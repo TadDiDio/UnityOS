@@ -136,5 +136,10 @@ namespace DeveloperConsole.Tests.TestUtils
         {
             throw new NotImplementedException();
         }
+
+        public override string OnValidationFailedMessage()
+        {
+            return "";
+        }
     }
 }

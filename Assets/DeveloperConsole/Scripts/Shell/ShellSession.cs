@@ -24,7 +24,6 @@ namespace DeveloperConsole.Core.Shell
 
         private ShellSignalHandler _onShellSignal;
 
-
         /// <summary>
         /// Creates a new shell session for a human interface.
         /// </summary>
@@ -116,6 +115,8 @@ namespace DeveloperConsole.Core.Shell
                         throw new InvalidOperationException(
                             $"{_promptResponder.GetType().Name} responded with {response.GetType().Name}" +
                             $"when asked for {prompt.RequestedType.Name}!");
+
+                    if (stringResponse is "") continue;
 
                     if (!ConsoleAPI.Parsing.CanAdaptType(typeof(T)))
                     {

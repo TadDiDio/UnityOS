@@ -1,4 +1,5 @@
 using DeveloperConsole.Core.Shell;
+using UnityEditor;
 
 namespace DeveloperConsole.Command
 {
@@ -29,8 +30,49 @@ namespace DeveloperConsole.Command
     /// </summary>
     public enum UnityEnvironment
     {
+        /// <summary>
+        /// This command will only be available in a build.
+        /// </summary>
+        Build,
+
+        /// <summary>
+        /// This command is only available in the editor.
+        /// </summary>
+        Editor,
+
+        /// <summary>
+        /// This command is only available during edit mode.
+        /// </summary>
         EditMode,
+
+        /// <summary>
+        /// This command is only available during play mode in the editor.
+        /// </summary>
         PlayMode,
-        BuildMode
+
+        /// <summary>
+        /// This command is only available during play mode in either the editor or a build.
+        /// </summary>
+        Runtime
+    }
+
+    public static class UnityEnvironmentExtensions
+    {
+        public static bool IsAvailable(this UnityEnvironment a)
+        {
+#if UNITY_EDITOR
+            // If we are in play mode in the editor
+            if (EditorApplication.isPlaying)
+            {
+                return a is UnityEnvironment.PlayMode or UnityEnvironment.Editor or UnityEnvironment.Runtime;
+            }
+
+            // If we are in edit mode
+            return a is UnityEnvironment.Editor or UnityEnvironment.EditMode;
+#else
+            // If we are in a build
+            return a is UnityEnvironment.Build or UnityEnvironment.Runtime;
+#endif
+        }
     }
 }

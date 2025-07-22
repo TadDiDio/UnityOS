@@ -2,8 +2,8 @@
 using UnityEditor;
 #endif
 
+using System;
 using UnityEngine;
-using DeveloperConsole.Core;
 using DeveloperConsole.Core.Kernel;
 
 namespace DeveloperConsole
@@ -16,9 +16,11 @@ namespace DeveloperConsole
 #endif
     public static class KernelBootstrapper
     {
+        public static Action SystemInitialized;
+
         private static bool _commonElementsInitialized;
         private static DependenciesFactory _configurationOverride;
-        
+
         #region AUTO BOOTSTRAP
 #if UNITY_EDITOR
         static KernelBootstrapper() => Bootstrap();
@@ -28,8 +30,8 @@ namespace DeveloperConsole
         public static void RuntimeBootstrap() => Bootstrap();
 #endif
         #endregion
-        
-        
+
+
         /// <summary>
         /// Starts or restarts the developer console if it is already started.
         /// </summary>
@@ -47,9 +49,11 @@ namespace DeveloperConsole
             EditModeTicker.Initialize(() => new EditModeTicker(updater));
 #endif
             CommonBootstrap();
+
+            SystemInitialized?.Invoke();
         }
-        
-        
+
+
         /// <summary>
         /// Shuts down the developer console system.
         /// </summary>
@@ -57,7 +61,7 @@ namespace DeveloperConsole
         {
             _configurationOverride = null;
             _commonElementsInitialized = false;
-            
+
             // Unload runners
             if (PlayModeTickerSpawner.IsInitialized)
             {
@@ -65,11 +69,13 @@ namespace DeveloperConsole
                 PlayModeTickerSpawner.Reset();
             }
 
+#if UNITY_EDITOR
             if (EditModeTicker.IsInitialized)
             {
                 EditModeTicker.Instance.Clear();
                 EditModeTicker.Reset();
             }
+#endif
 
             // Unload kernel last so that nothing is referencing it
             if (Kernel.IsInitialized)
@@ -78,8 +84,8 @@ namespace DeveloperConsole
                 Kernel.Reset();
             }
         }
-        
-        
+
+
         /// <summary>
         /// Sets an override configuration to inject custom dependencies.
         /// </summary>
@@ -88,17 +94,17 @@ namespace DeveloperConsole
         {
             _configurationOverride = config;
         }
-        
+
         private static void CommonBootstrap()
         {
             if (_commonElementsInitialized) return;
-            
+
             DependenciesFactory config = GetConfiguration();
             Kernel.Initialize(() => new Kernel(config));
-            
+
             _commonElementsInitialized = true;
         }
-        
+
         private static DependenciesFactory GetConfiguration()
         {
             return _configurationOverride ?? new DependenciesFactory();
