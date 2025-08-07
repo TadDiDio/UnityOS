@@ -67,6 +67,10 @@ namespace DeveloperConsole.Command
 
                 return CommandExecutionResult.Fail(message);
             }
+            finally
+            {
+                command.Dispose();
+            }
         }
     }
 }

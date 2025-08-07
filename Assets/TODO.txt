@@ -1,6 +1,9 @@
-Gonna need to probably restructure some IO things to make this all more manageable. Probably consolidate the idea of a 
-shell client some and route things more consistently. also input manager really shouldnt be sending output, that is 
-possibly the shell sessions job to do things like mirror input to output.
+WHEN WE LAST LEFT OFF...
+Things are generally untested and the tests I do have are old, but the system appears very robust and there were no 
+code smells. Testing is only worth it if selling this product, otherwise its not worth the immense time sink. Remember 
+that when making new things, can you register defaults for anything you want using an IConsoleInstaller. There is no 
+protection against prompting in a non interactive context, but currently all contexts are interactive and file running 
+is contained to terminals so this feature was not worth protecting against yet.
 
 
 ROSLYN:
@@ -11,7 +14,7 @@ Only one UnlimitedArgsAttribute
 Required is only for switch, all positional are always required
 Making a switch with the same long or short name
 Missing Command attribute on command class
-preserve attribute for anything with Command on it
+preserve attribute for anything with [Command] on it and for IConsoleInstaller classes.
 mutual exclusion between command and subcommand attributes
 
 THINGS TO TEST

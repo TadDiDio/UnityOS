@@ -129,7 +129,6 @@ namespace DeveloperConsole.Command
 
         public List<string> AllCommandNames() => SchemaTable.Keys.Where(k => !SchemaTable[k].HiddenInRegistry).ToList();
 
-
         public void RegisterCommand(Type type)
         {
             RegisterType(type);

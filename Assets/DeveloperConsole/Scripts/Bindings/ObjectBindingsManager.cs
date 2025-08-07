@@ -12,19 +12,17 @@ namespace DeveloperConsole.Bindings
 
         public Dictionary<Type, Object> GetAllBindings() => _bindings;
 
-        
         public bool TryGetBinding(Type type, string name, string tag, out Object obj)
         {
             var success = _bindings.TryGetValue(type, out obj);
             if (obj) return true;
-            
+
             if (success) _bindings.Remove(type);
 
             obj = ResolveBinding(type, name, tag);
             return obj;
         }
-        
-        
+
         public Object ResolveBinding(Type objType, string name, string tag)
         {
             bool found = _bindings.TryGetValue(objType, out Object current);
@@ -34,9 +32,9 @@ namespace DeveloperConsole.Bindings
             {
                 _bindings.Remove(objType);
             }
-            
+
             if (!typeof(Object).IsAssignableFrom(objType)) return null;
-            
+
             // TODO: I think this only searches active scene, add support for all open scenes.
             var allObjects = Object.FindObjectsByType(objType, FindObjectsInactive.Exclude, FindObjectsSortMode.None);
             if (allObjects == null) return null;

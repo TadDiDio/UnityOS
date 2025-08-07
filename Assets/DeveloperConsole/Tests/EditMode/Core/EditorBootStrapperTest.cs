@@ -8,25 +8,25 @@ namespace DeveloperConsole.Tests.Core
         [OneTimeTearDown]
         public void RestartKernel()
         {
-            KernelBootstrapper.Bootstrap();
+            ConsoleBootstrapper.Bootstrap();
         }
         
         [Test]
         public void EditorBootstrapper_BootstrapThenKill()
         {
-            Assert.DoesNotThrow(KernelBootstrapper.Bootstrap);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Bootstrap);
             Assert.NotNull(Kernel.Instance);
             Assert.True(Kernel.IsInitialized);
-            Assert.DoesNotThrow(KernelBootstrapper.KillSystem);
+            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
             Assert.False(Kernel.IsInitialized);
         }
         
         [Test]
         public void EditorBootstrapper_KillThenBootstrap()
         {
-            Assert.DoesNotThrow(KernelBootstrapper.KillSystem);
+            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
             Assert.False(Kernel.IsInitialized);
-            Assert.DoesNotThrow(KernelBootstrapper.Bootstrap);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Bootstrap);
             Assert.NotNull(Kernel.Instance);
             Assert.True(Kernel.IsInitialized);
         }
@@ -34,20 +34,20 @@ namespace DeveloperConsole.Tests.Core
         [Test]
         public void EditorBootstrapper_MultipleKills()
         {
-            Assert.DoesNotThrow(KernelBootstrapper.KillSystem);
-            Assert.DoesNotThrow(KernelBootstrapper.KillSystem);
-            Assert.DoesNotThrow(KernelBootstrapper.KillSystem);
-            Assert.DoesNotThrow(KernelBootstrapper.KillSystem);
+            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
+            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
+            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
+            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
             Assert.False(Kernel.IsInitialized);
         }
         
         [Test]
         public void EditorBootstrapper_MultipleBootstraps()
         {
-            Assert.DoesNotThrow(KernelBootstrapper.Bootstrap);
-            Assert.DoesNotThrow(KernelBootstrapper.Bootstrap);
-            Assert.DoesNotThrow(KernelBootstrapper.Bootstrap);
-            Assert.DoesNotThrow(KernelBootstrapper.Bootstrap);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Bootstrap);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Bootstrap);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Bootstrap);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Bootstrap);
             Assert.True(Kernel.IsInitialized);
         }
     }

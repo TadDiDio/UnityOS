@@ -60,12 +60,6 @@ namespace DeveloperConsole.Core.Kernel
         {
             // TODO: Will probably include window manager here.
             RegisterApplication(dependencies.Shell);
-
-            // TODO: Instantiate terminal and other clients in a better spot. Make sure that its done
-            // after kernel constructor completes so Kernel.IsInitialized is true for external use
-            var terminal = new TerminalClient();
-            _dependencies.Shell.CreateSession(terminal);
-            _dependencies.WindowManager.RegisterWindow(terminal);
         }
 
         /// <summary>

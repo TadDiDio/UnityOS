@@ -16,7 +16,7 @@ namespace DeveloperConsole.Tests.Core
         [Test]
         public void KernelService_GetServices()
         {
-            KernelBootstrapper.Bootstrap();
+            ConsoleBootstrapper.Bootstrap();
             
             Assert.NotNull(Kernel.Instance);
             
@@ -45,19 +45,19 @@ namespace DeveloperConsole.Tests.Core
         [Test]
         public void KernelService_KernelKilled()
         {
-            KernelBootstrapper.KillSystem();
+            ConsoleBootstrapper.KillSystem();
             Assert.Throws<InvalidOperationException>(() => Kernel.Instance.Get<ICommandParser>());
         }
         
         [Test]
         public void KernelService_StaleSystemsThrow()
         {
-            KernelBootstrapper.Bootstrap();
+            ConsoleBootstrapper.Bootstrap();
             
             var handle = Kernel.Instance.Get<ICommandParser>();
             Assert.NotNull(handle);
 
-            KernelBootstrapper.KillSystem();
+            ConsoleBootstrapper.KillSystem();
             
             // Using a stale reference is not allowed and fails loudly
             // TODO:

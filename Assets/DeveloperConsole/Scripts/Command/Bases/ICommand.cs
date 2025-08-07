@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,7 +7,7 @@ namespace DeveloperConsole.Command
     /// <summary>
     /// Command interface.
     /// </summary>
-    public interface ICommand
+    public interface ICommand : IDisposable
     {
         /// <summary>
         /// Defines the asynchronous execution logic for this command.

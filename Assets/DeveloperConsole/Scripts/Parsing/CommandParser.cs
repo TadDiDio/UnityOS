@@ -1,14 +1,16 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Rules;
 using DeveloperConsole.Parsing.Tokenizing;
+using UnityEngine;
 
 namespace DeveloperConsole.Parsing
 {
     public class CommandParser : ICommandParser
     {
-        private readonly List<IParseRule> _rules;
+        private List<IParseRule> _rules = new();
         private readonly ITokenizer _tokenizer;
 
 
@@ -19,23 +21,6 @@ namespace DeveloperConsole.Parsing
         public CommandParser(ITokenizer tokenizer)
         {
             _tokenizer = tokenizer;
-
-            // TODO: Inject these
-            List<IParseRule> rules = new()
-            {
-                new InvertedBoolLongSwitchParseRule(),
-                new InvertedBoolShortSwitchParseRule(),
-                new BoolLongSwitchParseRule(),
-                new BoolShortSwitchParseRule(),
-                new GroupedShortBoolSwitchRule(),
-                new LongSwitchParseRule(),
-                new ShortSwitchParseRule(),
-                new PositionalParseRule(),
-                new OptionalParseRule(),
-                new VariadicParseRule()
-            };
-
-            _rules = rules.OrderBy(rule => rule.Priority()).ToList();
         }
 
         public TokenizationResult Tokenize(string input)
@@ -111,6 +96,27 @@ namespace DeveloperConsole.Parsing
             }
 
             return ParseResult.Finished();
+        }
+
+        public void RegisterParseRule(Type ruleType)
+        {
+            if (!typeof(IParseRule).IsAssignableFrom(ruleType))
+            {
+                Log.Warning($"Command parsing rule of type {ruleType.Name} does not implement " +
+                            $"{nameof(IParseRule)} and will be skipped.");
+                return;
+            }
+
+            if (_rules.Any(rule => rule.GetType() == ruleType)) return;
+
+            _rules.Add((IParseRule)Activator.CreateInstance(ruleType));
+            _rules = _rules.OrderBy(r => r.Priority()).ToList();
+        }
+
+        public void UnregisterParseRule(Type ruleType)
+        {
+            IParseRule toRemove = _rules.FirstOrDefault(rule => rule.GetType() == ruleType);
+            _rules.Remove(toRemove);
         }
     }
 }

@@ -9,5 +9,10 @@ namespace DeveloperConsole.Command
     public abstract class AsyncCommand : ICommand
     {
         public abstract Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken);
+
+        public virtual void Dispose()
+        {
+            // No-op
+        }
     }
 }

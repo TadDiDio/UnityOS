@@ -30,6 +30,8 @@ namespace DeveloperConsole
         public TerminalClient()
         {
             WriteLine("Welcome to the developer console 9000! To view a list of available commands, type 'reg'.");
+
+            // TODO: Open startup
         }
 
         public void Draw(Rect areaRect)
@@ -149,8 +151,8 @@ namespace DeveloperConsole
         public void WriteLine(string line)
         {
             if (string.IsNullOrEmpty(line)) return;
-            _scrollPosition.y = float.MaxValue;
             _outputBuffer.Add(line);
+            _scrollPosition.y = float.MaxValue;
         }
 
 

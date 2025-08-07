@@ -8,6 +8,7 @@ using DeveloperConsole.IO;
 using DeveloperConsole.Parsing;
 using DeveloperConsole.Parsing.Tokenizing;
 using DeveloperConsole.Parsing.TypeAdapting;
+using DeveloperConsole.Windowing;
 using Object = UnityEngine.Object;
 
 namespace DeveloperConsole
@@ -149,10 +150,16 @@ namespace DeveloperConsole
             }
 
 
+            /// <summary>
+            /// Tells if the type can be adapted by the currently registered adapters.
+            /// </summary>
+            /// <param name="type">The type to adapt.</param>
+            /// <returns>True if it can be.</returns>
             public static bool CanAdaptType(Type type)
             {
                 return WithService<ITypeAdapterRegistry, bool>(r => r.CanAdaptType(type));
             }
+
 
             /// <summary>
             /// Registers a type adapter. Safe to call multiple times.
@@ -162,6 +169,26 @@ namespace DeveloperConsole
             public static void RegisterTypeParser<T>(ITypeAdapter adapter)
             {
                 WithService<ITypeAdapterRegistry>(r => r.RegisterAdapter<T>(adapter));
+            }
+
+
+            /// <summary>
+            /// Adds a rule to the command parser.
+            /// </summary>
+            /// <param name="ruleType">The type of the rule to add.</param>
+            public static void AddRule(Type ruleType)
+            {
+                WithService<ICommandParser>(p => p.RegisterParseRule(ruleType));
+            }
+
+
+            /// <summary>
+            /// Removes a rule from the command parser.
+            /// </summary>
+            /// <param name="ruleType">The type of the rule to remove.</param>
+            public static void RemoveRule(Type ruleType)
+            {
+                WithService<ICommandParser>(p => p.UnregisterParseRule(ruleType));
             }
         }
 
@@ -266,6 +293,9 @@ namespace DeveloperConsole
         }
 
 
+        /// <summary>
+        /// A container for shell related API calls
+        /// </summary>
         public static class Shell
         {
             /// <summary>
@@ -299,6 +329,32 @@ namespace DeveloperConsole
             public static ShellSession GetShellSession(Guid sessionId)
             {
                 return WithService<IShellApplication, ShellSession>(s => s.GetSession(sessionId));
+            }
+        }
+
+
+        /// <summary>
+        /// A container for windowing related API calls
+        /// </summary>
+        public static class Windowing
+        {
+            /// <summary>
+            /// Registers a window.
+            /// </summary>
+            /// <param name="window">The window.</param>
+            public static void RegisterWindow(IWindow window)
+            {
+                WithService<IWindowManager>(m => m.RegisterWindow(window));
+            }
+
+
+            /// <summary>
+            /// Unregisters a window.
+            /// </summary>
+            /// <param name="window">The window.</param>
+            public static void UnregisterWindow(IWindow window)
+            {
+                WithService<IWindowManager>(m => m.UnregisterWindow(window));
             }
         }
     }

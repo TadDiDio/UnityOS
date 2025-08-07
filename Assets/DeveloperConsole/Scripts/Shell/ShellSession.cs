@@ -22,6 +22,7 @@ namespace DeveloperConsole.Core.Shell
         private IShellApplication _shell;
         private CompositeOutputChannel _output;
 
+        private string _promptHeader = "";
         private ShellSignalHandler _onShellSignal;
 
         /// <summary>
@@ -57,7 +58,6 @@ namespace DeveloperConsole.Core.Shell
             _onShellSignal += responder.GetSignalHandler();
             _output = new CompositeOutputChannel(outputs);
 
-            // TODO: May need to move this to some sort of OnSystemReady action.
             _ = CommandPromptLoop();
         }
 
@@ -145,6 +145,9 @@ namespace DeveloperConsole.Core.Shell
                 throw;
             }
         }
+
+        public void AppendPromptHeader(string header) => _promptHeader += header;
+        public void RemoveFromPromptHeader(string header) => _promptHeader = _promptHeader.Replace(header, "");
 
         public void Write(object message)
         {

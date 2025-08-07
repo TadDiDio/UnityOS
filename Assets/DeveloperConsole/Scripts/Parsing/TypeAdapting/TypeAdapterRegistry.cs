@@ -1,31 +1,12 @@
 using System;
 using System.Collections.Generic;
-using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Tokenizing;
-using DeveloperConsole.Parsing.TypeAdapting.Types;
-using UnityEngine;
 
 namespace DeveloperConsole.Parsing.TypeAdapting
 {
     public class TypeAdapterRegistry : ITypeAdapterRegistry
     {
         private Dictionary<Type, ITypeAdapter> _adapters = new();
-
-        public TypeAdapterRegistry()
-        {
-            // Register default type parsers
-            RegisterAdapter<int>(new IntAdapter());
-            RegisterAdapter<bool>(new BoolAdapter());
-            RegisterAdapter<float>(new FloatAdapter());
-            RegisterAdapter<Color>(new ColorAdapter());
-            RegisterAdapter<Color>(new AlphaColorAdapter());
-            RegisterAdapter<string>(new StringAdapter());
-            RegisterAdapter<Type>(new TypeAdapter());
-            RegisterAdapter<Vector2>(new Vector2Adapter());
-            RegisterAdapter<Vector3>(new Vector3Adapter());
-            RegisterAdapter<ConfirmationResult>(new ConfirmationResultAdapter());
-            RegisterAdapter<ICommandResolver>(new TextCommandResolverAdapter());
-        }
 
         public void RegisterAdapter<T>(ITypeAdapter adapter)
         {

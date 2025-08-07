@@ -7,13 +7,13 @@ namespace DeveloperConsole.Tests
         [OneTimeSetUp]
         public void RestartKernelOnSetup()
         {
-            KernelBootstrapper.Bootstrap();
+            ConsoleBootstrapper.Bootstrap();
         }
         
         [OneTimeTearDown]
         public void RestartKernelOnTearDown()
         {
-            KernelBootstrapper.Bootstrap();
+            ConsoleBootstrapper.Bootstrap();
         }
     }
 }

@@ -3,8 +3,13 @@ using UnityEditor;
 #endif
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using UnityEngine;
 using DeveloperConsole.Core.Kernel;
+using DeveloperConsole.Core.Shell;
+using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole
 {
@@ -14,23 +19,22 @@ namespace DeveloperConsole
 #if UNITY_EDITOR
     [InitializeOnLoad]
 #endif
-    public static class KernelBootstrapper
+    public static class ConsoleBootstrapper
     {
-        public static Action SystemInitialized;
+        public static event Action SystemInitialized;
 
         private static bool _commonElementsInitialized;
         private static DependenciesFactory _configurationOverride;
 
         #region AUTO BOOTSTRAP
 #if UNITY_EDITOR
-        static KernelBootstrapper() => Bootstrap();
+        static ConsoleBootstrapper() => Bootstrap();
 #endif
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void RuntimeBootstrap() => Bootstrap();
 #endif
         #endregion
-
 
         /// <summary>
         /// Starts or restarts the developer console if it is already started.
@@ -39,6 +43,7 @@ namespace DeveloperConsole
         {
             KillSystem();
             KernelUpdater updater = new KernelUpdater();
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (Application.isPlaying)
             {
@@ -48,7 +53,9 @@ namespace DeveloperConsole
 #if UNITY_EDITOR
             EditModeTicker.Initialize(() => new EditModeTicker(updater));
 #endif
+
             CommonBootstrap();
+            InstallComponents();
 
             SystemInitialized?.Invoke();
         }
@@ -108,6 +115,58 @@ namespace DeveloperConsole
         private static DependenciesFactory GetConfiguration()
         {
             return _configurationOverride ?? new DependenciesFactory();
+        }
+
+        private static bool IsKnownSafeToSkip(Assembly a)
+        {
+            var name = a.GetName().Name;
+            if (string.IsNullOrEmpty(name))
+                return true;
+
+            return name.StartsWith("UnityEngine")
+                   || name.StartsWith("UnityEditor")
+                   || name.StartsWith("System")
+                   || name.StartsWith("mscorlib")
+                   || name.StartsWith("netstandard")
+                   || name.StartsWith("TextMeshPro")
+                   || name.StartsWith("Mono.")
+                   || name.StartsWith("Unity.")
+                   || name.StartsWith("nunit")
+                   || name.StartsWith("JetBrains")
+                   || name.StartsWith("Microsoft.")
+                   || name.StartsWith("Boo.")
+                   || name.StartsWith("ExCSS") // Example 3rd party lib
+                   || name.Contains("Newtonsoft"); // common JSON lib
+        }
+
+        private static IEnumerable<Type> SafeGetTypes(Assembly assembly)
+        {
+            try
+            {
+                return assembly.GetTypes();
+            }
+            catch (ReflectionTypeLoadException e)
+            {
+                return e.Types.Where(t => t != null)!;
+            }
+            catch
+            {
+                return Array.Empty<Type>();
+            }
+        }
+
+        private static void InstallComponents()
+        {
+            var installers = AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => !IsKnownSafeToSkip(a))
+                .SelectMany(SafeGetTypes)
+                .Where(t => typeof(IConsoleInstaller).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass);
+
+            foreach (var type in installers)
+            {
+                var instance = (IConsoleInstaller)Activator.CreateInstance(type)!;
+                instance.Install();
+            }
         }
     }
 }
