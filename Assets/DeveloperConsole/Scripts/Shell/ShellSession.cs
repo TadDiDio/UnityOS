@@ -69,16 +69,26 @@ namespace DeveloperConsole.Core.Shell
                 try
                 {
                     var token = _promptResponder.GetCommandCancellationToken();
-                    var resolver = await PromptAsync<ICommandResolver>(Prompt.Command(), token);
+                    var batch = await PromptAsync<CommandBatch>(Prompt.Command(), token);
 
-                    // TODO: Set windowed properly here
-                    var request = new ShellRequest { Session = this, Windowed = false, CommandResolver = resolver };
-                    var output = await _shell.HandleCommandRequestAsync(request, token);
+                    var previousStatus = Status.Success;
+                    foreach (var request in batch.Requests)
+                    {
+                        if (!request.Condition.AllowsStatus(previousStatus)) continue;
 
-                    string message = output.Status is Status.Success
-                        ? output.CommandOutput.Message
-                        : output.ErrorMessage;
-                    WriteLine(message);
+                        var shellRequest = new ShellRequest
+                        {
+                            Session = this,
+                            Windowed = request.Windowed,
+                            CommandResolver = request.Resolver
+                        };
+
+                        var output = await _shell.HandleCommandRequestAsync(shellRequest, token);
+
+                        previousStatus = output.Status;
+                        string message = output.Status is Status.Success ? output.CommandOutput.Message : output.ErrorMessage;
+                        WriteLine(message);
+                    }
                 }
                 catch (OperationCanceledException)
                 {
@@ -107,13 +117,13 @@ namespace DeveloperConsole.Core.Shell
                     {
                         if (prompt.Validator.Invoke(typed)) return typed;
 
-                        WriteLine(MessageFormatter.Error("Invalid response entered."));
+                        WriteLine(MessageFormatter.Error($"Cannot convert {response.GetType().FullName} to type {typeof(T).FullName}."));
                         continue;
                     }
 
                     if (response is not string stringResponse)
                         throw new InvalidOperationException(
-                            $"{_promptResponder.GetType().Name} responded with {response.GetType().Name}" +
+                            $"{_promptResponder.GetType().Name} responded with {response.GetType().Name} " +
                             $"when asked for {prompt.RequestedType.Name}!");
 
                     if (stringResponse is "") continue;
@@ -127,12 +137,13 @@ namespace DeveloperConsole.Core.Shell
 
                     if (!result.Success)
                     {
-                        WriteLine(MessageFormatter.Error("Invalid response entered."));
+                        WriteLine(MessageFormatter.Error($"Cannot convert {response.GetType().FullName} to type {typeof(T).FullName}."));
                         continue;
                     }
 
                     if (prompt.Validator.Invoke(result.As<T>())) return result.As<T>();
-                    WriteLine(MessageFormatter.Error("Invalid response entered."));
+                    WriteLine(MessageFormatter.Error($"Cannot convert {response.GetType().FullName} to type {typeof(T).FullName}."));
+
                 }
             }
             catch (OperationCanceledException)

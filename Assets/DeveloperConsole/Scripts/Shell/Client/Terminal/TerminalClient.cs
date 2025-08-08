@@ -13,7 +13,7 @@ namespace DeveloperConsole
         {
             Busy,
             General,
-            ChoicePrompt,
+            ChoicePrompt
         }
 
         // Visual related state
@@ -169,7 +169,6 @@ namespace DeveloperConsole
                 PromptKind.Choice => TerminalState.ChoicePrompt,
                 _ => TerminalState.General
             };
-
 
             var tcs = new TaskCompletionSource<object>();
             _promptResponseSource = tcs;

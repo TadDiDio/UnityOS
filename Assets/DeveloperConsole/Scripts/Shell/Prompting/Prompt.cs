@@ -28,7 +28,7 @@ namespace DeveloperConsole.Core.Shell
         {
             return new Prompt(PromptKind.Command, typeof(ICommandResolver), "", i =>
             {
-                return typeof(ICommandResolver).IsAssignableFrom(i.GetType());
+                return typeof(CommandBatch).IsAssignableFrom(i.GetType());
             });
         }
 

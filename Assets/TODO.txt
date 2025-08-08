@@ -3,7 +3,9 @@ Things are generally untested and the tests I do have are old, but the system ap
 code smells. Testing is only worth it if selling this product, otherwise its not worth the immense time sink. Remember 
 that when making new things, can you register defaults for anything you want using an IConsoleInstaller. There is no 
 protection against prompting in a non interactive context, but currently all contexts are interactive and file running 
-is contained to terminals so this feature was not worth protecting against yet.
+is contained to terminals so this feature was not worth protecting against yet. When prompting for commands, we can only 
+convert string -> XXX so a gui will need to build a command batch fully and submit it like that (or use a string, but
+that is not proper for a gui which can build commands directly).
 
 
 ROSLYN:
@@ -89,6 +91,7 @@ NOTES FOR DOCS
 - When using variadic args, make sure to initialize the list using new(). If you don't the system will only initialize it when you provide variadic args on the command line.
 - You can make flags true by default and disabled with --no-flag or -no-f by simply setting bool to true like [...] private bool flag = true;
 - Make sure to allow OperationCancelledExceptions to propagate in commands or else unexpected things may happen.
+- Commands that take in other commands can use a Command Batch object but that must appear at the end of the input since it will absorb all remaining text
 
 COMMAND IDEAS
 bind

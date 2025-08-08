@@ -65,7 +65,10 @@ namespace DeveloperConsole.Core.Shell
         {
             try
             {
-                // TODO: Handle windowed here.
+                if (request.Windowed)
+                {
+                    // TODO: Handle windowed here.
+                }
 
                 CommandExecutionRequest executionRequest = new()
                 {

@@ -8,7 +8,7 @@ namespace DeveloperConsole.Parsing.TypeAdapting
     {
         protected override bool TryConsumeAndConvert(TokenStream stream, out TextCommandResolver result)
         {
-            string command = string.Join(" ",stream.Read(stream.Remaining().Count()));
+            string command = string.Join(" ", stream.Read(stream.Remaining().Count()));
             result = new TextCommandResolver(command);
             return true;
         }
