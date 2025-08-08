@@ -15,29 +15,55 @@ namespace DeveloperConsole.Command
 
 
         /// <summary>
+        /// User-defined success of the command execution.
+        /// </summary>
+        public readonly Status Status;
+
+
+        /// <summary>
         /// Creates an empty output.
         /// </summary>
-        public CommandOutput() => Message = "";
+        /// <param name="status">User-defined success status of the command.</param>
+        public CommandOutput(Status status = Status.Success)
+        {
+            Message = "";
+            Status = status;
+        }
 
 
         /// <summary>
         /// Creates an output with a message.
         /// </summary>
         /// <param name="message">The message</param>
-        public CommandOutput(string message) => Message = message;
+        /// <param name="status">User-defined success status of the command.</param>
+        public CommandOutput(string message, Status status = Status.Success)
+        {
+            Message = message;
+            Status = status;
+        }
 
 
         /// <summary>
         /// Creates an output message with each line on a new line.
         /// </summary>
         /// <param name="lines">The lines.</param>
-        public CommandOutput(IEnumerable<string> lines) => Message = string.Join(Environment.NewLine, lines);
+        /// <param name="status">User-defined success status of the command.</param>
+        public CommandOutput(IEnumerable<string> lines, Status status = Status.Success)
+        {
+            Message = string.Join(Environment.NewLine, lines);
+            Status = status;
+        }
 
 
         /// <summary>
         /// Creates on output message from a result.
         /// </summary>
         /// <param name="result"></param>
-        public CommandOutput(object result) => Message = result.ToString();
+        /// <param name="status">User-defined success status of the command.</param>
+        public CommandOutput(object result, Status status = Status.Success)
+        {
+            Message = result.ToString();
+            Status = status;
+        }
     }
 }

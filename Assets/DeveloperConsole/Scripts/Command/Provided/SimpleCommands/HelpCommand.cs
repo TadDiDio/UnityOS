@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DeveloperConsole.Command;
+using UnityEngine.Windows.Speech;
 
 namespace DeveloperConsole
 {

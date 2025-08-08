@@ -49,12 +49,11 @@ namespace DeveloperConsole.Command
 
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    output.Message =
-                        MessageFormatter.Warning(
-                            "Command exited without throwing after a cancellation was requested. ") + output.Message;
+                    output.Message = MessageFormatter.Warning
+                    ("Command exited without throwing after a cancellation was requested. ") + output.Message;
                 }
 
-                return CommandExecutionResult.Success(output);
+                return output.Status is Status.Success ? CommandExecutionResult.Success(output) : CommandExecutionResult.Fail(output.Message);
             }
             catch (OperationCanceledException)
             {
