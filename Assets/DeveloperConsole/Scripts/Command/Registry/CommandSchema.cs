@@ -61,7 +61,7 @@ namespace DeveloperConsole.Command
         /// <summary>
         /// The description of the arg.
         /// </summary>
-        public string Description;
+        public readonly string Description;
 
         /// <summary>
         /// The field representing this arg.
@@ -120,6 +120,20 @@ namespace DeveloperConsole.Command
             }
 
             return specs;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is not ArgumentSpecification other) return false;
+
+            return Name == other.Name && Description == other.Description
+                && Attributes == other.Attributes
+                && FieldInfo == other.FieldInfo;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Name, Description, Attributes, FieldInfo);
         }
     }
 }

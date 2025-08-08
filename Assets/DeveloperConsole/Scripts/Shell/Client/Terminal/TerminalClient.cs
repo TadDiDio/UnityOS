@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using DeveloperConsole.Command;
 using DeveloperConsole.Core.Shell;
 
 namespace DeveloperConsole
@@ -14,6 +15,7 @@ namespace DeveloperConsole
             Busy,
             General,
             ChoicePrompt,
+            CommandPrompt
         }
 
         // Visual related state
@@ -22,17 +24,11 @@ namespace DeveloperConsole
         private TerminalHistoryBuffer _historyBuffer = new();
 
         // Processing related state
+        private DefaultCommandBatcher _batcher = new();
         private PromptChoice[] _choices;
         private TerminalState _state = TerminalState.General;
         private TaskCompletionSource<object> _promptResponseSource;
         private CancellationTokenSource _cancellationSource;
-
-        public TerminalClient()
-        {
-            WriteLine("Welcome to the developer console 9000! To view a list of available commands, type 'reg'.");
-
-            // TODO: Open startup
-        }
 
         public void Draw(Rect areaRect)
         {
@@ -68,6 +64,7 @@ namespace DeveloperConsole
             switch (_state)
             {
                 case TerminalState.General:
+                case TerminalState.CommandPrompt:
                     GUILayout.BeginHorizontal();
 
                     GUILayout.Label("> ", TerminalGUIStyle.Prompt(), GUILayout.ExpandWidth(false));
@@ -139,7 +136,12 @@ namespace DeveloperConsole
 
             // TODO: support dynamic prompt selection
             WriteLine($"> {input}");
-            _promptResponseSource.SetResult(input);
+
+            if (_state is TerminalState.CommandPrompt)
+            {
+                _promptResponseSource.SetResult(_batcher.GetBatch(input));
+            }
+            else _promptResponseSource.SetResult(input);
         }
 
         public void Write(string token)
@@ -167,9 +169,9 @@ namespace DeveloperConsole
             _state = prompt.Kind switch
             {
                 PromptKind.Choice => TerminalState.ChoicePrompt,
+                PromptKind.Command => TerminalState.CommandPrompt,
                 _ => TerminalState.General
             };
-
 
             var tcs = new TaskCompletionSource<object>();
             _promptResponseSource = tcs;

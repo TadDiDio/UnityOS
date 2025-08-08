@@ -23,7 +23,7 @@ namespace DeveloperConsole.Parsing
         /// <param name="stream">The token stream.</param>
         /// <param name="target">The parse target.</param>
         /// <returns>The result.</returns>
-        public ParseResult Parse(TokenStream stream, ICommandParseTarget target);
+        public ParseResult Parse(TokenStream stream, CommandParseTarget target);
 
 
         /// <summary>

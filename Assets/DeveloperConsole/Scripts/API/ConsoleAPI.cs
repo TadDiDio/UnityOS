@@ -118,7 +118,7 @@ namespace DeveloperConsole
             /// <param name="stream">The stream to parse.</param>
             /// <param name="target">The target to parse to.</param>
             /// <returns>The result.</returns>
-            public static ParseResult ParseCommand(TokenStream stream, ICommandParseTarget target)
+            public static ParseResult ParseCommand(TokenStream stream, CommandParseTarget target)
             {
                 return WithService<ICommandParser, ParseResult>(p => p.Parse(stream, target));
             }

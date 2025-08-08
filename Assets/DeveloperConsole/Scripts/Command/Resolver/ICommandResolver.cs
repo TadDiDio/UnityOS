@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DeveloperConsole.Core.Shell;
 
 namespace DeveloperConsole.Command
@@ -11,11 +12,18 @@ namespace DeveloperConsole.Command
         /// Resolves to a command.
         /// </summary>
         /// <param name="session">The session executing this command.</param>
+        /// <param name="expandAliases">Tells whether to expand aliases.</param>
         /// <returns>The result.</returns>
-        public CommandResolutionResult Resolve(ShellSession session);
+        public CommandResolutionResult Resolve(ShellSession session, bool expandAliases);
     }
 
-    
+    public enum CommandResolutionStatus
+    {
+        Success,
+        Fail,
+        AliasExpansion
+    }
+
     /// <summary>
     /// Holds the results of a command resolution.
     /// </summary>
@@ -25,18 +33,24 @@ namespace DeveloperConsole.Command
         /// The command if successful.
         /// </summary>
         public ICommand Command;
-        
+
         /// <summary>
         /// The error message if failed.
         /// </summary>
         public string ErrorMessage;
-        
+
         /// <summary>
         /// The failure status.
         /// </summary>
-        public Status Status;
+        public CommandResolutionStatus Status;
 
-        
+
+        /// <summary>
+        /// Tokens to reevaluate when an alias expansion occured.
+        /// </summary>
+        public List<string> Tokens;
+
+
         /// <summary>
         /// Creates a failed result.
         /// </summary>
@@ -47,12 +61,13 @@ namespace DeveloperConsole.Command
             return new CommandResolutionResult
             {
                 Command = null,
-                Status = Status.Fail,
-                ErrorMessage = message
+                Status = CommandResolutionStatus.Fail,
+                ErrorMessage = message,
+                Tokens = null
             };
         }
 
-        
+
         /// <summary>
         /// Creates a successful result.
         /// </summary>
@@ -63,8 +78,20 @@ namespace DeveloperConsole.Command
             return new CommandResolutionResult
             {
                 Command = command,
-                Status = Status.Success,
-                ErrorMessage = string.Empty
+                Status = CommandResolutionStatus.Success,
+                ErrorMessage = string.Empty,
+                Tokens = null
+            };
+        }
+
+        public static CommandResolutionResult AliasExpansion(List<string> tokens)
+        {
+            return new CommandResolutionResult
+            {
+                Command = null,
+                Status = CommandResolutionStatus.AliasExpansion,
+                ErrorMessage = string.Empty,
+                Tokens = tokens
             };
         }
     }

@@ -11,7 +11,7 @@ namespace DeveloperConsole.Parsing
         /// <summary>
         /// The finalized parse target.
         /// </summary>
-        public ICommandParseTarget Target { get; }
+        public CommandParseTarget Target { get; }
         
         private Dictionary<string, object> _metadata = new();
 
@@ -20,7 +20,7 @@ namespace DeveloperConsole.Parsing
         /// Creates a new parse context.
         /// </summary>
         /// <param name="target">The parse target.</param>
-        public ParseContext(ICommandParseTarget target)
+        public ParseContext(CommandParseTarget target)
         {
             Target = target;
         }

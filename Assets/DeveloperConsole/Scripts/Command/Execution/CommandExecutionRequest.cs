@@ -12,7 +12,6 @@ namespace DeveloperConsole.Command
         /// </summary>
         public ShellSession ShellSession;
 
-
         /// <summary>
         /// The command resolver for this input.
         /// </summary>
@@ -22,5 +21,10 @@ namespace DeveloperConsole.Command
         /// The execution shell.
         /// </summary>
         public ShellApplication Shell;
+
+        /// <summary>
+        /// Tells whether aliases should be expanded.
+        /// </summary>
+        public bool ExpandAliases;
     }
 }

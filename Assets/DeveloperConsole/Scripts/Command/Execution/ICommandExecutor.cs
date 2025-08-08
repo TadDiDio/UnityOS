@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using NUnit.Framework;
 
 namespace DeveloperConsole.Command
 {
@@ -26,7 +28,7 @@ namespace DeveloperConsole.Command
         /// <summary>
         /// Whether it succeeded.
         /// </summary>
-        public Status Status;
+        public CommandResolutionStatus Status;
 
         /// <summary>
         /// An error message if there was one.
@@ -39,6 +41,11 @@ namespace DeveloperConsole.Command
         public CommandOutput CommandOutput;
 
         /// <summary>
+        /// Updated token list when performing alias expansion.
+        /// </summary>
+        public List<string> Tokens;
+
+        /// <summary>
         /// Creates a failed result.
         /// </summary>
         /// <param name="errorMessage">The error message.</param>
@@ -47,9 +54,10 @@ namespace DeveloperConsole.Command
         {
             return new CommandExecutionResult
             {
-                Status = Status.Fail,
+                Status = CommandResolutionStatus.Fail,
                 ErrorMessage = errorMessage,
-                CommandOutput = null
+                CommandOutput = null,
+                Tokens = null
             };
         }
 
@@ -62,9 +70,22 @@ namespace DeveloperConsole.Command
         {
             return new CommandExecutionResult
             {
-                Status = Status.Success,
+                Status = CommandResolutionStatus.Success,
                 ErrorMessage = string.Empty,
-                CommandOutput = output
+                CommandOutput = output,
+                Tokens = null
+            };
+        }
+
+
+        public static CommandExecutionResult AliasExpansion(List<string> tokens)
+        {
+            return new CommandExecutionResult
+            {
+                Status = CommandResolutionStatus.AliasExpansion,
+                ErrorMessage = string.Empty,
+                CommandOutput = null,
+                Tokens = tokens
             };
         }
     }

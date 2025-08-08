@@ -1,17 +1,10 @@
 namespace DeveloperConsole.Command
 {
-    public class RequiredAttribute : ArgumentAttribute, IValidatedAttribute
+    public class RequiredAttribute : ArgumentAttribute, IAttributeValidatorFactory
     {
-        private string _name;
-        private bool _wasSet;
-
-        public bool Validate(ArgumentSpecification spec)
+        public IAttributeValidator CreateValidatorInstance()
         {
-            _name = spec?.Name;
-            return _wasSet;
+            return new RequiredAttributeValidator();
         }
-
-        public void Record(RecordingContext context) => _wasSet = true;
-        public string ErrorMessage() => $"Argument '{_name ?? "unknown"}' must be explicitly set.";
     }
 }

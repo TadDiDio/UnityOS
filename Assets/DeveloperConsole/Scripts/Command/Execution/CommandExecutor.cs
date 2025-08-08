@@ -14,10 +14,15 @@ namespace DeveloperConsole.Command
         public async Task<CommandExecutionResult> ExecuteCommand(CommandExecutionRequest request, CancellationToken cancellationToken)
         {
             // 1. Resolve
-            var resolution = request.Resolver.Resolve(request.ShellSession);
-            if (resolution.Status is not Status.Success)
+            var resolution = request.Resolver.Resolve(request.ShellSession, request.ExpandAliases);
+
+            switch (resolution.Status)
             {
-                return CommandExecutionResult.Fail(resolution.ErrorMessage);
+                case CommandResolutionStatus.Success: break;
+                case CommandResolutionStatus.AliasExpansion:
+                    return CommandExecutionResult.AliasExpansion(resolution.Tokens);
+                case CommandResolutionStatus.Fail:
+                    return CommandExecutionResult.Fail(resolution.ErrorMessage);
             }
 
             // 2. Build context
@@ -49,12 +54,11 @@ namespace DeveloperConsole.Command
 
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    output.Message =
-                        MessageFormatter.Warning(
-                            "Command exited without throwing after a cancellation was requested. ") + output.Message;
+                    output.Message = MessageFormatter.Warning
+                    ("Command exited without throwing after a cancellation was requested. ") + output.Message;
                 }
 
-                return CommandExecutionResult.Success(output);
+                return output.Status is Status.Success ? CommandExecutionResult.Success(output) : CommandExecutionResult.Fail(output.Message);
             }
             catch (OperationCanceledException)
             {

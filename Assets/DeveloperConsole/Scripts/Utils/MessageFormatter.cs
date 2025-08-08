@@ -119,7 +119,14 @@ namespace DeveloperConsole
                 }
             }
 
-            return builder.ToString();
+            string result = builder.ToString();
+
+            if (result.EndsWith(Environment.NewLine))
+            {
+                result = result[..^Environment.NewLine.Length];
+            }
+
+            return result;
         }
 
         /// <summary>

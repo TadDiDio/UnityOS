@@ -7,6 +7,6 @@ namespace DeveloperConsole.Command
         private ICommand _command;
 
         public CommandCommandResolver(ICommand command) => _command = command;
-        public CommandResolutionResult Resolve(ShellSession session) => CommandResolutionResult.Success(_command);
+        public CommandResolutionResult Resolve(ShellSession session, bool expandAliases = false) => CommandResolutionResult.Success(_command);
     }
 }

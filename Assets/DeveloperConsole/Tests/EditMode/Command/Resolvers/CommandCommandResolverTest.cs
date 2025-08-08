@@ -12,12 +12,12 @@ namespace DeveloperConsole.Tests.Command.Resolvers
             var command = new CommandBuilder()
                 .WithName("mock")
                 .Build();
-            
+
             var resolver = new CommandCommandResolver(command);
 
             var result = resolver.Resolve(null);
 
-            Assert.IsTrue(result.Status == Status.Success);
+            Assert.IsTrue(result.Status == CommandResolutionStatus.Success);
             Assert.AreSame(command, result.Command);
         }
     }

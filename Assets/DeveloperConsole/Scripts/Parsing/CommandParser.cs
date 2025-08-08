@@ -4,7 +4,6 @@ using System.Linq;
 using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Rules;
 using DeveloperConsole.Parsing.Tokenizing;
-using UnityEngine;
 
 namespace DeveloperConsole.Parsing
 {
@@ -36,7 +35,7 @@ namespace DeveloperConsole.Parsing
         /// <param name="stream">The token stream.</param>
         /// <param name="target">The target.</param>
         /// <returns>The result.</returns>
-        public ParseResult Parse(TokenStream stream, ICommandParseTarget target)
+        public ParseResult Parse(TokenStream stream, CommandParseTarget target)
         {
             ParseContext context = new(target);
 

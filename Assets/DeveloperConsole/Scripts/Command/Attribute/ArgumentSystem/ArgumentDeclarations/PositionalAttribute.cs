@@ -6,15 +6,12 @@ namespace DeveloperConsole.Command
     /// Declares a positional arg.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class PositionalAttribute : ArgumentDeclarationAttribute, IValidatedAttribute
+    public class PositionalAttribute : ArgumentDeclarationAttribute, IAttributeValidatorFactory
     {
         /// <summary>
         /// The index in the command.
         /// </summary>
         public int Index { get; }
-
-        private bool _wasSet;
-        private string _name;
 
         /// <summary>
         /// Creates a positional arg.
@@ -33,20 +30,9 @@ namespace DeveloperConsole.Command
             return $"{Name ?? "Positional"} ({Index}): {Description}";
         }
 
-        public bool Validate(ArgumentSpecification argSpec)
+        public IAttributeValidator CreateValidatorInstance()
         {
-            _name = argSpec.Name;
-            return _wasSet;
-        }
-
-        public void Record(RecordingContext context)
-        {
-            _wasSet = true;
-        }
-
-        public string ErrorMessage()
-        {
-            return $"Missing value for positional argument: '{_name ?? "unknown"}'.";
+            return new PositionalAttributeValidator();
         }
     }
 }

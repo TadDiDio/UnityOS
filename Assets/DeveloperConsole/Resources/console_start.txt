@@ -1,4 +1,2 @@
-// This does not work currently.
-
-alias cls clear
-alias h help
+alias test "print This is a test alias"
+alias boot "play; print entered play mode"

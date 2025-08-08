@@ -6,7 +6,7 @@ using NUnit.Framework;
 
 namespace DeveloperConsole.Tests.EditMode.Parsing.ParseTargets
 {
-    public class CommandCommandParseTargetTest
+    public class CommandParseTargetTest
     {
         [Test]
         public void Constructor_CreatesCommandInstance()
@@ -25,7 +25,7 @@ namespace DeveloperConsole.Tests.EditMode.Parsing.ParseTargets
                 ArgumentSpecifications = argSpecs
             };
 
-            var target = new CommandCommandParseTarget(schema);
+            var target = new CommandParseTarget(schema);
 
             Assert.IsNotNull(target.Command);
             Assert.AreEqual(commandType, target.Command.GetType());
@@ -48,7 +48,7 @@ namespace DeveloperConsole.Tests.EditMode.Parsing.ParseTargets
                 ArgumentSpecifications = argSpecs
             };
 
-            var target = new CommandCommandParseTarget(schema);
+            var target = new CommandParseTarget(schema);
             var arguments = target.GetArguments();
 
             Assert.AreEqual(argSpecs.Count, arguments.Count);
@@ -72,7 +72,7 @@ namespace DeveloperConsole.Tests.EditMode.Parsing.ParseTargets
                 ArgumentSpecifications = argSpecs
             };
 
-            var target = new CommandCommandParseTarget(schema);
+            var target = new CommandParseTarget(schema);
             var argSpec = argSpecs.First();
 
             target.SetArgument(argSpec, true);

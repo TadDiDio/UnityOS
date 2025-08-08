@@ -38,7 +38,7 @@ namespace DeveloperConsole
             ConsoleAPI.Parsing.RegisterTypeParser<Vector2>(new Vector2Adapter());
             ConsoleAPI.Parsing.RegisterTypeParser<Vector3>(new Vector3Adapter());
             ConsoleAPI.Parsing.RegisterTypeParser<ConfirmationResult>(new ConfirmationResultAdapter());
-            ConsoleAPI.Parsing.RegisterTypeParser<ICommandResolver>(new TextCommandResolverAdapter());
+            ConsoleAPI.Parsing.RegisterTypeParser<ICommandResolver>(new TokenCommandResolverAdapter());
         }
     }
 

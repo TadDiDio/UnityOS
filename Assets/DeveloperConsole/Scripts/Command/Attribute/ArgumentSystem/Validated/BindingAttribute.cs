@@ -1,5 +1,4 @@
 using System;
-using DeveloperConsole.Parsing;
 
 namespace DeveloperConsole.Command
 {
@@ -7,14 +6,10 @@ namespace DeveloperConsole.Command
     /// Specifies to inject an object of this field's type for use in the command.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class BindingAttribute : ArgumentAttribute, IValidatedAttribute
+    public class BindingAttribute : ArgumentAttribute, IAttributeValidatorFactory
     {
         public readonly string Name;
         public readonly string Tag;
-
-        private Type _type;
-
-        private ICommandParseTarget _commandParseTarget;
 
         /// <summary>
         /// Injects an object of this type if one is or can be bound.
@@ -27,29 +22,9 @@ namespace DeveloperConsole.Command
             Name = name;
         }
 
-
-        public void Record(RecordingContext context)
+        public IAttributeValidator CreateValidatorInstance()
         {
-            _commandParseTarget = context.CommandParseTarget;
-        }
-
-
-        public bool Validate(ArgumentSpecification spec)
-        {
-            _type = spec.FieldInfo.FieldType;
-            bool success = ConsoleAPI.Bindings.TryGetBinding(_type, Name, Tag, out var obj);
-
-            if (!success) return false;
-
-            _commandParseTarget.SetArgument(spec, obj);
-            return true;
-        }
-
-
-        public string ErrorMessage()
-        {
-            return $"There is no binding of type '{_type}' and one could not be found in the loaded scenes. " +
-                   $"Try using the 'bind' command to set a binding.";
+            return new BindingAttributeValidator(Name, Tag);
         }
     }
 }
