@@ -1,6 +1,8 @@
 using System;
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Core.Shell;
@@ -14,6 +16,7 @@ namespace DeveloperConsole
             Busy,
             General,
             ChoicePrompt,
+            CommandPrompt
         }
 
         // Visual related state
@@ -22,6 +25,7 @@ namespace DeveloperConsole
         private TerminalHistoryBuffer _historyBuffer = new();
 
         // Processing related state
+        private Queue<string> _inputBuffer = new();
         private PromptChoice[] _choices;
         private TerminalState _state = TerminalState.General;
         private TaskCompletionSource<object> _promptResponseSource;
@@ -68,6 +72,7 @@ namespace DeveloperConsole
             switch (_state)
             {
                 case TerminalState.General:
+                case TerminalState.CommandPrompt:
                     GUILayout.BeginHorizontal();
 
                     GUILayout.Label("> ", TerminalGUIStyle.Prompt(), GUILayout.ExpandWidth(false));
@@ -139,7 +144,38 @@ namespace DeveloperConsole
 
             // TODO: support dynamic prompt selection
             WriteLine($"> {input}");
-            _promptResponseSource.SetResult(input);
+
+            if (_state is TerminalState.CommandPrompt)
+            {
+                input = SplitAndBuffer(input);
+                _promptResponseSource.SetResult(input);
+            }
+            else
+            {
+                _promptResponseSource.SetResult(input);
+            }
+        }
+
+        private string SplitAndBuffer(string input)
+        {
+            if (_inputBuffer.Count > 0)
+            {
+                Log.Warning($"Attempted to run a new command ({input}) while {_inputBuffer.Peek()} was still buffered. " +
+                          $"Skipping buffered execution.");
+                _inputBuffer.Clear();
+            }
+
+            // Split on ';' and '&&'
+            var parts = Regex.Split(input, @"(?:\s*(?:&&|;)\s*)+")
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .ToArray();
+
+            foreach (var part in parts)
+            {
+                _inputBuffer.Enqueue(part);
+            }
+
+            return _inputBuffer.Count == 0 ? "" : _inputBuffer.Dequeue();
         }
 
         public void Write(string token)
@@ -166,10 +202,10 @@ namespace DeveloperConsole
 
             _state = prompt.Kind switch
             {
+                PromptKind.Command => TerminalState.CommandPrompt,
                 PromptKind.Choice => TerminalState.ChoicePrompt,
                 _ => TerminalState.General
             };
-
 
             var tcs = new TaskCompletionSource<object>();
             _promptResponseSource = tcs;
@@ -177,6 +213,11 @@ namespace DeveloperConsole
             await using var reg = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
 
             DisplayPromptOnce(prompt);
+
+            if (_inputBuffer.Count > 0)
+            {
+                _promptResponseSource.SetResult(_inputBuffer.Dequeue());
+            }
 
             try
             {
