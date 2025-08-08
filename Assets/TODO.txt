@@ -47,6 +47,7 @@ Permissions system (hooked via precommand validator)
 If you make a abstract UI system, do an abstract input system too.
 Choice functionality in shell to help common input choices that are limited to range. Should support modal GUI later too.
 Auto completion system with rich typed positional arg hints in CLI
+Change NoPrompt flag in shell request to be a filter rather than an all-off switch
 
 FEATURES TO GET TO
 Need to make a system wide Isready event before accessing resources or running commands to give users a chance to register stuff before commands are run.

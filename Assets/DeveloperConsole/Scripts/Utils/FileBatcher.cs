@@ -46,7 +46,9 @@ namespace DeveloperConsole.Parsing
                     else sb.Append("; ");
                 }
 
-                return new DefaultCommandBatcher().GetBatch(sb.ToString());
+                var batch = new DefaultCommandBatcher().GetBatch(sb.ToString());
+                batch.AllowPrompting = false; // TODO: This will be replaced with filter.
+                return batch;
             }
             catch (Exception e)
             {

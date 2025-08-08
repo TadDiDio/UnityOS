@@ -9,7 +9,6 @@ using DeveloperConsole.Parsing.Tokenizing;
 
 namespace DeveloperConsole.Core.Shell
 {
-
     /// <summary>
     /// A delegate representing a shell signal handler.
     /// </summary>
@@ -24,6 +23,7 @@ namespace DeveloperConsole.Core.Shell
         private IShellApplication _shell;
         private CompositeOutputChannel _output;
 
+        private bool _promptingAllowed = true;
         private string _promptHeader = "";
         private ShellSignalHandler _onShellSignal;
         private Dictionary<string, string> _aliasTable = new();
@@ -74,7 +74,6 @@ namespace DeveloperConsole.Core.Shell
             try
             {
                 await SubmitBatch(startBatch, _promptResponder.GetCommandCancellationToken());
-                Signal(new ClearSignal());
             }
             catch (Exception e)
             {
@@ -111,7 +110,7 @@ namespace DeveloperConsole.Core.Shell
                 var aliasExpanded = false;
                 var previousStatus = Status.Success;
 
-                var requests = new List<CommandRequest>(batch.Requests);
+                var requests = new List<FrontEndCommandRequest>(batch.Requests);
 
                 for (int i = 0; i < requests.Count; i++)
                 {
@@ -129,7 +128,9 @@ namespace DeveloperConsole.Core.Shell
 
                     aliasExpanded = false;
 
+                    _promptingAllowed = batch.AllowPrompting && !request.Windowed;
                     var output = await _shell.HandleCommandRequestAsync(shellRequest, token);
+                    _promptingAllowed = true;
 
                     switch (output.Status)
                     {
@@ -169,6 +170,9 @@ namespace DeveloperConsole.Core.Shell
         /// <exception cref="InvalidOperationException">Throws if incorrect response type given.</exception>
         public async Task<T> PromptAsync<T>(Prompt prompt, CancellationToken cancellationToken)
         {
+            // BUG: Unnoticed so far but this likely causes problems for async commands running in parallel.
+            if (!_promptingAllowed) throw new InvalidOperationException("Cannot prompt in a batch that does not allow it.");
+
             try
             {
                 while (true)

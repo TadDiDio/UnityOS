@@ -16,7 +16,7 @@ namespace DeveloperConsole.Command
         /// <summary>
         /// A shell for running commands.
         /// </summary>
-        public ShellApplication Shell;
+        public IShellApplication Shell;
 
         /// <summary>
         /// The current environment.

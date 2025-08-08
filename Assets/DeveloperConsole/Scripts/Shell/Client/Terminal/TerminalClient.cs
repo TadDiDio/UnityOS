@@ -30,13 +30,6 @@ namespace DeveloperConsole
         private TaskCompletionSource<object> _promptResponseSource;
         private CancellationTokenSource _cancellationSource;
 
-        public TerminalClient()
-        {
-            WriteLine("Welcome to the developer console 9000! To view a list of available commands, type 'reg'.");
-
-            // TODO: Open startup
-        }
-
         public void Draw(Rect areaRect)
         {
             // Terminal background

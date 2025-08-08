@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using DeveloperConsole.Core.Shell;
 using UnityEngine;
 
 namespace DeveloperConsole.Command
@@ -11,10 +12,10 @@ namespace DeveloperConsole.Command
     /// </summary>
     public class CommandExecutor : ICommandExecutor
     {
-        public async Task<CommandExecutionResult> ExecuteCommand(CommandExecutionRequest request, CancellationToken cancellationToken)
+        public async Task<CommandExecutionResult> ExecuteCommand(ShellRequest request, CancellationToken cancellationToken)
         {
             // 1. Resolve
-            var resolution = request.Resolver.Resolve(request.ShellSession, request.ExpandAliases);
+            var resolution = request.CommandResolver.Resolve(request.Session, request.ExpandAliases);
 
             switch (resolution.Status)
             {
@@ -29,7 +30,7 @@ namespace DeveloperConsole.Command
             var context = new CommandContext
             {
                 Shell = request.Shell,
-                Session = request.ShellSession
+                Session = request.Session
             };
 #if UNITY_EDITOR
             context.Environment = Application.isPlaying ? UnityEnvironment.PlayMode : UnityEnvironment.EditMode;

@@ -67,20 +67,12 @@ namespace DeveloperConsole.Core.Shell
             {
                 if (request.Windowed)
                 {
-                    // TODO: Handle windowed here.
+                    
                 }
 
-                CommandExecutionRequest executionRequest = new()
-                {
-                    Shell = this,
-                    ExpandAliases = request.ExpandAliases,
-                    Resolver = request.CommandResolver,
-                    ShellSession = request.Session
-                };
-
+                request.Shell = this;
                 CancellationTokenSource tokenSource = CancellationTokenSource.CreateLinkedTokenSource(userToken);
-
-                return await _executor.ExecuteCommand(executionRequest, tokenSource.Token);
+                return await _executor.ExecuteCommand(request, tokenSource.Token);
             }
             catch (OperationCanceledException)
             {

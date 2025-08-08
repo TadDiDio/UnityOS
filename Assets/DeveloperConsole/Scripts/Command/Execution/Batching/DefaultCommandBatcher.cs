@@ -67,7 +67,7 @@ namespace DeveloperConsole.Command
                     // Tokenize the command text
                     var tokens = ConsoleAPI.Parsing.Tokenize(cmdText).Tokens;
 
-                    batch.Requests.Add(new CommandRequest
+                    batch.Requests.Add(new FrontEndCommandRequest
                     {
                         Resolver = new TokenCommandResolver(tokens),
                         Condition = lastSep == "&&" ? CommandCondition.OnPreviousSuccess : CommandCondition.Always,
