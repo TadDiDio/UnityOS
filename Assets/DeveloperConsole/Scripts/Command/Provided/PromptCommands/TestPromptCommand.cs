@@ -14,27 +14,28 @@ namespace DeveloperConsole.Scripts.Command
             Cat,
             Fish
         }
-        protected override async Task<CommandOutput> Execute(CommandContext context, CancellationToken cancellationToken)
+        protected override async Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
         {
-            if (!await ConfirmAsync("Do you want to proceed?", cancellationToken)) return new("Execution canceled.");
+            if (!await ConfirmAsync("Do you want to proceed?", cancellationToken))
+                return new CommandOutput("Execution canceled.");
 
             int number = await PromptAsync<int>("Enter your favorite integer", cancellationToken);
 
-            context.Session.WriteLine($"You picked {number}");
+            WriteLine($"You picked {number}");
 
-            Animal animal = await PromptWithChoicesAsync<Animal>("Pick your favorite animal", new[]
+            await PromptWithChoicesAsync<Animal>("Pick your favorite animal", new[]
             {
                 new PromptChoice("Dog", Animal.Dog),
                 new PromptChoice("Cat", Animal.Cat),
                 new PromptChoice("Fish", Animal.Fish),
             }, cancellationToken);
 
-            context.Session.WriteLine("Doing a random countdown.");
+            WriteLine("Doing a random countdown.");
 
             int i = 3;
             while (i > 0)
             {
-                context.Session.WriteLine(i--);
+                WriteLine(i--);
                 await Task.Delay(1000, cancellationToken);
             }
 

@@ -4,6 +4,7 @@ using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Rules;
 using DeveloperConsole.Parsing.TypeAdapting;
 using DeveloperConsole.Parsing.TypeAdapting.Types;
+using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole
 {
@@ -46,7 +47,14 @@ namespace DeveloperConsole
     {
         public void Install()
         {
-            var terminal = new TerminalClient();
+            var config = new WindowConfigFactory()
+                .Draggable()
+                .WithHeaderHeight(30)
+                .ForceFullscreen()
+                .WithName("Terminal")
+                .Build();
+
+            var terminal = new TerminalClient(config);
             ConsoleAPI.Shell.CreateShellSession(terminal);
             ConsoleAPI.Windowing.RegisterWindow(terminal);
         }

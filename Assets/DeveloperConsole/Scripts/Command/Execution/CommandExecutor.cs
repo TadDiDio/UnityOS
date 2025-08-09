@@ -12,7 +12,10 @@ namespace DeveloperConsole.Command
     /// </summary>
     public class CommandExecutor : ICommandExecutor
     {
-        public async Task<CommandExecutionResult> ExecuteCommand(ShellRequest request, CancellationToken cancellationToken)
+        public async Task<CommandExecutionResult> ExecuteCommand(
+            ShellRequest request,
+            UserInterface userInterface,
+            CancellationToken cancellationToken)
         {
             // 1. Resolve
             var resolution = request.CommandResolver.Resolve(request.Session, request.ExpandAliases);
@@ -30,7 +33,7 @@ namespace DeveloperConsole.Command
             var context = new CommandContext
             {
                 Shell = request.Shell,
-                Session = request.Session
+                Session = request.Session,
             };
 #if UNITY_EDITOR
             context.Environment = Application.isPlaying ? UnityEnvironment.PlayMode : UnityEnvironment.EditMode;
@@ -38,20 +41,25 @@ namespace DeveloperConsole.Command
             context.Environment = UnityEnvironment.Build;
 #endif
 
-            // 3. Pre-execution validation
+            // 3. Pre-execution wiring and validation
             ICommand command = resolution.Command;
-            var validators = command.GetType().GetCustomAttributes<PreExecutionValidatorAttribute>();
 
-            foreach (var validator in validators)
-            {
-                if (await validator.Validate(context, cancellationToken)) continue;
-                return CommandExecutionResult.Fail(validator.OnValidationFailedMessage());
-            }
-
-            // 4. Execute
             try
             {
-                var output = await command.ExecuteAsync(context, cancellationToken);
+                context.CommandId = command.CommandId;
+                request.Session.RegisterInterfaceId(context.CommandId, userInterface);
+
+                var validators = command.GetType().GetCustomAttributes<PreExecutionValidatorAttribute>();
+
+                foreach (var validator in validators)
+                {
+                    if (await validator.Validate(context, cancellationToken)) continue;
+                    request.Session.WriteLine(context.CommandId, validator.OnValidationFailedMessage());
+                    return CommandExecutionResult.Fail();
+                }
+
+                // 4. Execute
+                var output = await command.ExecuteCommandAsync(context, cancellationToken);
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -59,7 +67,9 @@ namespace DeveloperConsole.Command
                     ("Command exited without throwing after a cancellation was requested. ") + output.Message;
                 }
 
-                return output.Status is Status.Success ? CommandExecutionResult.Success(output) : CommandExecutionResult.Fail(output.Message);
+                request.Session.WriteLine(context.CommandId, output.Message);
+
+                return output.Status is Status.Success ? CommandExecutionResult.Success() : CommandExecutionResult.Fail();
             }
             catch (OperationCanceledException)
             {
@@ -69,11 +79,13 @@ namespace DeveloperConsole.Command
             {
                 string commandName = command.GetType().Name;
                 string message = $"Command '{commandName}' threw an exception during execution: {e.Message}";
+                request.Session.WriteLine(context.CommandId, message);
 
-                return CommandExecutionResult.Fail(message);
+                return CommandExecutionResult.Fail();
             }
             finally
             {
+                request.Session.UnregisterInterfaceId(context.CommandId);
                 command.Dispose();
             }
         }

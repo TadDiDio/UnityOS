@@ -1,3 +1,4 @@
+using System;
 using DeveloperConsole.Core.Shell;
 using UnityEditor;
 
@@ -22,6 +23,11 @@ namespace DeveloperConsole.Command
         /// The current environment.
         /// </summary>
         public UnityEnvironment Environment;
+
+        /// <summary>
+        /// The id of the current command.
+        /// </summary>
+        public Guid CommandId;
     }
 
 

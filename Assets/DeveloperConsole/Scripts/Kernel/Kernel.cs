@@ -139,7 +139,6 @@ namespace DeveloperConsole.Core.Kernel
         /// <param name="current"></param>
         public void OnInput(Event current)
         {
-            // TODO: Send this only to input consumers
             _dependencies.WindowManager.OnInput(current);
         }
 
@@ -152,9 +151,8 @@ namespace DeveloperConsole.Core.Kernel
         /// <param name="isSceneView">Whether this is the scene or game view.</param>
         public void OnDraw(int screenWidth, int screenHeight, bool isSceneView)
         {
-            int padding = 10; // TODO: Move padding elsewhere
-            Rect screenRect = new(padding, padding, screenWidth - 2 * padding, screenHeight - 2 * padding);
-            _dependencies.WindowManager.OnGUI(screenRect);
+            Rect screenRect = new(0, 0, screenWidth, screenHeight);
+            _dependencies.WindowManager.OnGUI(screenRect, isSceneView);
         }
 
 

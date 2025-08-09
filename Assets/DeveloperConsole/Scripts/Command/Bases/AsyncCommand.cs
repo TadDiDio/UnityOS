@@ -1,5 +1,8 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
+using DeveloperConsole.Core.Shell;
+using DeveloperConsole.IO;
 
 namespace DeveloperConsole.Command
 {
@@ -8,7 +11,45 @@ namespace DeveloperConsole.Command
     /// </summary>
     public abstract class AsyncCommand : ICommand
     {
-        public abstract Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken);
+        public Guid CommandId { get; private set; } = Guid.NewGuid();
+
+        protected ShellSession Session;
+
+        public async Task<CommandOutput> ExecuteCommandAsync(CommandContext context, CancellationToken cancellationToken)
+        {
+            Session = context.Session;
+            return await ExecuteAsync(context, cancellationToken);
+        }
+
+        protected abstract Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Writes a message to the output channel.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        protected void Write(object message)
+        {
+            Session.Write(CommandId, message);
+        }
+
+        /// <summary>
+        /// Overwrites the current output line on the output channel.
+        /// </summary>
+        /// <param name="message">The message.</param>
+        protected void OverWrite(object message)
+        {
+            Session.OverWrite(CommandId, message);
+        }
+
+        /// <summary>
+        /// Writes a line to the output channel.
+        /// </summary>
+        /// <param name="line">The line.</param>
+        protected void WriteLine(object line)
+        {
+            Session.WriteLine(CommandId, line);
+        }
+
 
         public virtual void Dispose()
         {

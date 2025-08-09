@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
 using DeveloperConsole.IO;
+using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole.Core.Shell
 {
@@ -13,6 +14,7 @@ namespace DeveloperConsole.Core.Shell
     public sealed class ShellApplication : IShellApplication
     {
         private ICommandExecutor _executor;
+        private IWindowManager _windowManager;
 
         private Dictionary<Guid, ShellSession> _sessions = new();
 
@@ -21,9 +23,11 @@ namespace DeveloperConsole.Core.Shell
         /// Creates a new shell application.
         /// </summary>
         /// <param name="executor">The command executor.</param>
-        public ShellApplication(ICommandExecutor executor)
+        /// <param name="windowManager">The window manager.</param>
+        public ShellApplication(ICommandExecutor executor, IWindowManager windowManager)
         {
             _executor = executor;
+            _windowManager = windowManager;
         }
 
 
@@ -36,7 +40,7 @@ namespace DeveloperConsole.Core.Shell
         public Guid CreateSession(IPromptResponder promptResponder, List<IOutputChannel> outputs = null)
         {
             Guid sessionId = Guid.NewGuid();
-            ShellSession session = new(this, promptResponder, outputs);
+            ShellSession session = new(this, promptResponder, sessionId, outputs);
             _sessions.Add(sessionId, session);
             return sessionId;
         }
@@ -50,7 +54,7 @@ namespace DeveloperConsole.Core.Shell
         public Guid CreateSession(IHumanInterface humanInterface)
         {
             Guid sessionId = Guid.NewGuid();
-            ShellSession session = new(this, humanInterface);
+            ShellSession session = new(this, humanInterface, sessionId);
             _sessions.Add(sessionId, session);
             return sessionId;
         }
@@ -60,19 +64,22 @@ namespace DeveloperConsole.Core.Shell
             return _sessions.GetValueOrDefault(sessionId);
         }
 
-
-        public async Task<CommandExecutionResult> HandleCommandRequestAsync(ShellRequest request, CancellationToken userToken)
+        public async Task<CommandExecutionResult> HandleCommandRequestAsync(
+            ShellRequest request,
+            CancellationToken userToken,
+            UserInterface defaultUserInterface)
         {
             try
             {
+                request.Shell = this;
+
                 if (request.Windowed)
                 {
-                    
+                    _ = RunWindowedCommand(request);
+                    return CommandExecutionResult.Success();
                 }
 
-                request.Shell = this;
-                CancellationTokenSource tokenSource = CancellationTokenSource.CreateLinkedTokenSource(userToken);
-                return await _executor.ExecuteCommand(request, tokenSource.Token);
+                return await _executor.ExecuteCommand(request, defaultUserInterface, userToken);
             }
             catch (OperationCanceledException)
             {
@@ -86,14 +93,18 @@ namespace DeveloperConsole.Core.Shell
             }
         }
 
+        private async Task RunWindowedCommand(ShellRequest request)
+        {
+            var config = WindowConfigFactory.CommandWindow();
+
+            var commandWindow = new CommandWindow(config);
+            _windowManager.RegisterWindow(commandWindow);
+
+            await _executor.ExecuteCommand(request, commandWindow.GetInterface(), commandWindow.GetCommandCancellationToken());
+        }
+
         public void Tick() { /* TODO */ }
 
-        public void Dispose()
-        {
-            foreach (var session in _sessions.Values)
-            {
-                session.Dispose();
-            }
-        }
+        public void Dispose() { /* TODO */ }
     }
 }

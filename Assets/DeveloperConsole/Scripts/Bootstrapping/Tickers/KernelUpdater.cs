@@ -45,10 +45,8 @@ namespace DeveloperConsole
         {
             if (_disabled) return;
 
-            // TODO: May need to verify that only a single unified input stream passes through here.
-
             // TODO: Allow other event types through as needed
-            if (current.type is not EventType.KeyDown) return;
+            if (current.type is not (EventType.KeyDown or EventType.Used)) return;
 
             if (!Kernel.IsInitialized)
             {

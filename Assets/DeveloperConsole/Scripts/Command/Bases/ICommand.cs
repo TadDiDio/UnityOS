@@ -9,12 +9,14 @@ namespace DeveloperConsole.Command
     /// </summary>
     public interface ICommand : IDisposable
     {
+        public Guid CommandId { get; }
+
         /// <summary>
         /// Defines the asynchronous execution logic for this command.
         /// </summary>
         /// <param name="context">The context of this execution.</param>
         /// <param name="cancellationToken">A cancellation token to stop execution.</param>
         /// <returns>The command's output.</returns>
-        public Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken);
+        public Task<CommandOutput> ExecuteCommandAsync(CommandContext context, CancellationToken cancellationToken);
     }
 }

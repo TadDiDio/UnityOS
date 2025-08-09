@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace DeveloperConsole.Windowing
@@ -13,44 +14,80 @@ namespace DeveloperConsole.Windowing
     {
         private List<IWindow> _windows = new();
 
-        private bool _visible;
+        private TerminalClient _terminal;
+        private bool _terminalVisible;
+
+        private Rect _screenRect;
+        private const int ScreenPadding = 10;
+
+        public Rect FullScreenSize()
+        {
+            return _screenRect;
+        }
 
         public void RegisterWindow(IWindow window)
         {
+            // TODO: This is temporary. Nothing should be special about terminal
+            if (window is TerminalClient terminal)
+            {
+                _terminal = terminal;
+                return;
+            }
+
             if (_windows.Contains(window)) return;
+
+            window.OnClose += OnWindowClose;
+
             _windows.Add(window);
         }
-
 
         public void UnregisterWindow(IWindow window)
         {
             if (!_windows.Contains(window)) return;
+
+            window.OnClose -= OnWindowClose;
+
             _windows.Remove(window);
         }
 
 
+        private void OnWindowClose(IWindow window)
+        {
+            UnregisterWindow(window);
+        }
+
         public void OnInput(Event current)
         {
-            // Must use characters here because unity generates two keypress events for each
-            // physical press, one is a physical key and the other textual. If you only
-            // handle physical keys (KeyCode), then TextFields can still receive and consume textual presses.
-            if (Event.current.type is EventType.KeyDown && Event.current.character == '/')
+            if (current.character == '/')
             {
-                _visible = !_visible;
-                Event.current.Use();
+                _terminalVisible = !_terminalVisible;
+
+                if (_terminalVisible) _terminal.Focus();
+                current.Use();
                 return;
             }
 
-            if (!_visible) return;
-            foreach (var window in _windows) window.OnInput(Event.current);
+
+            if (_terminalVisible) _terminal.OnInput(current);
+            foreach (var window in _windows.ToList()) window.OnInput(current);
         }
 
-        public void OnGUI(Rect fullScreen)
+        public void OnGUI(Rect fullScreen, bool isSceneView)
         {
-            if (!_visible) return;
+            UpdateScreenSize(fullScreen);
 
-            fullScreen = new Rect(fullScreen.x, fullScreen.y, fullScreen.width * 0.9f, fullScreen.height);
-            foreach (var window in _windows) window.Draw(fullScreen);
+            GUI.skin = ModernDarkGUISkin.Skin;
+
+            foreach (var window in _windows.ToList()) window.Draw(fullScreen);
+
+            if (_terminalVisible) _terminal.Draw(fullScreen);
+        }
+
+        private void UpdateScreenSize(Rect fullScreen)
+        {
+            _screenRect = new Rect(ScreenPadding, ScreenPadding,
+                fullScreen.width - ScreenPadding * 2,
+                fullScreen.height - ScreenPadding * 2);
         }
     }
 }

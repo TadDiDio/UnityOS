@@ -108,7 +108,7 @@ namespace DeveloperConsole
             };
 
             // Compose complex components
-            container.Shell = ShellApplicationFactory?.Invoke() ?? new ShellApplication(container.CommandExecutor);
+            container.Shell = ShellApplicationFactory?.Invoke() ?? new ShellApplication(container.CommandExecutor, container.WindowManager);
 
             return container;
         }

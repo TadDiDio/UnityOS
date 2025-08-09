@@ -36,7 +36,11 @@ namespace DeveloperConsole.Core.Shell
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="userToken">The commands cancellation token.</param>
-        public Task<CommandExecutionResult> HandleCommandRequestAsync(ShellRequest request, CancellationToken userToken);
+        /// <param name="defaultUserInterface">The default interface to use.</param>
+        public Task<CommandExecutionResult> HandleCommandRequestAsync(
+            ShellRequest request,
+            CancellationToken userToken,
+            UserInterface defaultUserInterface);
 
 
         /// <summary>

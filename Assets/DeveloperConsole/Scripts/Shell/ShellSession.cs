@@ -14,19 +14,42 @@ namespace DeveloperConsole.Core.Shell
     /// </summary>
     public delegate void ShellSignalHandler(ShellSignal signal);
 
+    public struct UserInterface
+    {
+        /// <summary>
+        /// A prompt responder.
+        /// </summary>
+        public IPromptResponder Responder;
+
+        /// <summary>
+        /// An output channel.
+        /// </summary>
+        public IOutputChannel Output;
+
+        /// <summary>
+        /// A collection of I/O devices that represents a user interface.
+        /// </summary>
+        /// <param name="responder">A prompt responder.</param>
+        /// <param name="output">An output channel.</param>
+        public UserInterface(IPromptResponder responder, IOutputChannel output)
+        {
+            Responder = responder;
+            Output = output;
+        }
+    }
+
     /// <summary>
     /// Owns the interaction and state context for a shell session.
     /// </summary>
-    public class ShellSession : IDisposable
+    public class ShellSession
     {
-        private IPromptResponder _promptResponder;
         private IShellApplication _shell;
-        private CompositeOutputChannel _output;
 
         private bool _promptingAllowed = true;
-        private string _promptHeader = "";
-        private ShellSignalHandler _onShellSignal;
         private Dictionary<string, string> _aliasTable = new();
+
+        private Guid _sessionId;
+        private Dictionary<Guid, UserInterface> _interfaces = new();
 
         // TODO: get this file location from somewhere more suitable like a config.
         private const string StartupFilePath = "Assets/DeveloperConsole/Resources/console_start.txt";
@@ -36,9 +59,10 @@ namespace DeveloperConsole.Core.Shell
         /// </summary>
         /// <param name="shell">The shell.</param>
         /// <param name="humanInterface">The human interface.</param>
-        public ShellSession(IShellApplication shell, IHumanInterface humanInterface)
+        /// <param name="sessionId">The session id.</param>
+        public ShellSession(IShellApplication shell, IHumanInterface humanInterface, Guid sessionId)
         {
-            Initialize(shell, humanInterface, new List<IOutputChannel> {humanInterface});
+            Initialize(sessionId, shell, humanInterface, new List<IOutputChannel> {humanInterface});
         }
 
 
@@ -47,33 +71,33 @@ namespace DeveloperConsole.Core.Shell
         /// </summary>
         /// <param name="shell">The shell.</param>
         /// <param name="responder">The prompt responder.</param>
+        /// <param name="sessionId">The session id.</param>
         /// <param name="outputs">0 or more output channels.</param>
         public ShellSession(
             IShellApplication shell,
             IPromptResponder responder,
+            Guid sessionId,
             List<IOutputChannel> outputs = null)
         {
-            Initialize(shell, responder, outputs);
+            Initialize(sessionId, shell, responder, outputs);
         }
 
-        private void Initialize(IShellApplication shell, IPromptResponder responder,
+        private void Initialize(Guid sessionId, IShellApplication shell, IPromptResponder responder,
             List<IOutputChannel> outputs = null)
         {
             _shell = shell;
-            _promptResponder = responder;
-            _onShellSignal += responder.GetSignalHandler();
-            _output = new CompositeOutputChannel(outputs);
+            _sessionId = sessionId;
+            _interfaces[_sessionId] = new UserInterface(responder, new CompositeOutputChannel(outputs));
 
             var startBatch = FileBatcher.BatchFile(StartupFilePath);
             _ = CommandPromptLoop(startBatch);
         }
 
-
         private async Task CommandPromptLoop(CommandBatch startBatch)
         {
             try
             {
-                await SubmitBatch(startBatch, _promptResponder.GetCommandCancellationToken());
+                await SubmitBatch(startBatch, _interfaces[_sessionId].Responder.GetCommandCancellationToken());
             }
             catch (Exception e)
             {
@@ -85,8 +109,8 @@ namespace DeveloperConsole.Core.Shell
             {
                 try
                 {
-                    var token = _promptResponder.GetCommandCancellationToken();
-                    var batch = await PromptAsync<CommandBatch>(Prompt.Command(), token);
+                    var token = _interfaces[_sessionId].Responder.GetCommandCancellationToken();
+                    var batch = await PromptAsync<CommandBatch>(_sessionId, Prompt.Command(), token);
                     await SubmitBatch(batch, token);
                 }
                 catch (OperationCanceledException)
@@ -129,14 +153,13 @@ namespace DeveloperConsole.Core.Shell
                     aliasExpanded = false;
 
                     _promptingAllowed = batch.AllowPrompting && !request.Windowed;
-                    var output = await _shell.HandleCommandRequestAsync(shellRequest, token);
+                    var output = await _shell.HandleCommandRequestAsync(shellRequest, token, GetDefaultInterface());
                     _promptingAllowed = true;
 
                     switch (output.Status)
                     {
                         case CommandResolutionStatus.Success:
                             previousStatus = Status.Success;
-                            WriteLine(output.CommandOutput.Message);
                             break;
 
                         case CommandResolutionStatus.AliasExpansion:
@@ -148,7 +171,10 @@ namespace DeveloperConsole.Core.Shell
 
                         case CommandResolutionStatus.Fail:
                             previousStatus = Status.Fail;
-                            WriteLine(output.ErrorMessage);
+                            if (output.ErrorMessageValid)
+                            {
+                                WriteLine(_sessionId, output.ErrorMessage);
+                            }
                             break;
                     }
                 }
@@ -163,12 +189,13 @@ namespace DeveloperConsole.Core.Shell
         /// <summary>
         /// Prompts the frontend.
         /// </summary>
+        /// <param name="id">The id of the object invoking this.</param>
         /// <param name="prompt">The prompt to give.</param>
         /// <param name="cancellationToken">A cancellation token to cancel the prompt.</param>
         /// <typeparam name="T">The response type.</typeparam>
         /// <returns>The response.</returns>
         /// <exception cref="InvalidOperationException">Throws if incorrect response type given.</exception>
-        public async Task<T> PromptAsync<T>(Prompt prompt, CancellationToken cancellationToken)
+        public async Task<T> PromptAsync<T>(Guid id, Prompt prompt, CancellationToken cancellationToken)
         {
             // BUG: Unnoticed so far but this likely causes problems for async commands running in parallel.
             if (!_promptingAllowed) throw new InvalidOperationException("Cannot prompt in a batch that does not allow it.");
@@ -177,7 +204,10 @@ namespace DeveloperConsole.Core.Shell
             {
                 while (true)
                 {
-                    var response = await _promptResponder.HandlePrompt(prompt, cancellationToken);
+                    IPromptResponder promptResponder = _interfaces[id].Responder;
+                    if (promptResponder == null) throw new InvalidOperationException($"Could not find a prompt responder for object {id}");
+
+                    var response = await promptResponder.HandlePrompt(prompt, cancellationToken);
 
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -185,13 +215,13 @@ namespace DeveloperConsole.Core.Shell
                     {
                         if (prompt.Validator.Invoke(typed)) return typed;
 
-                        WriteLine(MessageFormatter.Error($"Cannot convert {response.GetType().FullName} to type {typeof(T).FullName}."));
+                        WriteLine(_sessionId, MessageFormatter.Error($"Cannot convert {response.GetType().FullName} to type {typeof(T).FullName}."));
                         continue;
                     }
 
                     if (response is not string stringResponse)
                         throw new InvalidOperationException(
-                            $"{_promptResponder.GetType().Name} responded with {response.GetType().Name} " +
+                            $"{promptResponder.GetType().Name} responded with {response.GetType().Name} " +
                             $"when asked for {prompt.RequestedType.Name}!");
 
                     if (stringResponse is "") continue;
@@ -205,12 +235,12 @@ namespace DeveloperConsole.Core.Shell
 
                     if (!result.Success)
                     {
-                        WriteLine(MessageFormatter.Error($"Cannot convert {response.GetType().FullName} to type {typeof(T).FullName}."));
+                        WriteLine(_sessionId, MessageFormatter.Error($"Cannot convert {response.GetType().FullName} to type {typeof(T).FullName}."));
                         continue;
                     }
 
                     if (prompt.Validator.Invoke(result.As<T>())) return result.As<T>();
-                    WriteLine(MessageFormatter.Error($"Cannot convert {response.GetType().FullName} to type {typeof(T).FullName}."));
+                    WriteLine(_sessionId, MessageFormatter.Error($"Cannot convert {response.GetType().FullName} to type {typeof(T).FullName}."));
 
                 }
             }
@@ -220,7 +250,7 @@ namespace DeveloperConsole.Core.Shell
             }
             catch (Exception e)
             {
-                WriteLine(MessageFormatter.Error(e.Message));
+                WriteLine(_sessionId, MessageFormatter.Error(e.Message));
                 throw;
             }
         }
@@ -274,28 +304,80 @@ namespace DeveloperConsole.Core.Shell
             return new List<string> { token };
         }
 
-        public void AppendPromptHeader(string header) => _promptHeader += header;
-        public void RemoveFromPromptHeader(string header) => _promptHeader = _promptHeader.Replace(header, "");
-
+        /// <summary>
+        /// Gets the default user interface for the session.
+        /// </summary>
+        /// <returns></returns>
+        public UserInterface GetDefaultInterface() => _interfaces[_sessionId];
 
         /// <summary>
-        /// Writes to the output channel.
+        /// Maps an id to an interface.
         /// </summary>
-        /// <param name="message">The message.</param>
-        public void Write(object message)
+        /// <param name="id">The id to register for.</param>
+        /// <param name="userInterface">The interface to map to.</param>
+        public void RegisterInterfaceId(Guid id, UserInterface userInterface)
         {
-            _output.Write(message.ToString());
+            _interfaces[id] = userInterface;
         }
 
+        /// <summary>
+        /// Removes an id from the interface table.
+        /// </summary>
+        /// <param name="id">The id to remove.</param>
+        public void UnregisterInterfaceId(Guid id)
+        {
+            _interfaces.Remove(id);
+        }
+
+        /// <summary>
+        /// Writes a message to the output channel.
+        /// </summary>
+        /// <param name="id">The id of the writer.</param>
+        /// <param name="message">The message.</param>
+        public void Write(Guid id, object message)
+        {
+            if (!ValidateId(id))
+            {
+                Log.Error($"Id {id} not found when writing to output channel.");
+                return;
+            }
+
+            _interfaces[id].Output.WriteLine(message.ToString());
+        }
+
+        /// <summary>
+        /// Overwrites the current message in the output channel.
+        /// </summary>
+        /// <param name="id">The id of the writer.</param>
+        /// <param name="message">The message.</param>
+        public void OverWrite(Guid id, object message)
+        {
+            if (!ValidateId(id))
+            {
+                Log.Error($"Id {id} not found when writing to output channel.");
+                return;
+            }
+
+            _interfaces[id].Output.OverWrite(message.ToString());
+        }
 
         /// <summary>
         /// Writes a line to the output channel.
         /// </summary>
+        /// <param name="id">The id of the writer.</param>
         /// <param name="line">The line.</param>
-        public void WriteLine(object line)
+        public void WriteLine(Guid id, object line)
         {
-            _output.WriteLine(line.ToString());
+            if (!ValidateId(id))
+            {
+                Log.Error($"Id {id} not found when writing to output channel.");
+                return;
+            }
+
+            _interfaces[id].Output.WriteLine(line.ToString());
         }
+
+        private bool ValidateId(Guid id) => _interfaces.ContainsKey(id);
 
 
         /// <summary>
@@ -304,12 +386,7 @@ namespace DeveloperConsole.Core.Shell
         /// <param name="signal">The signal.</param>
         public void Signal(ShellSignal signal)
         {
-            _onShellSignal?.Invoke(signal);
-        }
-
-        public void Dispose()
-        {
-            _onShellSignal = null;
+            _interfaces[_sessionId].Responder.GetSignalHandler()?.Invoke(signal);
         }
     }
 }

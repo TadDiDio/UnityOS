@@ -9,6 +9,7 @@ using DeveloperConsole.Parsing;
 using DeveloperConsole.Parsing.Tokenizing;
 using DeveloperConsole.Parsing.TypeAdapting;
 using DeveloperConsole.Windowing;
+using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace DeveloperConsole
@@ -355,6 +356,16 @@ namespace DeveloperConsole
             public static void UnregisterWindow(IWindow window)
             {
                 WithService<IWindowManager>(m => m.UnregisterWindow(window));
+            }
+
+
+            /// <summary>
+            /// Gets a rect of the whole screen.
+            /// </summary>
+            /// <returns>The screen rect.</returns>
+            public static Rect FullscreenRect()
+            {
+                return WithService<IWindowManager, Rect>(m => m.FullScreenSize());
             }
         }
     }

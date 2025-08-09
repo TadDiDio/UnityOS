@@ -7,12 +7,12 @@ namespace DeveloperConsole
     [Command("async", "Test async command")]
     public class AsyncTestCommand : AsyncCommand
     {
-        public override async Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
+        protected override async Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
         {
-            context.Session.WriteLine("Beginning timer");
+            WriteLine("Beginning timer");
             for (int i = 3; i > 0; i--)
             {
-                context.Session.WriteLine(i);
+                WriteLine(i);
                 await Task.Delay(1000, cancellationToken);
             }
             return new CommandOutput("Finished");

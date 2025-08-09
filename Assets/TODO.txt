@@ -7,6 +7,12 @@ is contained to terminals so this feature was not worth protecting against yet. 
 convert string -> XXX so a gui will need to build a command batch fully and submit it like that (or use a string, but
 that is not proper for a gui which can build commands directly). Currently command separators ";" and "&&" are hardcoded 
 in TokenCommandResolver.cs and DefaultBatcher. Eventually this should be moved to a config file or at last a common place.
+CommandWindow and TerminalClient duplicate a lot of graphics so that should be refactored eventually. Most of the windowing
+was done quickly to get the project ready. The UserInterface may be close to redundant to IHumanInterface but the 
+redirection of interfacing works properly. The terminal hiding is a special case embedded in the terminal client right now
+because of the absurd difficulties in working with unitys stupid ass Event.current system. Basically it looks like the 
+GUILayout.Window class is absorbing it before the OnGui methods are being run somehow.
+
 
 
 ROSLYN:

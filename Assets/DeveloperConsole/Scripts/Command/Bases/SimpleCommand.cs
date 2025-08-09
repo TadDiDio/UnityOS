@@ -8,7 +8,7 @@ namespace DeveloperConsole.Command
     /// </summary>
     public abstract class SimpleCommand : AsyncCommand
     {
-        public override async Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
+        protected override async Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
         {
             return await Task.FromResult(Execute(context));
         }

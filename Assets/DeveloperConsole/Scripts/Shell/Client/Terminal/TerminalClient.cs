@@ -5,10 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core.Shell;
+using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole
 {
-    public class TerminalClient : IHumanInterface
+    public class TerminalClient : WindowBase, IHumanInterface
     {
         private enum TerminalState
         {
@@ -18,27 +19,31 @@ namespace DeveloperConsole
             CommandPrompt
         }
 
-        // Visual related state
         private List<string> _outputBuffer = new();
         private Vector2 _scrollPosition = Vector2.zero;
         private TerminalHistoryBuffer _historyBuffer = new();
-
-        // Processing related state
         private DefaultCommandBatcher _batcher = new();
         private PromptChoice[] _choices;
         private TerminalState _state = TerminalState.General;
         private TaskCompletionSource<object> _promptResponseSource;
         private CancellationTokenSource _cancellationSource;
+        private bool _bufferFocus;
+        private int _lastFocusedControlId;
 
-        public void Draw(Rect areaRect)
+        public TerminalClient(WindowConfig windowConfig) : base(windowConfig) { }
+
+        protected override void DrawContent(Rect areaRect)
         {
-            // Terminal background
-            var previousColor = GUI.color;
-            GUI.color = new Color(0f, 0f, 0f, 1f);
-            GUI.Box(areaRect, GUIContent.none);
-            GUI.color = previousColor;
+            int focusedControl = GUIUtility.keyboardControl;
+            bool windowFocused = focusedControl == WindowId;
 
-            GUILayout.BeginArea(areaRect);
+            if (windowFocused && _lastFocusedControlId != focusedControl)
+            {
+                _bufferFocus = true;
+            }
+
+            _lastFocusedControlId = focusedControl;
+
             GUILayout.BeginVertical();
             _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.ExpandHeight(true));
 
@@ -56,7 +61,11 @@ namespace DeveloperConsole
 
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
-            GUILayout.EndArea();
+        }
+
+        public void Focus()
+        {
+            _bufferFocus = true;
         }
 
         private void RenderInput()
@@ -71,7 +80,17 @@ namespace DeveloperConsole
                     GUI.SetNextControlName("TerminalInputField");
                     _historyBuffer.CurrentBuffer = GUILayout.TextField(_historyBuffer.CurrentBuffer, TerminalGUIStyle.InputField());
 
-                    GUI.FocusControl("TerminalInputField");
+                    if (_historyBuffer.CurrentBuffer.EndsWith("/"))
+                    {
+                        _historyBuffer.CurrentBuffer = _historyBuffer.CurrentBuffer[..^1];
+                        OnHide?.Invoke(this);
+                    }
+
+                    if (_bufferFocus)
+                    {
+                        _bufferFocus = false;
+                        GUI.FocusControl("TerminalInputField");
+                    }
 
                     GUILayout.EndHorizontal();
                     break;
@@ -92,10 +111,9 @@ namespace DeveloperConsole
             }
         }
 
-        public void OnInput(Event current)
+        public override void OnInput(Event current)
         {
-            // Raw key presses. Will refactor to generic input provider system
-            if (current.type is not EventType.KeyDown) return;
+            if (current.type is not (EventType.KeyDown or EventType.Used)) return;
 
             _scrollPosition.y = float.MaxValue;
 
@@ -112,7 +130,6 @@ namespace DeveloperConsole
             else if (current.keyCode is KeyCode.Return or KeyCode.KeypadEnter)
             {
                 if (_promptResponseSource == null) return;
-
                 SubmitInput();
                 current.Use();
             }
@@ -139,16 +156,25 @@ namespace DeveloperConsole
 
             if (_state is TerminalState.CommandPrompt)
             {
-                _promptResponseSource.SetResult(_batcher.GetBatch(input));
+                var batch = _batcher.GetBatch(input);
+                batch.AllowPrompting = true;
+                _promptResponseSource.SetResult(batch);
             }
             else _promptResponseSource.SetResult(input);
         }
 
-        public void Write(string token)
+        public void Write(string message)
         {
-            _outputBuffer[^1] += token;
+            _outputBuffer[^1] += message;
             _scrollPosition.y = float.MaxValue;
         }
+
+        public void OverWrite(string message)
+        {
+            _outputBuffer[^1] = message;
+            _scrollPosition.y = float.MaxValue;
+        }
+
 
         public void WriteLine(string line)
         {
@@ -218,6 +244,7 @@ namespace DeveloperConsole
 
         // TODO: Convert signal handlers to data driven.
         public ShellSignalHandler GetSignalHandler() => SignalHandler;
+
         private void SignalHandler(ShellSignal signal)
         {
             if (signal is ClearSignal)

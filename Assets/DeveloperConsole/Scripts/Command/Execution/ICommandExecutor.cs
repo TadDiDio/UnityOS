@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Core.Shell;
-using NUnit.Framework;
 
 namespace DeveloperConsole.Command
 {
@@ -15,9 +14,12 @@ namespace DeveloperConsole.Command
         /// Executes a command.
         /// </summary>
         /// <param name="executionRequest">The request.</param>
+        /// <param name="userInterface">The user interface this execution should use.</param>
         /// <param name="cancellationToken">The command's cancellation token.</param>
         /// <returns>The execution result.</returns>
-        public Task<CommandExecutionResult> ExecuteCommand(ShellRequest executionRequest, CancellationToken cancellationToken);
+        public Task<CommandExecutionResult> ExecuteCommand(ShellRequest executionRequest,
+            UserInterface userInterface,
+            CancellationToken cancellationToken);
     }
 
 
@@ -32,60 +34,59 @@ namespace DeveloperConsole.Command
         public CommandResolutionStatus Status;
 
         /// <summary>
-        /// An error message if there was one.
-        /// </summary>
-        public string ErrorMessage;
-
-        /// <summary>
-        /// The output from the command.
-        /// </summary>
-        public CommandOutput CommandOutput;
-
-        /// <summary>
         /// Updated token list when performing alias expansion.
         /// </summary>
         public List<string> Tokens;
 
         /// <summary>
+        /// Tells if the error message is valid.
+        /// </summary>
+        public bool ErrorMessageValid;
+
+        /// <summary>
+        /// An error message.
+        /// </summary>
+        public string ErrorMessage;
+
+        /// <summary>
         /// Creates a failed result.
         /// </summary>
-        /// <param name="errorMessage">The error message.</param>
         /// <returns>The result.</returns>
-        public static CommandExecutionResult Fail(string errorMessage)
+        public static CommandExecutionResult Fail(string errorMessage = null)
         {
             return new CommandExecutionResult
             {
                 Status = CommandResolutionStatus.Fail,
-                ErrorMessage = errorMessage,
-                CommandOutput = null,
-                Tokens = null
+                Tokens = null,
+                ErrorMessageValid = errorMessage != null,
+                ErrorMessage = errorMessage
             };
         }
 
         /// <summary>
         /// Creates a successful result.
         /// </summary>
-        /// <param name="output">The command output.</param>
         /// <returns>The result.</returns>
-        public static CommandExecutionResult Success(CommandOutput output)
+        public static CommandExecutionResult Success()
         {
             return new CommandExecutionResult
             {
                 Status = CommandResolutionStatus.Success,
-                ErrorMessage = string.Empty,
-                CommandOutput = output,
                 Tokens = null
             };
         }
 
 
+        /// <summary>
+        /// Creates an alias expansion result.
+        /// </summary>
+        /// <param name="tokens">All tokens including the expanded alias.</param>
+        /// <returns>The result.</returns>
         public static CommandExecutionResult AliasExpansion(List<string> tokens)
         {
             return new CommandExecutionResult
             {
                 Status = CommandResolutionStatus.AliasExpansion,
-                ErrorMessage = string.Empty,
-                CommandOutput = null,
                 Tokens = tokens
             };
         }

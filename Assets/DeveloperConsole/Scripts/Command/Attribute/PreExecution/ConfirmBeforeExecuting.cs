@@ -19,7 +19,7 @@ namespace DeveloperConsole.Command
         public override async Task<bool> Validate(CommandContext context, CancellationToken cancellationToken)
         {
             var prompt = Prompt.Confirmation(_message);
-            var result = await context.Session.PromptAsync<ConfirmationResult>(prompt, cancellationToken);
+            var result = await context.Session.PromptAsync<ConfirmationResult>(context.CommandId, prompt, cancellationToken);
             return result.Success;
         }
 
