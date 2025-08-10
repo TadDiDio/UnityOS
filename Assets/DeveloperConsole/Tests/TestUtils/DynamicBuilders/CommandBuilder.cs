@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -29,7 +28,7 @@ namespace DeveloperConsole.Tests
             return this;
         }
 
-        
+
         /// <summary>
         /// Makes it a subcommand.
         /// </summary>
@@ -41,7 +40,7 @@ namespace DeveloperConsole.Tests
             return this;
         }
 
-        
+
         /// <summary>
         /// Adds a pre-execution validator.
         /// </summary>
@@ -52,8 +51,8 @@ namespace DeveloperConsole.Tests
             prevalidators.Add(attribute);
             return this;
         }
-        
-        
+
+
         /// <summary>
         /// Adds a switch arg to the command.
         /// </summary>
@@ -69,12 +68,12 @@ namespace DeveloperConsole.Tests
                 .WithType(type)
                 .WithAttribute(new SwitchAttribute(workingAlias, "desc"))
                 .Build();
-            
+
             fields.Add(field);
             return this;
         }
-        
-        
+
+
         /// <summary>
         /// Adds a positional arg to the command.
         /// </summary>
@@ -89,12 +88,12 @@ namespace DeveloperConsole.Tests
                 .WithType(type)
                 .WithAttribute(new PositionalAttribute(index, "desc"))
                 .Build();
-            
+
             fields.Add(field);
             return this;
         }
-        
-        
+
+
         /// <summary>
         /// Adds variadic args to the command.
         /// </summary>
@@ -104,18 +103,18 @@ namespace DeveloperConsole.Tests
         public CommandBuilder WithVariadic(string name, Type elementType)
         {
             var listType = typeof(List<>).MakeGenericType(elementType);
-            
+
             var field = new FieldBuilder()
                 .WithName(name)
                 .WithType(listType)
                 .WithAttribute(new VariadicAttribute("desc"))
                 .Build();
-            
+
             fields.Add(field);
             return this;
         }
-        
-        
+
+
         /// <summary>
         /// Defaults to unique name, simple command base, not a subcommand, no fields or prevalidators.
         /// </summary>
@@ -150,8 +149,8 @@ namespace DeveloperConsole.Tests
             }
 
             string name = _name ?? $"test_{DynamicAssemblyCache.NextId}";
-            CommandAttribute commandAttribute = _parentType == null ? new CommandAttribute(name, "desc") : 
-                new SubcommandAttribute(name, "desc", _parentType);
+            CommandAttribute commandAttribute = _parentType == null ? new CommandAttribute(name, "desc") :
+                new CommandAttribute(name, "desc", _parentType);
 
             if (!AttributeBuilderRegistry.TryGet(commandAttribute, out var commandData))
             {
@@ -160,7 +159,7 @@ namespace DeveloperConsole.Tests
             }
 
             GenerateFakeExecute(typeBuilder);
-            
+
             typeBuilder.SetCustomAttribute(new CustomAttributeBuilder(commandData.ConstructorInfo, commandData.Arguments));
             return typeBuilder.CreateType();
         }
@@ -175,14 +174,13 @@ namespace DeveloperConsole.Tests
                 methodToOverride!.Name,
                 MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig,
                 methodToOverride.ReturnType,
-                new Type[] { typeof(CommandContext) });
+                new [] { typeof(CommandContext) });
 
             // Generate IL for the method (return Task.FromResult(default(CommandOutput)))
             var il = methodBuilder.GetILGenerator();
 
             // Prepare to call Task.FromResult(CommandOutput)
             var commandOutputType = typeof(CommandOutput);
-            var taskType = typeof(Task<CommandOutput>);
             var fromResultMethod = typeof(Task).GetMethod(nameof(Task.FromResult))!.MakeGenericMethod(commandOutputType);
 
             // Load default(CommandOutput) onto stack
@@ -202,7 +200,7 @@ namespace DeveloperConsole.Tests
             // Mark this method as override of the abstract base method
             typeBuilder.DefineMethodOverride(methodBuilder, methodToOverride);
         }
-        
+
         /// <summary>
         /// Defaults to unique name, simple command base, not a subcommand, no fields or prevalidators.
         /// </summary>

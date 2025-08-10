@@ -22,13 +22,11 @@ namespace DeveloperConsole.Command
         /// <param name="commandDiscoveryStrategy">The way to discover command types.</param>
         public CommandRegistry(ICommandDiscoveryStrategy commandDiscoveryStrategy)
         {
-            var commandTypes = commandDiscoveryStrategy.GetAllCommandTypes();
+            var commandTypes = commandDiscoveryStrategy.GetAllValidCommandTypes();
 
-            var lookup = commandTypes
-                .Where(t => t.GetCustomAttribute<CommandAttribute>() != null)
-                .ToLookup(t => t.GetCustomAttribute<CommandAttribute>().GetType() == typeof(CommandAttribute));
+            var lookup = commandTypes.ToLookup(t => t.GetCustomAttribute<CommandAttribute>().GetParentType(t) is null);
 
-            // Root commands then subcommands
+            // Root commands then subcommands so that subcommands can find and link their parents
             foreach (var rootCommand in lookup[true]) RegisterType(rootCommand);
             foreach (var subCommand in lookup[false]) RegisterType(subCommand);
         }
@@ -42,35 +40,35 @@ namespace DeveloperConsole.Command
                 return;
             }
 
-            var attribute = type.GetCustomAttribute<CommandAttribute>();
+            var cmdAttribute = type.GetCustomAttribute<CommandAttribute>();
             var hiddenAttribute = type.GetCustomAttribute<ExcludeFromCmdRegistry>();
             bool hidden = hiddenAttribute is { IncludeButDontList: true };
 
             var thisSchema = new CommandSchema
             {
-                Name = attribute.Name,
-                Description = attribute.Description,
+                Name = cmdAttribute.Name,
+                Description = cmdAttribute.Description,
                 CommandType = type,
                 HiddenInRegistry = hidden,
                 Subcommands = new HashSet<CommandSchema>()
             };
 
-            if (attribute is SubcommandAttribute subcommand)
+            if (cmdAttribute.GetParentType(type) is not null)
             {
-                var parentName = DeriveNameFromType(subcommand.ParentCommandType);
+                var parentName = DeriveNameFromType(cmdAttribute.GetParentType(type));
                 if (!SchemaTable.TryGetValue(parentName, out var parentSchema))
                 {
-                    Log.Error($"Parent command '{parentName}' not found for subcommand '{subcommand.Name}'!");
+                    Log.Error($"Parent command '{parentName}' not found for subcommand '{cmdAttribute.Name}'!");
                     return;
                 }
 
                 parentSchema.Subcommands.Add(thisSchema);
                 thisSchema.ParentSchema = parentSchema;
-                SchemaTable.Add($"{parentName}.{subcommand.Name}", thisSchema);
+                SchemaTable.Add($"{parentName}.{cmdAttribute.Name}", thisSchema);
             }
             else
             {
-                SchemaTable.Add(attribute.Name, thisSchema);
+                SchemaTable.Add(cmdAttribute.Name, thisSchema);
             }
 
             thisSchema.ArgumentSpecifications = ArgumentSpecification.GetAllFromType(type);
@@ -102,17 +100,12 @@ namespace DeveloperConsole.Command
 
                 names.Add(attr.Name);
 
-                // Stop if it's a base command, not a subcommand
-                if (attr.GetType() == typeof(CommandAttribute)) break;
+                // Stop if it's a base command
+                var save = currentType.FullName;
+                var parentType = attr.GetParentType(currentType);
+                if (parentType is null) break;
 
-                // Safe cast: attr must be SubcommandAttribute at this point
-                if (attr is not SubcommandAttribute subAttr)
-                {
-                    Log.Error($"Unexpected command attribute type on {currentType.Name}");
-                    return null;
-                }
-
-                currentType = subAttr.ParentCommandType;
+                currentType = parentType;
 
                 if (++depth > 10)
                 {

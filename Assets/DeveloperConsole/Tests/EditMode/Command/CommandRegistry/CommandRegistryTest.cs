@@ -13,7 +13,7 @@ namespace DeveloperConsole.Tests.Command
         {
             private readonly List<Type> _types;
             public MockDiscovery(params Type[] types) => _types = types.ToList();
-            public List<Type> GetAllCommandTypes() => _types;
+            public List<Type> GetAllValidCommandTypes() => _types;
         }
 
         [Test]

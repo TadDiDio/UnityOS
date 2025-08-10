@@ -36,21 +36,6 @@ namespace DeveloperConsole.Tests.TestUtils
             Assert.AreEqual(CommandMetaProcessor.Name("MyCommand"), cmdAttr.Name);
         }
 
-        [Test]
-        public void CommandBuilder_Subcommand()
-        {
-            Type parentType = typeof(SimpleCommand);  // just use base class as parent
-
-            var builder = new CommandBuilder()
-                .WithName("child")
-                .AsSubcommand(parentType);
-
-            Type type = builder.BuildType();
-            var subAttr = type.GetCustomAttribute<SubcommandAttribute>();
-            Assert.NotNull(subAttr);
-            Assert.AreEqual(CommandMetaProcessor.Name("child"), subAttr.Name);
-            Assert.AreEqual(parentType, subAttr.ParentCommandType);
-        }
 
         [Test]
         public void CommandBuilder_WithSwitch()

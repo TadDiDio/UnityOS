@@ -106,7 +106,7 @@ namespace DeveloperConsole
         /// <summary>
         /// Lists available scenes in the project (edit mode) or build (runtime).
         /// </summary>
-        [Subcommand("list", "Lists the scenes available.", typeof(SceneCommand))]
+        [Command("list", "Lists the scenes available.")]
         public class ListScenesCommand : SimpleCommand
         {
             protected override CommandOutput Execute(CommandContext context)
@@ -143,7 +143,7 @@ namespace DeveloperConsole
         /// Reloads the active scene.
         /// </summary>
         [Restrict(UnityEnvironment.Runtime)]
-        [Subcommand("reload", "Reloads the active scene.", typeof(SceneCommand))]
+        [Command("reload", "Reloads the active scene.")]
         public class ReloadSceneCommand : SimpleCommand
         {
             [Switch('a', "Loads the scene additively.")]
@@ -169,7 +169,7 @@ namespace DeveloperConsole
         /// <summary>
         /// Closes an open scene.
         /// </summary>
-        [Subcommand("close", "Closes an open scene.", typeof(SceneCommand))]
+        [Command("close", "Closes an open scene.")]
         public class CloseCommand : SimpleCommand
         {
             [Positional(0, "The name of the scene to close.")]
@@ -204,22 +204,20 @@ namespace DeveloperConsole
                     SceneManager.UnloadSceneAsync(sceneToClose);
                     return new CommandOutput($"Unloading scene: {sceneName}");
                 }
+
+#if UNITY_EDITOR
+                bool closed = EditorSceneManager.CloseScene(sceneToClose, true);
+                if (closed)
+                {
+                    return new CommandOutput($"Closed scene: {sceneName}");
+                }
                 else
                 {
-#if UNITY_EDITOR
-                    bool closed = EditorSceneManager.CloseScene(sceneToClose, true);
-                    if (closed)
-                    {
-                        return new CommandOutput($"Closed scene: {sceneName}");
-                    }
-                    else
-                    {
-                        return new CommandOutput($"Could not close the scene {sceneName}. Possibly the only open scene.");
-                    }
-#else
-                    return new CommandOutput("Scene closing in edit mode is only supported inside the Unity Editor.");
-#endif
+                    return new CommandOutput($"Could not close the scene {sceneName}. Possibly the only open scene.");
                 }
+#else
+                return new CommandOutput("Scene closing in edit mode is only supported inside the Unity Editor.");
+#endif
             }
         }
     }

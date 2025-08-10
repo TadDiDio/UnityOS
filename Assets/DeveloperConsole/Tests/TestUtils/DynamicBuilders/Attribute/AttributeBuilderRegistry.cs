@@ -11,7 +11,6 @@ namespace DeveloperConsole.Tests
         static AttributeBuilderRegistry()
         {
             Register(new TestCommandAttributeBuilder());
-            Register(new TestSubcommandAttributeBuilder());
             Register(new TestSwitchAttributeBuilder());
             Register(new TestPositionalAttributeBuilder());
             Register(new TestVariadicAttributeBuilder());

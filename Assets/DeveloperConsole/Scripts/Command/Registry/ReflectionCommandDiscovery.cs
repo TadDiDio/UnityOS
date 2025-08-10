@@ -10,7 +10,7 @@ namespace DeveloperConsole.Command
     /// </summary>
     public class ReflectionCommandDiscovery : ICommandDiscoveryStrategy
     {
-        public List<Type> GetAllCommandTypes()
+        public List<Type> GetAllValidCommandTypes()
         {
             return AppDomain.CurrentDomain.GetAssemblies()
                 .Where(assembly => !assembly.FullName.StartsWith("Unity") &&
@@ -31,10 +31,12 @@ namespace DeveloperConsole.Command
                 .Where(t =>
                 {
                     var excludeAttribute = t.GetCustomAttribute<ExcludeFromCmdRegistry>();
+                    var commandAttribute = t.GetCustomAttribute<CommandAttribute>();
                     return typeof(ICommand).IsAssignableFrom(t) &&
+                           commandAttribute is not null &&
                            !t.IsAbstract &&
                            !t.IsInterface &&
-                           (excludeAttribute == null || excludeAttribute.IncludeButDontList);
+                           (excludeAttribute is null || excludeAttribute.IncludeButDontList);
                 })
                 .ToList();
         }

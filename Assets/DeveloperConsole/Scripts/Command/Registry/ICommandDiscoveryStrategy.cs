@@ -12,6 +12,6 @@ namespace DeveloperConsole.Command
         /// Get all the command types the registry should know about.
         /// </summary>
         /// <returns>All command types.</returns>
-        public List<Type> GetAllCommandTypes();
+        public List<Type> GetAllValidCommandTypes();
     }
 }

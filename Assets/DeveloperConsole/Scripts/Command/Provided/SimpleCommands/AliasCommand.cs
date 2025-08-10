@@ -15,7 +15,7 @@ namespace DeveloperConsole
         }
 
 
-        [Subcommand("remove", "Removes an alias.", typeof(AliasCommand))]
+        [Command("remove", "Removes an alias.")]
         public class RemoveCommand : SimpleCommand
         {
             [Positional(0, "The alias key")] private string key;
@@ -26,7 +26,7 @@ namespace DeveloperConsole
             }
         }
 
-        [Subcommand("list", "Lists all current aliases.", typeof(AliasCommand))]
+        [Command("list", "Lists all current aliases.")]
         public class ListCommand : SimpleCommand
         {
             protected override CommandOutput Execute(CommandContext context)
