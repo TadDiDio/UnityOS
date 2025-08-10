@@ -22,8 +22,8 @@ namespace DeveloperConsole
 
     [ConfirmBeforeExecuting("Are you sure you want to exit the player?")]
     [Restrict(UnityEnvironment.Runtime)]
-    [Command("exit", "Exits play mode or the application.")]
-    public class ExitCommand : SimpleCommand
+    [Command("stop", "Exits play mode or the application.")]
+    public class StopCommand : SimpleCommand
     {
         protected override CommandOutput Execute(CommandContext context)
         {
@@ -41,8 +41,8 @@ namespace DeveloperConsole
     }
 
     [Restrict(UnityEnvironment.Runtime)]
-    [Command("exitf", "Exits play mode or the application without confirming.")]
-    public class ExitFCommand : SimpleCommand
+    [Command("stopf", "Exits play mode or the application without confirming.")]
+    public class StopFCommand : SimpleCommand
     {
         protected override CommandOutput Execute(CommandContext context)
         {
