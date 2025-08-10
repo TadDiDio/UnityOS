@@ -2,18 +2,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DeveloperConsole.Command;
-using UnityEngine.Windows.Speech;
 
 namespace DeveloperConsole
 {
     [Command("help", "Gets information on any command.")]
     public class HelpCommand : SimpleCommand
     {
-        [Optional(0, "The command to get help on.")]
-        private string commandName = "!!!";
-
-        [Variadic("Nested commands under the main command.")]
-        private List<string> subcommands;
+        [Variadic("The command to get help on.")]
+        private List<string> command;
 
         [Switch('v', "Gets detailed information about the command.")]
         private bool verbose = true;
@@ -26,11 +22,9 @@ namespace DeveloperConsole
 
         protected override CommandOutput Execute(CommandContext context)
         {
-            if (commandName == "!!!") return new CommandOutput(Describe());
+            if (command.Count == 0) return new CommandOutput(Describe());
 
-            string fullCommand = subcommands == null ? commandName : $"{commandName}.{string.Join('.', subcommands)}";
-
-            return new CommandOutput(GetHelpOnCommand(fullCommand));
+            return new CommandOutput(GetHelpOnCommand(string.Join('.', command)));
         }
 
         private string Describe()
@@ -178,7 +172,7 @@ namespace DeveloperConsole
                 builder.AppendLine();
                 builder.AppendLine("Variadic Arguments (optional):");
 
-                string type = $"List<{TypeFriendlyNames.TypeToName(_variadic.FieldInfo.FieldType.GetGenericArguments()[0])}>";
+                string type = $"0 or more {TypeFriendlyNames.TypeToName(_variadic.FieldInfo.FieldType.GetGenericArguments()[0])}s";
                 builder.AppendLine(MessageFormatter.IndentLines($"[{_variadic.Name} ({type})]: {_variadic.Description}", IndentAmount));
             }
 

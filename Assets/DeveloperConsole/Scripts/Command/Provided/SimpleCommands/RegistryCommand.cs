@@ -6,24 +6,24 @@ namespace DeveloperConsole
     [Command("reg", "Shows a registry of all commands.")]
     public class RegistryCommand : SimpleCommand
     {
-        [Optional(0, "Searches only the command tree for a specific command.")]
-        private string command = null;
+        [Optional(0, "Displays all commands and their subcommands that start with the this string.")]
+        private string filter = null;
 
         [Switch('n', "Shows nested commands as well", "nested")]
-        private bool _nested;
+        private bool nested;
 
         protected override CommandOutput Execute(CommandContext context)
         {
             var names = ConsoleAPI.Commands.GetAllCommandNames();
             names.Sort();
 
-            if (command is not null)
+            if (filter is not null)
             {
-                names = names.Where(n => n.StartsWith(command)).ToList();
-                _nested = true;
+                names = names.Where(n => n.StartsWith(filter)).ToList();
+                nested = true;
             }
 
-            if (!_nested)
+            if (!nested)
             {
                 names = names.Where(n => !n.Contains(".")).ToList();
             }

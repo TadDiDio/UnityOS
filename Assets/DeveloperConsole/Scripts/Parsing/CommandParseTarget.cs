@@ -15,8 +15,15 @@ namespace DeveloperConsole.Parsing
         /// </summary>
         public ICommand Command { get; }
 
-        private CommandSchema _schema;
+        /// <summary>
+        /// The schema representing this command.
+        /// </summary>
+        public CommandSchema Schema { get; }
+
         private Dictionary<ArgumentSpecification, List<IAttributeValidator>> _validators = new();
+
+        private List<ICommandValidator> _commandValidators;
+
 
         /// <summary>
         /// Creates a new command parse target.
@@ -24,8 +31,15 @@ namespace DeveloperConsole.Parsing
         /// <param name="schema">The schema to build.</param>
         public CommandParseTarget(CommandSchema schema)
         {
-            _schema = schema;
+            Schema = schema;
             Command = Activator.CreateInstance(schema.CommandType) as ICommand;
+
+            // TODO: Move these registrations to a registry that ConsoleAPI can see.
+            _commandValidators = new List<ICommandValidator>
+            {
+                new InstantiateVariadic(),
+                new BindingProcessor()
+            };
 
             foreach (var arg in schema.ArgumentSpecifications)
             {
@@ -44,7 +58,7 @@ namespace DeveloperConsole.Parsing
         /// All arguments that this target can receive.
         /// </summary>
         /// <returns>A set of arguments.</returns>
-        public HashSet<ArgumentSpecification> GetArguments() => _schema.ArgumentSpecifications;
+        public HashSet<ArgumentSpecification> GetArguments() => Schema.ArgumentSpecifications;
 
 
         /// <summary>
@@ -65,6 +79,14 @@ namespace DeveloperConsole.Parsing
                     errorMessage = validator.ErrorMessage();
                     return false;
                 }
+            }
+
+            foreach (var cmdValidator in  _commandValidators)
+            {
+                if (cmdValidator.Validate(this, out var error)) continue;
+
+                errorMessage = error;
+                return false;
             }
 
             return true;

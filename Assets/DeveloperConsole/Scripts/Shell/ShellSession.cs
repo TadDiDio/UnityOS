@@ -173,7 +173,7 @@ namespace DeveloperConsole.Core.Shell
                             previousStatus = Status.Fail;
                             if (output.ErrorMessageValid)
                             {
-                                WriteLine(_sessionId, output.ErrorMessage);
+                                WriteLine(_sessionId, MessageFormatter.Error(output.ErrorMessage));
                             }
                             break;
                     }

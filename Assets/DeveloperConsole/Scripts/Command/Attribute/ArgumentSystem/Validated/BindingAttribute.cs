@@ -6,7 +6,7 @@ namespace DeveloperConsole.Command
     /// Specifies to inject an object of this field's type for use in the command.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class BindingAttribute : ArgumentAttribute, IAttributeValidatorFactory
+    public class BindingAttribute : Attribute
     {
         public readonly string Name;
         public readonly string Tag;
@@ -20,11 +20,6 @@ namespace DeveloperConsole.Command
         {
             Tag = tag;
             Name = name;
-        }
-
-        public IAttributeValidator CreateValidatorInstance()
-        {
-            return new BindingAttributeValidator(Name, Tag);
         }
     }
 }

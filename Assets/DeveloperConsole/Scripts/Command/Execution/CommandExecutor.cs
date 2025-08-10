@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Core.Shell;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 
 namespace DeveloperConsole.Command
 {
@@ -54,7 +55,7 @@ namespace DeveloperConsole.Command
                 foreach (var validator in validators)
                 {
                     if (await validator.Validate(context, cancellationToken)) continue;
-                    request.Session.WriteLine(context.CommandId, validator.OnValidationFailedMessage());
+                    request.Session.WriteLine(context.CommandId, MessageFormatter.Error(validator.OnValidationFailedMessage()));
                     return CommandExecutionResult.Fail();
                 }
 
@@ -67,7 +68,8 @@ namespace DeveloperConsole.Command
                     ("Command exited without throwing after a cancellation was requested. ") + output.Message;
                 }
 
-                request.Session.WriteLine(context.CommandId, output.Message);
+                string message = output.Status is Status.Success ? output.Message : MessageFormatter.Error(output.Message);
+                request.Session.WriteLine(context.CommandId, message);
 
                 return output.Status is Status.Success ? CommandExecutionResult.Success() : CommandExecutionResult.Fail();
             }

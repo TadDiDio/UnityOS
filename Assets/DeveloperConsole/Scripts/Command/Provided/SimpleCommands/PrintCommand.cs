@@ -7,7 +7,7 @@ namespace DeveloperConsole
     public class PrintCommand : SimpleCommand
     {
         [Variadic("The message to display")]
-        public List<string> message = new();
+        public List<string> message;
         
         protected override CommandOutput Execute(CommandContext context)
         {
