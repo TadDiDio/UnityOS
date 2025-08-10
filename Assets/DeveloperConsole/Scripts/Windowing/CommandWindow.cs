@@ -26,7 +26,7 @@ namespace DeveloperConsole.Windowing
             // Print each output line
             foreach (string line in _outputBuffer)
             {
-                GUILayout.Label(line, TerminalGUIStyle.DefaultStyle());
+                GUILayout.Label(line);
             }
 
             // TODO: Add input here if needed.

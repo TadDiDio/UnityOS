@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
 using NUnit.Framework;
-using Unity.Hierarchy;
 using UnityEngine;
 
 namespace DeveloperConsole.Tests.TestUtils

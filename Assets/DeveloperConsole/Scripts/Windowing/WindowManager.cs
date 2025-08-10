@@ -20,6 +20,9 @@ namespace DeveloperConsole.Windowing
         private Rect _screenRect;
         private const int ScreenPadding = 10;
 
+        private GUISkin _gammaSkin = Resources.Load<GUISkin>("Gamma_Skin");
+        private GUISkin _linearSkin = Resources.Load<GUISkin>("Linear_Skin");
+
         public Rect FullScreenSize()
         {
             return _screenRect;
@@ -74,9 +77,10 @@ namespace DeveloperConsole.Windowing
 
         public void OnGUI(Rect fullScreen, bool isSceneView)
         {
-            UpdateScreenSize(fullScreen);
+            bool useGamma = isSceneView || QualitySettings.activeColorSpace is ColorSpace.Gamma;
+            GUI.skin = useGamma ? _gammaSkin : _linearSkin;
 
-            GUI.skin = ModernDarkGUISkin.Skin;
+            UpdateScreenSize(fullScreen);
 
             foreach (var window in _windows.ToList()) window.Draw(fullScreen);
 

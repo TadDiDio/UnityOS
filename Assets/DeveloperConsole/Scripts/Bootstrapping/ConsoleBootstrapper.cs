@@ -8,8 +8,6 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using DeveloperConsole.Core.Kernel;
-using DeveloperConsole.Core.Shell;
-using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole
 {

@@ -15,8 +15,11 @@ namespace DeveloperConsole.Tests
             Register(new TestSwitchAttributeBuilder());
             Register(new TestPositionalAttributeBuilder());
             Register(new TestVariadicAttributeBuilder());
+            Register(new TestRequiredAttributeBuilder());
+            Register(new TestInRangeAttributeBuilder());
+            Register(new TestBindingAttributeBuilder());
         }
-        
+
         public static void Register<T>(AttributeDataBuilder<T> dataBuilder) where T : Attribute
         {
             _providers[typeof(T)] = dataBuilder;
@@ -46,12 +49,12 @@ namespace DeveloperConsole.Tests
         public AttributeData GetBuildData(object attributeInstance)
         {
             if (attributeInstance is Attribute attribute) return GetBuildData((T)attribute);
-            
+
             Log.Error("The injected object was not an attribute.");
             return null;
         }
     }
-    
+
     public class AttributeData
     {
         public readonly object[] Arguments;
@@ -59,8 +62,8 @@ namespace DeveloperConsole.Tests
 
         public AttributeData(ConstructorInfo constructorInfo, object[] arguments)
         {
-            Arguments = arguments;
             ConstructorInfo = constructorInfo;
+            Arguments = arguments;
         }
     }
 }

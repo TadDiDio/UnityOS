@@ -73,6 +73,7 @@ namespace DeveloperConsole.Windowing
 
         private void DrawBody()
         {
+            GUILayout.Space(_config.HeaderHeight);
             DrawContent(_windowRect);
         }
 

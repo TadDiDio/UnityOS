@@ -37,7 +37,11 @@ namespace DeveloperConsole
             int focusedControl = GUIUtility.keyboardControl;
             bool windowFocused = focusedControl == WindowId;
 
-            if (windowFocused && _lastFocusedControlId != focusedControl)
+            // Cut off the scroll bar
+            Rect windowRect = new Rect(areaRect.x, areaRect.y, areaRect.width - 12, areaRect.height - 12);
+            bool clicked = Event.current.type is EventType.MouseDown && windowRect.Contains(Event.current.mousePosition);
+
+            if ((windowFocused && _lastFocusedControlId != focusedControl) || clicked)
             {
                 _bufferFocus = true;
             }
@@ -50,7 +54,7 @@ namespace DeveloperConsole
             // Print each output line
             foreach (string line in _outputBuffer)
             {
-                GUILayout.Label(line, TerminalGUIStyle.DefaultStyle());
+                GUILayout.Label(line);
             }
 
             // Input field inline with output
@@ -76,9 +80,9 @@ namespace DeveloperConsole
                 case TerminalState.CommandPrompt:
                     GUILayout.BeginHorizontal();
 
-                    GUILayout.Label("> ", TerminalGUIStyle.Prompt(), GUILayout.ExpandWidth(false));
+                    GUILayout.Label("> ", GUILayout.ExpandWidth(false));
                     GUI.SetNextControlName("TerminalInputField");
-                    _historyBuffer.CurrentBuffer = GUILayout.TextField(_historyBuffer.CurrentBuffer, TerminalGUIStyle.InputField());
+                    _historyBuffer.CurrentBuffer = GUILayout.TextField(_historyBuffer.CurrentBuffer);
 
                     if (_historyBuffer.CurrentBuffer.EndsWith("/"))
                     {
@@ -115,7 +119,7 @@ namespace DeveloperConsole
         {
             if (current.type is not (EventType.KeyDown or EventType.Used)) return;
 
-            _scrollPosition.y = float.MaxValue;
+            if (current.keyCode is not KeyCode.None) _scrollPosition.y = float.MaxValue;
 
             if (current.keyCode == KeyCode.UpArrow)
             {
