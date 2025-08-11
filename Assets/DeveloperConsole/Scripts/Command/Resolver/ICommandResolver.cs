@@ -21,7 +21,8 @@ namespace DeveloperConsole.Command
     {
         Success,
         Fail,
-        AliasExpansion
+        AliasExpansion,
+        Cancelled
     }
 
     /// <summary>

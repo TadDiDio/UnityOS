@@ -13,9 +13,17 @@ namespace DeveloperConsole.Windowing
         private Vector2 _scrollPosition = Vector2.zero;
         private UserInterface _userInterface;
 
+        private CancellationTokenSource _cancellationTokenSource;
+
         public CommandWindow(WindowConfig config) : base(config)
         {
             _userInterface = new UserInterface(this, this);
+            OnClose += CancelCommand;
+        }
+
+        private void CancelCommand(IWindow window)
+        {
+            _cancellationTokenSource?.Cancel();
         }
 
         protected override void DrawContent(Rect areaRect)
@@ -72,8 +80,8 @@ namespace DeveloperConsole.Windowing
 
         public CancellationToken GetCommandCancellationToken()
         {
-            // TODO: Hook this to a close button
-            return new CancellationTokenSource().Token;
+            _cancellationTokenSource = new CancellationTokenSource();
+            return _cancellationTokenSource.Token;
         }
 
         public ShellSignalHandler GetSignalHandler()

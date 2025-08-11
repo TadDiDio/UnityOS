@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Core.Shell;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
 
 namespace DeveloperConsole.Command
 {
@@ -33,8 +32,7 @@ namespace DeveloperConsole.Command
             // 2. Build context
             var context = new CommandContext
             {
-                Shell = request.Shell,
-                Session = request.Session,
+                Session = request.Session
             };
 #if UNITY_EDITOR
             context.Environment = Application.isPlaying ? UnityEnvironment.PlayMode : UnityEnvironment.EditMode;
@@ -69,7 +67,7 @@ namespace DeveloperConsole.Command
                 }
 
                 string message = output.Status is Status.Success ? output.Message : MessageFormatter.Error(output.Message);
-                request.Session.WriteLine(context.CommandId, message);
+                userInterface.Output.WriteLine(message);
 
                 return output.Status is Status.Success ? CommandExecutionResult.Success() : CommandExecutionResult.Fail();
             }
@@ -81,7 +79,7 @@ namespace DeveloperConsole.Command
             {
                 string commandName = command.GetType().Name;
                 string message = $"Command '{commandName}' threw an exception during execution: {e.Message}";
-                request.Session.WriteLine(context.CommandId, message);
+                userInterface.Output.WriteLine(MessageFormatter.Error(message));
 
                 return CommandExecutionResult.Fail();
             }

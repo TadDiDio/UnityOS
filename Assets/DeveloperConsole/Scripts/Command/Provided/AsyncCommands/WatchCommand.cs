@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core.Shell;
 using DeveloperConsole.IO;
-using Task = System.Threading.Tasks.Task;
 
 namespace DeveloperConsole
 {
@@ -27,14 +26,15 @@ namespace DeveloperConsole
         [Variadic("The command to run.")]
         private List<string> command = new();
 
-        private UserInterface _userInterface;
-        private bool receivedPrompt;
+        private bool _receivedPrompt;
         private CancellationToken _token;
+        private bool _kill;
+        private UserInterface _userInterface;
 
         protected override async Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
         {
-            _userInterface = new UserInterface(this, this);
             _token = cancellationToken;
+            _userInterface = new UserInterface(this, this);
 
             if (!command.Any()) return new CommandOutput("Aborting: No command specified.");
 
@@ -44,46 +44,55 @@ namespace DeveloperConsole
             while (true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                if (receivedPrompt) return new CommandOutput();
+                if (_receivedPrompt) return new CommandOutput();
 
-                var request = new ShellRequest
+                var batch = new CommandBatch
                 {
-                    CommandResolver = new TokenCommandResolver(command.ToList()),
-                    Session = context.Session,
-                    Shell = context.Shell,
-                    Windowed = false,
-                    ExpandAliases = true,
-                    NoPrompt = false
+                    AllowPrompting = true
                 };
 
-                var result = await context.Shell.HandleCommandRequestAsync(request, cancellationToken, _userInterface);
-
-                if (result.ErrorMessageValid)
+                var request = new FrontEndCommandRequest
                 {
-                    WriteLine(result.ErrorMessage);
-                }
+                    Resolver = new TokenCommandResolver(command.ToList()),
+                    Windowed = false,
+                    Condition = CommandCondition.Always
+                };
 
-                if (result.Status is CommandResolutionStatus.Fail && killOnError) return new CommandOutput();
+                batch.Requests.Add(request);
+
+                await context.Session.SubmitBatch(batch, _userInterface, OnCommandResult);
+
+                if (_kill) break;
+
                 await Task.Delay((int)(intervalSeconds * 1000), cancellationToken);
             }
-            // ReSharper disable once FunctionNeverReturns
+
+            return new CommandOutput();
+        }
+
+        private void OnCommandResult(CommandExecutionResult result)
+        {
+            if (killOnError && result.Status is CommandResolutionStatus.Fail)
+            {
+                _kill = true;
+            }
         }
 
         public Task<object> HandlePrompt(Prompt prompt, CancellationToken cancellationToken)
         {
-            receivedPrompt = true;
+            _receivedPrompt = true;
             WriteLine(MessageFormatter.Error("Watch command cannot handle prompts."));
             return null;
         }
 
-        public CancellationToken GetCommandCancellationToken() => _token;
+        public CancellationToken GetCommandCancellationToken()
+        {
+            return _token;
+        }
 
         public ShellSignalHandler GetSignalHandler()
         {
-            void NullHandler(ShellSignal signal)
-            {
-                // no-op
-            }
+            void NullHandler(ShellSignal signal) { /* no-op */}
             return NullHandler;
         }
 

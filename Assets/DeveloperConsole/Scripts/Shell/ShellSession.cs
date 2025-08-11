@@ -49,6 +49,7 @@ namespace DeveloperConsole.Core.Shell
         private Dictionary<string, string> _aliasTable = new();
 
         private Guid _sessionId;
+        private UserInterface _userInterface;
         private Dictionary<Guid, UserInterface> _interfaces = new();
 
         // TODO: get this file location from somewhere more suitable like a config.
@@ -88,6 +89,7 @@ namespace DeveloperConsole.Core.Shell
             _shell = shell;
             _sessionId = sessionId;
             _interfaces[_sessionId] = new UserInterface(responder, new CompositeOutputChannel(outputs));
+            _userInterface = _interfaces[_sessionId];
 
             var startBatch = FileBatcher.BatchFile(StartupFilePath);
             _ = CommandPromptLoop(startBatch);
@@ -97,7 +99,7 @@ namespace DeveloperConsole.Core.Shell
         {
             try
             {
-                await SubmitBatch(startBatch, _interfaces[_sessionId].Responder.GetCommandCancellationToken());
+                await SubmitBatch(startBatch, _userInterface);
             }
             catch (Exception e)
             {
@@ -111,7 +113,7 @@ namespace DeveloperConsole.Core.Shell
                 {
                     var token = _interfaces[_sessionId].Responder.GetCommandCancellationToken();
                     var batch = await PromptAsync<CommandBatch>(_sessionId, Prompt.Command(), token);
-                    await SubmitBatch(batch, token);
+                    await SubmitBatch(batch, _userInterface);
                 }
                 catch (OperationCanceledException)
                 {
@@ -127,10 +129,17 @@ namespace DeveloperConsole.Core.Shell
         }
 
 
-        private async Task SubmitBatch(CommandBatch batch, CancellationToken token)
+        /// <summary>
+        /// Submits a batch of commands to be run in the context of the session.
+        /// </summary>
+        /// <param name="batch">The batch to run.</param>
+        /// <param name="ui">The interface this submission should communicate with.</param>
+        /// <param name="onResult">A handle to call per command result.</param>
+        public async Task SubmitBatch(CommandBatch batch, UserInterface ui, Action<CommandExecutionResult> onResult = null)
         {
             try
             {
+                CancellationToken token = ui.Responder.GetCommandCancellationToken();
                 var aliasExpanded = false;
                 var previousStatus = Status.Success;
 
@@ -153,8 +162,10 @@ namespace DeveloperConsole.Core.Shell
                     aliasExpanded = false;
 
                     _promptingAllowed = batch.AllowPrompting && !request.Windowed;
-                    var output = await _shell.HandleCommandRequestAsync(shellRequest, token, GetDefaultInterface());
+                    var output = await _shell.HandleCommandRequestAsync(shellRequest, token, ui);
                     _promptingAllowed = true;
+
+                    onResult?.Invoke(output);
 
                     switch (output.Status)
                     {
@@ -168,12 +179,15 @@ namespace DeveloperConsole.Core.Shell
                             var insertBatch = batcher.GetBatchFromTokens(output.Tokens);
                             requests.InsertRange(i + 1, insertBatch.Requests);
                             break;
-
+                        case CommandResolutionStatus.Cancelled:
+                            previousStatus = Status.Fail;
+                            WriteLine(ui, output.ErrorMessage);
+                            break;
                         case CommandResolutionStatus.Fail:
                             previousStatus = Status.Fail;
                             if (output.ErrorMessageValid)
                             {
-                                WriteLine(_sessionId, MessageFormatter.Error(output.ErrorMessage));
+                                WriteLine(ui, MessageFormatter.Error(output.ErrorMessage));
                             }
                             break;
                     }
@@ -305,12 +319,6 @@ namespace DeveloperConsole.Core.Shell
         }
 
         /// <summary>
-        /// Gets the default user interface for the session.
-        /// </summary>
-        /// <returns></returns>
-        public UserInterface GetDefaultInterface() => _interfaces[_sessionId];
-
-        /// <summary>
         /// Maps an id to an interface.
         /// </summary>
         /// <param name="id">The id to register for.</param>
@@ -375,6 +383,11 @@ namespace DeveloperConsole.Core.Shell
             }
 
             _interfaces[id].Output.WriteLine(line.ToString());
+        }
+
+        private void WriteLine(UserInterface ui, object line)
+        {
+            ui.Output.WriteLine(line.ToString());
         }
 
         private bool ValidateId(Guid id) => _interfaces.ContainsKey(id);

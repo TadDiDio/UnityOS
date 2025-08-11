@@ -6,7 +6,6 @@ namespace DeveloperConsole.Core.Shell
     {
         public ICommandResolver CommandResolver;
         public ShellSession Session;
-        public IShellApplication Shell;
 
         public bool Windowed;
         public bool ExpandAliases;

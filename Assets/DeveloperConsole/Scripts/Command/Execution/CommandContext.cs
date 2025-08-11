@@ -15,11 +15,6 @@ namespace DeveloperConsole.Command
         public ShellSession Session;
 
         /// <summary>
-        /// A shell for running commands.
-        /// </summary>
-        public IShellApplication Shell;
-
-        /// <summary>
         /// The current environment.
         /// </summary>
         public UnityEnvironment Environment;

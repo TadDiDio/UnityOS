@@ -17,7 +17,8 @@ namespace DeveloperConsole.Command
         /// <param name="userInterface">The user interface this execution should use.</param>
         /// <param name="cancellationToken">The command's cancellation token.</param>
         /// <returns>The execution result.</returns>
-        public Task<CommandExecutionResult> ExecuteCommand(ShellRequest executionRequest,
+        public Task<CommandExecutionResult> ExecuteCommand(
+            ShellRequest executionRequest,
             UserInterface userInterface,
             CancellationToken cancellationToken);
     }
@@ -88,6 +89,19 @@ namespace DeveloperConsole.Command
             {
                 Status = CommandResolutionStatus.AliasExpansion,
                 Tokens = tokens
+            };
+        }
+
+        /// <summary>
+        /// Creates a cancelled result.
+        /// </summary>
+        /// <returns>The result.</returns>
+        public static CommandExecutionResult Cancelled()
+        {
+            return new CommandExecutionResult
+            {
+                Status = CommandResolutionStatus.Cancelled,
+                ErrorMessage = "Command execution was canceled."
             };
         }
     }

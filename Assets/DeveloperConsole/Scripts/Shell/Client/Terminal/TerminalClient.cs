@@ -178,7 +178,6 @@ namespace DeveloperConsole
             _scrollPosition.y = float.MaxValue;
         }
 
-
         public void WriteLine(string line)
         {
             if (string.IsNullOrEmpty(line)) return;

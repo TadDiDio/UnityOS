@@ -71,8 +71,6 @@ namespace DeveloperConsole.Core.Shell
         {
             try
             {
-                request.Shell = this;
-
                 if (request.Windowed)
                 {
                     _ = RunWindowedCommand(request);
@@ -83,7 +81,7 @@ namespace DeveloperConsole.Core.Shell
             }
             catch (OperationCanceledException)
             {
-                return CommandExecutionResult.Fail("Command execution was canceled.");
+                return CommandExecutionResult.Cancelled();
             }
             catch (Exception e)
             {
