@@ -62,10 +62,8 @@ namespace DeveloperConsole
         /// <summary>
         /// Ticks the kernel draw hook.
         /// </summary>
-        /// <param name="screenWidth">The screen width.</param>
-        /// <param name="screenHeight">The screen height.</param>
         /// <param name="sceneView">The SceneView.</param>
-        public void Draw(int screenWidth, int screenHeight, bool sceneView)
+        public void Draw(bool sceneView)
         {
             if (_disabled) return;
 
@@ -79,7 +77,7 @@ namespace DeveloperConsole
 #if UNITY_EDITOR
             Handles.BeginGUI();
 #endif
-            Kernel.Instance.OnDraw(screenWidth, screenHeight, sceneView);
+            Kernel.Instance.OnDraw(sceneView);
 
 #if UNITY_EDITOR
             Handles.EndGUI();

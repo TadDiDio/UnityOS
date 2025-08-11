@@ -17,11 +17,10 @@ namespace DeveloperConsole
 
         private void Update() => _updater.Tick();
 
-        private int sd;
         private void OnGUI()
         {
             _updater.Input(Event.current);
-            _updater.Draw(Screen.width, Screen.height, false);
+            _updater.Draw(false);
         }
     }
 }

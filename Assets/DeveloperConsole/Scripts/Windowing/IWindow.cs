@@ -13,7 +13,6 @@ namespace DeveloperConsole.Windowing
         /// </summary>
         public event Action<IWindow> OnClose;
 
-
         /// <summary>
         /// Sets the name of this window.
         /// </summary>
@@ -23,8 +22,8 @@ namespace DeveloperConsole.Windowing
         /// <summary>
         /// Draws the window.
         /// </summary>
-        /// <param name="areaRect">The area that this window gets to fill.</param>
-        public void Draw(Rect areaRect);
+        /// <param name="fullScreen">The area that this window gets to fill.</param>
+        public void Draw(Rect fullScreen);
 
 
         /// <summary>

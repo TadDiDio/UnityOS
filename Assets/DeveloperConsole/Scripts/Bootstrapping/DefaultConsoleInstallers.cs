@@ -48,9 +48,11 @@ namespace DeveloperConsole
         public void Install()
         {
             var config = new WindowConfigFactory()
-                .Draggable()
+                .Resizeable()
+                .WithMinSize(400, 300)
                 .WithHeaderHeight(30)
-                .ForceFullscreen()
+                .FullScreen()
+                .WithPadding(12)
                 .WithName("Terminal")
                 .Build();
 

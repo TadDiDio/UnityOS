@@ -2,6 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
+
 namespace DeveloperConsole.Windowing
 {
     // TODO: This class will need major refactoring. For now it just spawns a terminal.
@@ -18,15 +22,11 @@ namespace DeveloperConsole.Windowing
         private bool _terminalVisible;
 
         private Rect _screenRect;
-        private const int ScreenPadding = 10;
 
         private GUISkin _gammaSkin = Resources.Load<GUISkin>("Gamma_Skin");
         private GUISkin _linearSkin = Resources.Load<GUISkin>("Linear_Skin");
 
-        public Rect FullScreenSize()
-        {
-            return _screenRect;
-        }
+        private const int ToolbarHeight = 25;
 
         public void RegisterWindow(IWindow window)
         {
@@ -75,23 +75,36 @@ namespace DeveloperConsole.Windowing
             foreach (var window in _windows.ToList()) window.OnInput(current);
         }
 
-        public void OnGUI(Rect fullScreen, bool isSceneView)
+        public void OnGUI(bool isSceneView)
         {
             bool useGamma = isSceneView || QualitySettings.activeColorSpace is ColorSpace.Gamma;
             GUI.skin = useGamma ? _gammaSkin : _linearSkin;
 
-            UpdateScreenSize(fullScreen);
+            Rect fullScreen = GetFullScreen(isSceneView);
 
             foreach (var window in _windows.ToList()) window.Draw(fullScreen);
 
             if (_terminalVisible) _terminal.Draw(fullScreen);
         }
 
-        private void UpdateScreenSize(Rect fullScreen)
+        private Rect GetFullScreen(bool isSceneView)
         {
-            _screenRect = new Rect(ScreenPadding, ScreenPadding,
-                fullScreen.width - ScreenPadding * 2,
-                fullScreen.height - ScreenPadding * 2);
+#if UNITY_EDITOR
+            if (isSceneView)
+            {
+                int width = (int)SceneView.currentDrawingSceneView.position.width;
+                int height = (int)SceneView.currentDrawingSceneView.position.height - ToolbarHeight;
+                return new Rect(0, 0, width, height);
+            }
+            else
+            {
+                int width = Screen.width;
+                int height = Screen.height;
+                return new Rect(0, 0, width, height);
+            }
+#else
+            return new Rect(0, 0, Screen.width, Screen.height);
+#endif
         }
     }
 }

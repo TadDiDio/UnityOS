@@ -357,16 +357,6 @@ namespace DeveloperConsole
             {
                 WithService<IWindowManager>(m => m.UnregisterWindow(window));
             }
-
-
-            /// <summary>
-            /// Gets a rect of the whole screen.
-            /// </summary>
-            /// <returns>The screen rect.</returns>
-            public static Rect FullscreenRect()
-            {
-                return WithService<IWindowManager, Rect>(m => m.FullScreenSize());
-            }
         }
     }
 }

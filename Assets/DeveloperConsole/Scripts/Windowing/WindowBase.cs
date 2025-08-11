@@ -15,34 +15,31 @@ namespace DeveloperConsole.Windowing
 
         public Action<IWindow> OnHide;
 
-        protected WindowBase(WindowConfig config, Rect startRect = default)
+        protected WindowBase(WindowConfig config)
         {
             WindowId = _nextWindowId++;
             _config = config;
-            if (startRect == default)
-            {
-                startRect = new Rect(0, 0, _config.MinSize.x, _config.MinSize.y);
-            }
-            _windowRect = startRect;
+            _windowRect = new Rect(0, 0, _config.MinSize.x, _config.MinSize.y);
         }
+
+        public WindowConfig GetConfig() => _config;
 
         public void SetName(string name)
         {
             _config.Name = name;
         }
 
-        public void Draw(Rect areaRect)
+        public void Draw(Rect fullScreen)
         {
-            Rect screenRect = ConsoleAPI.Windowing.FullscreenRect();
+            fullScreen = new Rect(fullScreen.x + _config.Padding, fullScreen.y + _config.Padding,
+                fullScreen.width - 2 * _config.Padding, fullScreen.height - 2 * _config.Padding);
 
-            if (_config.ForceFullscreen) _windowRect = screenRect;
+            if (_config.FullScreen) _windowRect = fullScreen;
             _windowRect = GUILayout.Window(WindowId, _windowRect, DrawWindow, _config.Name);
 
             // Clamp to screen limits
-            _windowRect.x = Mathf.Clamp(_windowRect.x, 0, screenRect.width - 100);
-            _windowRect.y = Mathf.Clamp(_windowRect.y, 0, screenRect.height - 100);
-            _windowRect.width = Mathf.Clamp(_windowRect.width, 100, screenRect.width - _windowRect.x);
-            _windowRect.height = Mathf.Clamp(_windowRect.height, 100, screenRect.height - _windowRect.y);
+            _windowRect.x = Mathf.Clamp(_windowRect.x, 0, fullScreen.width - _windowRect.width);
+            _windowRect.y = Mathf.Clamp(_windowRect.y, 0, fullScreen.height - _windowRect.height);
         }
 
         private void DrawWindow(int id)
@@ -97,8 +94,8 @@ namespace DeveloperConsole.Windowing
             else if (e.type == EventType.MouseDrag && _resizing)
             {
                 Vector2 delta = e.mousePosition - _resizeStartMousePos;
-                _windowRect.width = Mathf.Max(100, _resizeStartWindowRect.width + delta.x);
-                _windowRect.height = Mathf.Max(100, _resizeStartWindowRect.height + delta.y);
+                _windowRect.width = Mathf.Max(_config.MinSize.x, _resizeStartWindowRect.width + delta.x);
+                _windowRect.height = Mathf.Max(_config.MinSize.y, _resizeStartWindowRect.height + delta.y);
                 e.Use();
             }
             else if (e.type == EventType.MouseUp && _resizing)

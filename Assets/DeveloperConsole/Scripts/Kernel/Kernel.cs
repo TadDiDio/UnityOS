@@ -146,13 +146,10 @@ namespace DeveloperConsole.Core.Kernel
         /// <summary>
         /// Makes the kernel distribute a draw call.
         /// </summary>
-        /// <param name="screenWidth">Current fullscreen width.</param>
-        /// <param name="screenHeight">Current fullscreen height.</param>
         /// <param name="isSceneView">Whether this is the scene or game view.</param>
-        public void OnDraw(int screenWidth, int screenHeight, bool isSceneView)
+        public void OnDraw(bool isSceneView)
         {
-            Rect screenRect = new(0, 0, screenWidth, screenHeight);
-            _dependencies.WindowManager.OnGUI(screenRect, isSceneView);
+            _dependencies.WindowManager.OnGUI(isSceneView);
         }
 
 

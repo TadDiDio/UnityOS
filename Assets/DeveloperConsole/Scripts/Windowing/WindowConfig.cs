@@ -4,7 +4,7 @@ namespace DeveloperConsole.Windowing
 {
     public class WindowConfig
     {
-        public bool ForceFullscreen;
+        public bool FullScreen;
         public bool Closeable = false;
         public bool IsMinimizable = false;
         public bool IsDraggable = false;

@@ -10,8 +10,6 @@ namespace DeveloperConsole
     /// </summary>
     public class EditModeTicker : Singleton<EditModeTicker>
     {
-        private const int ToolbarHeight = 25;
-
         private bool _disposed;
         private KernelUpdater _updater;
 
@@ -50,11 +48,8 @@ namespace DeveloperConsole
         {
             if (_disposed) return;
 
-            int width = (int)sceneView.position.width;
-            int height = (int)sceneView.position.height - ToolbarHeight;
-
             _updater.Input(Event.current);
-            _updater.Draw(width, height, true);
+            _updater.Draw(true);
             sceneView.Repaint();
         }
     }

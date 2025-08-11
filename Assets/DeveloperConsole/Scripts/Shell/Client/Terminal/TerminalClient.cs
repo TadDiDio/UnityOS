@@ -28,25 +28,21 @@ namespace DeveloperConsole
         private TaskCompletionSource<object> _promptResponseSource;
         private CancellationTokenSource _cancellationSource;
         private bool _bufferFocus;
-        private int _lastFocusedControlId;
 
         public TerminalClient(WindowConfig windowConfig) : base(windowConfig) { }
 
         protected override void DrawContent(Rect areaRect)
         {
-            int focusedControl = GUIUtility.keyboardControl;
-            bool windowFocused = focusedControl == WindowId;
-
             // Cut off the scroll bar
             Rect windowRect = new Rect(areaRect.x, areaRect.y, areaRect.width - 12, areaRect.height - 12);
             bool clicked = Event.current.type is EventType.MouseDown && windowRect.Contains(Event.current.mousePosition);
 
-            if ((windowFocused && _lastFocusedControlId != focusedControl) || clicked)
+            if (clicked)
             {
+                // Literally no idea why this has to be cleared but it prevents toggling control to scene
+                GUI.FocusControl("");
                 _bufferFocus = true;
             }
-
-            _lastFocusedControlId = focusedControl;
 
             GUILayout.BeginVertical();
             _scrollPosition = GUILayout.BeginScrollView(_scrollPosition, GUILayout.ExpandHeight(true));
@@ -92,8 +88,11 @@ namespace DeveloperConsole
 
                     if (_bufferFocus)
                     {
-                        _bufferFocus = false;
-                        GUI.FocusControl("TerminalInputField");
+                        if (GUI.GetNameOfFocusedControl() != "TerminalInputField")
+                        {
+                            GUI.FocusControl("TerminalInputField");
+                        }
+                        else _bufferFocus = false;
                     }
 
                     GUILayout.EndHorizontal();

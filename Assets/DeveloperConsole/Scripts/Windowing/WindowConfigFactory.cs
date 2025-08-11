@@ -54,9 +54,9 @@ namespace DeveloperConsole.Windowing
             return this;
         }
 
-        public WindowConfigFactory ForceFullscreen()
+        public WindowConfigFactory FullScreen()
         {
-            _config.ForceFullscreen = true;
+            _config.FullScreen = true;
             return this;
         }
 
@@ -81,6 +81,7 @@ namespace DeveloperConsole.Windowing
                 .Draggable()
                 .Closeable()
                 .Resizeable()
+                .WithPadding(0)
                 .WithMinSize(200, 100)
                 .Build();
         }
