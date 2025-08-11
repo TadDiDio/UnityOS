@@ -2,9 +2,9 @@ using DeveloperConsole.Command;
 
 namespace DeveloperConsole.Tests
 {
-    public class TestBindingAttributeBuilder : AttributeDataBuilder<BindingAttribute>
+    public class TestBindingAttributeBuilder : AttributeDataBuilder<BindAttribute>
     {
-        protected override AttributeData GetBuildData(BindingAttribute attribute)
+        protected override AttributeData GetBuildData(BindAttribute attribute)
         {
             return new AttributeData
             (

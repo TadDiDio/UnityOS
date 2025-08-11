@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using UnityEngine;
 using Object = UnityEngine.Object;
@@ -8,57 +9,64 @@ namespace DeveloperConsole.Bindings
 {
     public class ObjectBindingsManager : IObjectBindingsManager
     {
-        private Dictionary<Type, Object> _bindings = new();
+        private Dictionary<Type, object> _bindings = new();
 
-        public Dictionary<Type, Object> GetAllBindings() => _bindings;
-
-        public bool TryGetBinding(Type type, string name, string tag, out Object obj)
+        public ReadOnlyDictionary<Type, object> GetAllBindings()
         {
-            var success = _bindings.TryGetValue(type, out obj);
-            if (obj) return true;
+            return new ReadOnlyDictionary<Type, object>(_bindings);
+        }
 
-            if (success) _bindings.Remove(type);
+        public void BindObject(Type type, object obj)
+        {
+            Log.Info("Here");
+            _bindings[type] = obj;
+        }
 
-            obj = ResolveBinding(type, name, tag);
+        public bool TryGetPlainCSharpBinding(Type type, out object obj) => _bindings.TryGetValue(type, out obj);
+        public bool TryGetUnityObjectBinding(Type type, string name, string tag, out Object obj)
+        {
+            var found = Object.FindObjectsByType(type, FindObjectsInactive.Include, FindObjectsSortMode.None);
+
+            obj = found.OrderByDescending(o => HasTag(o, tag))  // Prioritize tags
+                .ThenByDescending(o => HasName(o, name))        // Then names
+                .ThenByDescending(IsActive)                     // Then active in hierarchy
+                .FirstOrDefault();
+
             return obj;
         }
 
-        public Object ResolveBinding(Type objType, string name, string tag)
+
+        private static bool HasTag(Object o, string tag)
         {
-            bool found = _bindings.TryGetValue(objType, out Object current);
+            if (string.IsNullOrEmpty(tag)) return false;
 
-            // If the cached value is null, remove it
-            if (found && !current)
+            return o switch
             {
-                _bindings.Remove(objType);
-            }
+                GameObject go => go.CompareTag(tag),
+                Component comp => comp.gameObject.CompareTag(tag),
+                _ => false
+            };
+        }
 
-            if (!typeof(Object).IsAssignableFrom(objType)) return null;
+        private static bool HasName(Object o, string name)
+        {
+            if (string.IsNullOrEmpty(name)) return false;
+            return o switch
+            {
+                GameObject go => go.name == name,
+                Component comp => comp.gameObject.name == name,
+                _ => false
+            };
+        }
 
-            // TODO: I think this only searches active scene, add support for all open scenes.
-            var allObjects = Object.FindObjectsByType(objType, FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-            if (allObjects == null) return null;
-
-            var result = allObjects
-                .OrderBy(obj =>
-                {
-                    bool nameMatches = !string.IsNullOrEmpty(name) && obj.name == name;
-                    bool tagMatches = !string.IsNullOrEmpty(tag) && obj switch
-                    {
-                        GameObject go => go.CompareTag(tag),
-                        Component comp => comp.CompareTag(tag),
-                        _ => false
-                    };
-
-                    if (nameMatches && tagMatches) return 0;
-                    if (tagMatches) return 1;
-                    if (nameMatches) return 2;
-                    return 3;
-                })
-                .FirstOrDefault();
-
-            if (result) _bindings[objType] = result;
-            return result;
+        private static bool IsActive(Object o)
+        {
+            return o switch
+            {
+                GameObject go => go.activeInHierarchy,
+                Component comp => comp.gameObject.activeInHierarchy,
+                _ => false
+            };
         }
     }
 }

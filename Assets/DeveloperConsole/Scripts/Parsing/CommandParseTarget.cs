@@ -22,9 +22,6 @@ namespace DeveloperConsole.Parsing
 
         private Dictionary<ArgumentSpecification, List<IAttributeValidator>> _validators = new();
 
-        private List<ICommandValidator> _commandValidators;
-
-
         /// <summary>
         /// Creates a new command parse target.
         /// </summary>
@@ -32,14 +29,7 @@ namespace DeveloperConsole.Parsing
         public CommandParseTarget(CommandSchema schema)
         {
             Schema = schema;
-            Command = Activator.CreateInstance(schema.CommandType) as ICommand;
-
-            // TODO: Move these registrations to a registry that ConsoleAPI can see.
-            _commandValidators = new List<ICommandValidator>
-            {
-                new InstantiateVariadic(),
-                new BindingProcessor()
-            };
+            Command = ICommand.Create(schema);
 
             foreach (var arg in schema.ArgumentSpecifications)
             {
@@ -79,14 +69,6 @@ namespace DeveloperConsole.Parsing
                     errorMessage = validator.ErrorMessage();
                     return false;
                 }
-            }
-
-            foreach (var cmdValidator in  _commandValidators)
-            {
-                if (cmdValidator.Validate(this, out var error)) continue;
-
-                errorMessage = error;
-                return false;
             }
 
             return true;

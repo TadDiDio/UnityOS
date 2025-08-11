@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,6 +13,13 @@ namespace DeveloperConsole.Command
     /// </summary>
     public class CommandExecutor : ICommandExecutor
     {
+        // TODO: Don't do this here, move it to a public registry so the API can add more.
+        private List<ICommandValidator> _commandValidators = new()
+        {
+            new InstantiateVariadic(),
+            new BindingProcessor()
+        };
+
         public async Task<CommandExecutionResult> ExecuteCommand(
             ShellRequest request,
             UserInterface userInterface,
@@ -57,7 +65,15 @@ namespace DeveloperConsole.Command
                     return CommandExecutionResult.Fail();
                 }
 
-                // 4. Execute
+                // 4. Command validators
+                foreach (var cmdValidator in _commandValidators)
+                {
+                    if (cmdValidator.Validate(command, out var error)) continue;
+                    request.Session.WriteLine(context.CommandId, MessageFormatter.Error(error));
+                    return CommandExecutionResult.Fail();
+                }
+
+                // 5. Execute
                 var output = await command.ExecuteCommandAsync(context, cancellationToken);
 
                 if (cancellationToken.IsCancellationRequested)

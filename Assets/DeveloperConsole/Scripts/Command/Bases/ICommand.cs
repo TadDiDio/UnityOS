@@ -9,7 +9,15 @@ namespace DeveloperConsole.Command
     /// </summary>
     public interface ICommand : IDisposable
     {
+        /// <summary>
+        /// A unique id for this command.
+        /// </summary>
         public Guid CommandId { get; }
+
+        /// <summary>
+        /// The schema representing this command.
+        /// </summary>
+        public CommandSchema Schema { get; }
 
         /// <summary>
         /// Defines the asynchronous execution logic for this command.
@@ -18,5 +26,18 @@ namespace DeveloperConsole.Command
         /// <param name="cancellationToken">A cancellation token to stop execution.</param>
         /// <returns>The command's output.</returns>
         public Task<CommandOutput> ExecuteCommandAsync(CommandContext context, CancellationToken cancellationToken);
+
+
+        /// <summary>
+        /// Instantiates and initializes a new command.
+        /// </summary>
+        /// <param name="schema">The schema to build.</param>
+        /// <returns>The command.</returns>
+        public static ICommand Create(CommandSchema schema)
+        {
+            var command = (AsyncCommand)Activator.CreateInstance(schema.CommandType);
+            command.Initialize(schema);
+            return command;
+        }
     }
 }

@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Core.Shell;
-using DeveloperConsole.IO;
 
 namespace DeveloperConsole.Command
 {
@@ -11,9 +10,23 @@ namespace DeveloperConsole.Command
     /// </summary>
     public abstract class AsyncCommand : ICommand
     {
-        public Guid CommandId { get; private set; } = Guid.NewGuid();
+        public Guid CommandId { get; } = Guid.NewGuid();
+        public CommandSchema Schema => _schema;
 
         protected ShellSession Session;
+        private CommandSchema _schema;
+
+        protected AsyncCommand()
+        {
+            // Delete constructor to force use of creation factory
+        }
+
+        public void Initialize(CommandSchema schema)
+        {
+            if (_schema != null) throw new InvalidOperationException("Schema already initialized.");
+
+            _schema = schema ?? throw new ArgumentNullException(nameof(schema));
+        }
 
         public async Task<CommandOutput> ExecuteCommandAsync(CommandContext context, CancellationToken cancellationToken)
         {

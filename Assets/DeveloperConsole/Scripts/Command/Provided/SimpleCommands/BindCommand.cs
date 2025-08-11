@@ -5,7 +5,7 @@ namespace DeveloperConsole
     [Command("bind", "Tests the bind attribute")]
     public class BindCommand : SimpleCommand
     {
-        [Binding]
+        [Bind]
         private TestClass test;
         protected override CommandOutput Execute(CommandContext context)
         {

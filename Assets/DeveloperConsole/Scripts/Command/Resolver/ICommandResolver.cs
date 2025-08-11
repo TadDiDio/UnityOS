@@ -45,7 +45,6 @@ namespace DeveloperConsole.Command
         /// </summary>
         public CommandResolutionStatus Status;
 
-
         /// <summary>
         /// Tokens to reevaluate when an alias expansion occured.
         /// </summary>

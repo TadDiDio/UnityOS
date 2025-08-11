@@ -70,48 +70,28 @@ namespace DeveloperConsole
 
         private void RenderInput()
         {
-            switch (_state)
+            GUILayout.BeginHorizontal();
+
+            GUILayout.Label("> ", GUILayout.ExpandWidth(false));
+            GUI.SetNextControlName("TerminalInputField");
+            _historyBuffer.CurrentBuffer = GUILayout.TextField(_historyBuffer.CurrentBuffer);
+
+            if (_historyBuffer.CurrentBuffer.EndsWith("/"))
             {
-                case TerminalState.General:
-                case TerminalState.CommandPrompt:
-                    GUILayout.BeginHorizontal();
-
-                    GUILayout.Label("> ", GUILayout.ExpandWidth(false));
-                    GUI.SetNextControlName("TerminalInputField");
-                    _historyBuffer.CurrentBuffer = GUILayout.TextField(_historyBuffer.CurrentBuffer);
-
-                    if (_historyBuffer.CurrentBuffer.EndsWith("/"))
-                    {
-                        _historyBuffer.CurrentBuffer = _historyBuffer.CurrentBuffer[..^1];
-                        OnHide?.Invoke(this);
-                    }
-
-                    if (_bufferFocus)
-                    {
-                        if (GUI.GetNameOfFocusedControl() != "TerminalInputField")
-                        {
-                            GUI.FocusControl("TerminalInputField");
-                        }
-                        else _bufferFocus = false;
-                    }
-
-                    GUILayout.EndHorizontal();
-                    break;
-                case TerminalState.ChoicePrompt:
-                    GUILayout.BeginHorizontal();
-
-                    foreach (var choice in _choices)
-                    {
-                        if (GUILayout.Button(choice.Label))
-                        {
-                            SubmitChoiceInput(choice);
-                            break;
-                        }
-                    }
-
-                    GUILayout.EndHorizontal();
-                    break;
+                _historyBuffer.CurrentBuffer = _historyBuffer.CurrentBuffer[..^1];
+                OnHide?.Invoke(this);
             }
+
+            if (_bufferFocus)
+            {
+                if (GUI.GetNameOfFocusedControl() != "TerminalInputField")
+                {
+                    GUI.FocusControl("TerminalInputField");
+                }
+                else _bufferFocus = false;
+            }
+
+            GUILayout.EndHorizontal();
         }
 
         public override void OnInput(Event current)
@@ -133,7 +113,7 @@ namespace DeveloperConsole
             else if (current.keyCode is KeyCode.Return or KeyCode.KeypadEnter)
             {
                 if (_promptResponseSource == null) return;
-                SubmitInput();
+                if (_state is TerminalState.ChoicePrompt) SubmitChoiceInput(); else SubmitInput();
                 current.Use();
             }
             else if (current.keyCode is KeyCode.C && current.modifiers.HasFlag(EventModifiers.Control))
@@ -143,9 +123,22 @@ namespace DeveloperConsole
         }
 
 
-        private void SubmitChoiceInput(PromptChoice choice)
+        private void SubmitChoiceInput()
         {
+            string input = _historyBuffer.CurrentBuffer;
+            if (!int.TryParse(input, out int number) || number < 1 || number > _choices.Length)
+            {
+                _historyBuffer.PushHistory();
+                WriteLine($"> {input}");
+                WriteLine("Invalid choice, please select a number that is in range of the choices:");
+                return;
+            }
+
+            var choice = _choices[number - 1];
+
+            _historyBuffer.PushHistory();
             WriteLine($"> {choice.Label}");
+
             _promptResponseSource.SetResult(choice.Value);
         }
 
@@ -237,6 +230,13 @@ namespace DeveloperConsole
                 case PromptKind.Choice:
                     WriteLine(prompt.Message);
                     _choices = (PromptChoice[])prompt.Metadata[PromptMetaKeys.Choices];
+
+                    int num = 1;
+                    foreach (var choice in _choices)
+                    {
+                        WriteLine($"{num++}. {choice.Label}");
+                    }
+
                     break;
                 case PromptKind.Confirmation:
                     WriteLine($"{prompt.Message} (y/n)");

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using DeveloperConsole.Bindings;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core.Kernel;
@@ -9,7 +10,6 @@ using DeveloperConsole.Parsing;
 using DeveloperConsole.Parsing.Tokenizing;
 using DeveloperConsole.Parsing.TypeAdapting;
 using DeveloperConsole.Windowing;
-using UnityEngine;
 using Object = UnityEngine.Object;
 
 namespace DeveloperConsole
@@ -56,43 +56,60 @@ namespace DeveloperConsole
 
         public static class Bindings
         {
-             /// <summary>
-            /// Tries to get an object by checking if there is a binding, then searching for one if not.
+            /// <summary>
+            /// Returns all current bindings.
+            /// </summary>
+            /// <returns>All current bindings.</returns>
+            public static ReadOnlyDictionary<Type, object> GetAllBindings()
+            {
+                return WithService<IObjectBindingsManager, ReadOnlyDictionary<Type, object>>(m => m.GetAllBindings());
+            }
+
+
+            /// <summary>
+            /// Binds an object for future commands to use.
+            /// </summary>
+            /// <param name="type">The type to bind for.</param>
+            /// <param name="obj">The object instance to bind to.</param>
+            public static void BindObject(Type type, object obj)
+            {
+                WithService<IObjectBindingsManager>(m => m.BindObject(type, obj));
+            }
+
+
+            /// <summary>
+            /// Tries to get a Unity object by searching the scene with the matching parameters.
             /// </summary>
             /// <param name="type">The type of object to get.</param>
             /// <param name="name">The name to find if there isn't an object already bound. Ignored if empty.</param>
             /// <param name="tag">The tag to find if there isn't an object already bound. Ignored if empty.</param>
             /// <param name="obj">The bound object.</param>
             /// <returns>True if a bound object was found in the cache or scene.</returns>
-            public static bool TryGetBinding(Type type, string name, string tag, out Object obj)
+            public static bool TryGetUnityObjectBinding(Type type, string name, string tag, out Object obj)
             {
                 Object result = null;
-                var success = WithService<IObjectBindingsManager, bool>(m => m.TryGetBinding(type, name, tag, out result));
+
+                bool success = WithService<IObjectBindingsManager, bool>(m => m.TryGetUnityObjectBinding(type, name, tag, out result));
                 obj = result;
+
                 return success;
             }
 
 
             /// <summary>
-            /// Binds an object for commands to reference.
+            /// Tries to get a plain C# object from the cache.
             /// </summary>
-            /// <param name="objType">The type to bind.</param>
-            /// <param name="name">The name to search for. Ignored if empty.</param>
-            /// <param name="tag">The tag to search for. Ignored if empty.</param>
-            /// <returns>The bound object or null if one wasn't found.</returns>
-            public static Object ResolveBinding(Type objType, string name, string tag)
+            /// <param name="type">The type to get.</param>
+            /// <param name="obj">The bound object.</param>
+            /// <returns>True if a cached object exists.</returns>
+            public static bool TryGetPlainCSharpBinding(Type type, out object obj)
             {
-                return WithService<IObjectBindingsManager, Object>(m => m.ResolveBinding(objType, name, tag));
-            }
+                object result = null;
 
+                bool success = WithService<IObjectBindingsManager, bool>(m => m.TryGetPlainCSharpBinding(type, out result));
+                obj = result;
 
-            /// <summary>
-            /// Gets all current bindings.
-            /// </summary>
-            /// <returns>The bindings table.</returns>
-            public static Dictionary<Type, Object> GetAllBindings()
-            {
-                return WithService<IObjectBindingsManager, Dictionary<Type, Object>>(m => m.GetAllBindings());
+                return success;
             }
         }
 

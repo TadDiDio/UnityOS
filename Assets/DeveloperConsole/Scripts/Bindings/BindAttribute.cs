@@ -6,17 +6,17 @@ namespace DeveloperConsole.Command
     /// Specifies to inject an object of this field's type for use in the command.
     /// </summary>
     [AttributeUsage(AttributeTargets.Field)]
-    public class BindingAttribute : Attribute
+    public class BindAttribute : Attribute
     {
         public readonly string Name;
         public readonly string Tag;
 
         /// <summary>
-        /// Injects an object of this type if one is or can be bound.
+        /// Injects an object of this type automatically. If the object is a GameObject
         /// </summary>
         /// <param name="name">Prefer an object with this name.</param>
         /// <param name="tag">Prefer an object with this tag.</param>
-        public BindingAttribute(string name = "", string tag = "")
+        public BindAttribute(string name = "", string tag = "")
         {
             Tag = tag;
             Name = name;

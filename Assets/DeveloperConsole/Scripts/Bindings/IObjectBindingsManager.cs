@@ -1,5 +1,5 @@
 using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Object = UnityEngine.Object;
 
 namespace DeveloperConsole.Bindings
@@ -13,27 +13,34 @@ namespace DeveloperConsole.Bindings
         /// Returns all current bindings.
         /// </summary>
         /// <returns>All current bindings.</returns>
-        public Dictionary<Type, Object> GetAllBindings();
-        
-        
+        public ReadOnlyDictionary<Type, object> GetAllBindings();
+
+
         /// <summary>
-        /// Tries to get an object by checking if there is a binding, then searching for one if not.
+        /// Binds an object for future commands to use.
+        /// </summary>
+        /// <param name="type">The type to bind for.</param>
+        /// <param name="obj">The object instance to bind to.</param>
+        public void BindObject(Type type, object obj);
+
+
+        /// <summary>
+        /// Tries to get a Unity object by searching the scene with the matching parameters.
         /// </summary>
         /// <param name="type">The type of object to get.</param>
         /// <param name="name">The name to find if there isn't an object already bound. Ignored if empty.</param>
         /// <param name="tag">The tag to find if there isn't an object already bound. Ignored if empty.</param>
         /// <param name="obj">The bound object.</param>
         /// <returns>True if a bound object was found in the cache or scene.</returns>
-        public bool TryGetBinding(Type type, string name, string tag, out Object obj);
-        
-        
+        public bool TryGetUnityObjectBinding(Type type, string name, string tag, out Object obj);
+
+
         /// <summary>
-        /// Binds an object for commands to reference.
+        /// Tries to get a plain C# object from the cache.
         /// </summary>
-        /// <param name="objType">The type to bind.</param>
-        /// <param name="name">The name to search for. Ignored if empty.</param>
-        /// <param name="tag">The tag to search for. Ignored if empty.</param>
-        /// <returns>The bound object or null if one wasn't found.</returns>
-        public Object ResolveBinding(Type objType, string name, string tag);
+        /// <param name="type">The type to get.</param>
+        /// <param name="obj">The bound object.</param>
+        /// <returns>True if a cached object exists.</returns>
+        public bool TryGetPlainCSharpBinding(Type type, out object obj);
     }
 }

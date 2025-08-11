@@ -8,12 +8,6 @@ namespace DeveloperConsole.Scripts.Command
     [Command("prompt", "Tests the prompt mechanics.")]
     public class TestPromptCommand : PromptCommand
     {
-        private enum Animal
-        {
-            Dog,
-            Cat,
-            Fish
-        }
         protected override async Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
         {
             if (!await ConfirmAsync("Do you want to proceed?", cancellationToken))
@@ -23,11 +17,11 @@ namespace DeveloperConsole.Scripts.Command
 
             WriteLine($"You picked {number}");
 
-            await PromptWithChoicesAsync<Animal>("Pick your favorite animal", new[]
+            await PromptWithChoicesAsync<string>("Pick your favorite animal", new[]
             {
-                new PromptChoice("Dog", Animal.Dog),
-                new PromptChoice("Cat", Animal.Cat),
-                new PromptChoice("Fish", Animal.Fish),
+                new PromptChoice("Dog", "Dog"),
+                new PromptChoice("Cat", "Cat"),
+                new PromptChoice("Fish", "Fiss"),
             }, cancellationToken);
 
             WriteLine("Doing a random countdown.");
