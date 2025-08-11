@@ -1,5 +1,4 @@
 using System;
-using UnityEditor;
 using UnityEngine;
 
 namespace DeveloperConsole.Windowing
@@ -85,7 +84,6 @@ namespace DeveloperConsole.Windowing
         private void HandleResize()
         {
             Rect resizeHandleRect = new Rect(_windowRect.width - ResizeHandleSize, _windowRect.height - ResizeHandleSize, ResizeHandleSize, ResizeHandleSize);
-            EditorGUIUtility.AddCursorRect(resizeHandleRect, MouseCursor.ResizeUpLeft);
 
             // Handle mouse events for resizing
             Event e = Event.current;

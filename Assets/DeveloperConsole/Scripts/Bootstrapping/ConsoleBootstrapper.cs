@@ -20,15 +20,20 @@ namespace DeveloperConsole
     public static class ConsoleBootstrapper
     {
         public static event Action SystemInitialized;
-
-        private static bool _commonElementsInitialized;
         private static DependenciesFactory _configurationOverride;
 
         #region AUTO BOOTSTRAP
+        // Handles bootstrapping while in the editor but not play mode.
 #if UNITY_EDITOR
-        static ConsoleBootstrapper() => Bootstrap();
+        // Called on domain reload
+        static ConsoleBootstrapper()
+        {
+            if (!EditorApplication.isPlayingOrWillChangePlaymode) Bootstrap();
+        }
 #endif
+        // Handles bootstrapping when entering playmode
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
+        // Called when entering playmode
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
         public static void RuntimeBootstrap() => Bootstrap();
 #endif
@@ -65,7 +70,6 @@ namespace DeveloperConsole
         public static void KillSystem()
         {
             _configurationOverride = null;
-            _commonElementsInitialized = false;
 
             // Unload runners
             if (PlayModeTickerSpawner.IsInitialized)
@@ -102,39 +106,13 @@ namespace DeveloperConsole
 
         private static void CommonBootstrap()
         {
-            if (_commonElementsInitialized) return;
-
             DependenciesFactory config = GetConfiguration();
             Kernel.Initialize(() => new Kernel(config));
-
-            _commonElementsInitialized = true;
         }
 
         private static DependenciesFactory GetConfiguration()
         {
             return _configurationOverride ?? new DependenciesFactory();
-        }
-
-        private static bool IsKnownSafeToSkip(Assembly a)
-        {
-            var name = a.GetName().Name;
-            if (string.IsNullOrEmpty(name))
-                return true;
-
-            return name.StartsWith("UnityEngine")
-                   || name.StartsWith("UnityEditor")
-                   || name.StartsWith("System")
-                   || name.StartsWith("mscorlib")
-                   || name.StartsWith("netstandard")
-                   || name.StartsWith("TextMeshPro")
-                   || name.StartsWith("Mono.")
-                   || name.StartsWith("Unity.")
-                   || name.StartsWith("nunit")
-                   || name.StartsWith("JetBrains")
-                   || name.StartsWith("Microsoft.")
-                   || name.StartsWith("Boo.")
-                   || name.StartsWith("ExCSS") // Example 3rd party lib
-                   || name.Contains("Newtonsoft"); // common JSON lib
         }
 
         private static IEnumerable<Type> SafeGetTypes(Assembly assembly)
@@ -156,7 +134,7 @@ namespace DeveloperConsole
         private static void InstallComponents()
         {
             var installers = AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => !IsKnownSafeToSkip(a))
+                .Where(a => !LibIsKnownSafeToSkip(a))
                 .SelectMany(SafeGetTypes)
                 .Where(t => typeof(IConsoleInstaller).IsAssignableFrom(t) && !t.IsAbstract && t.IsClass);
 
@@ -165,6 +143,28 @@ namespace DeveloperConsole
                 var instance = (IConsoleInstaller)Activator.CreateInstance(type)!;
                 instance.Install();
             }
+        }
+
+        private static bool LibIsKnownSafeToSkip(Assembly a)
+        {
+            var name = a.GetName().Name;
+            if (string.IsNullOrEmpty(name))
+                return true;
+
+            return name.StartsWith("UnityEngine")
+                   || name.StartsWith("UnityEditor")
+                   || name.StartsWith("System")
+                   || name.StartsWith("mscorlib")
+                   || name.StartsWith("netstandard")
+                   || name.StartsWith("TextMeshPro")
+                   || name.StartsWith("Mono.")
+                   || name.StartsWith("Unity.")
+                   || name.StartsWith("nunit")
+                   || name.StartsWith("JetBrains")
+                   || name.StartsWith("Microsoft.")
+                   || name.StartsWith("Boo.")
+                   || name.StartsWith("ExCSS") // Example 3rd party lib
+                   || name.Contains("Newtonsoft"); // common JSON lib
         }
     }
 }

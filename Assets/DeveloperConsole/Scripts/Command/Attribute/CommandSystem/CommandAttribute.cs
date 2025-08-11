@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using UnityEditorInternal.VersionControl;
 
 namespace DeveloperConsole.Command
 {
