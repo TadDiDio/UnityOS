@@ -68,7 +68,12 @@ namespace DeveloperConsole.Command
             }
             else
             {
-                SchemaTable.Add(cmdAttribute.Name, thisSchema);
+                if (!SchemaTable.TryAdd(cmdAttribute.Name, thisSchema))
+                {
+                    Log.Warning($"Commands {SchemaTable[cmdAttribute.Name].CommandType} and '{thisSchema.CommandType}' " +
+                                $"both use invocation word {cmdAttribute.Name}. Only {SchemaTable[cmdAttribute.Name].CommandType} " +
+                                $"will be available for use.");
+                }
             }
 
             thisSchema.ArgumentSpecifications = ArgumentSpecification.GetAllFromType(type);

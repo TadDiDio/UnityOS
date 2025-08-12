@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using DeveloperConsole.Command;
 
 namespace DeveloperConsole
@@ -12,7 +14,7 @@ namespace DeveloperConsole
         private List<string> command;
 
         [Switch('v', "Gets detailed information about the command.")]
-        private bool verbose = true;
+        private bool verbose;
 
         private const int IndentAmount = 2;
         private List<ArgumentSpecification> _positionals;

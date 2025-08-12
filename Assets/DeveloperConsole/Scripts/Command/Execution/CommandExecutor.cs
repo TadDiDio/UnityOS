@@ -78,8 +78,8 @@ namespace DeveloperConsole.Command
 
                 if (cancellationToken.IsCancellationRequested)
                 {
-                    output.Message = MessageFormatter.Warning
-                    ("Command exited without throwing after a cancellation was requested. ") + output.Message;
+                    output.Message = MessageFormatter.Warning(
+                        $"Command exited without throwing after a cancellation was requested. {output.Message}");
                 }
 
                 string message = output.Status is Status.Success ? output.Message : MessageFormatter.Error(output.Message);
