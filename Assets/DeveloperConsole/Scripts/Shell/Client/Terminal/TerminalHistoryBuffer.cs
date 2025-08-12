@@ -1,5 +1,7 @@
-using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
+using System.Collections.Generic;
+using DeveloperConsole.Persistence;
 
 namespace DeveloperConsole
 {
@@ -9,6 +11,25 @@ namespace DeveloperConsole
 
         private int _index;
         private List<string> _history = new();
+        private int _maxHistory = 500;
+
+        public TerminalHistoryBuffer(PersistentHistoryContainer container)
+        {
+            if (container is null)
+            {
+                _history = new List<string>();
+            }
+            else
+            {
+                foreach (var entry in container.History)
+                {
+                    CurrentBuffer = entry;
+                    PushHistory();
+                }
+            }
+        }
+
+        public List<string> GetBuffer() => _history.ToList();
 
         public void PushHistory()
         {
@@ -17,6 +38,11 @@ namespace DeveloperConsole
 
             if (!isEmpty && !isIdenticalEntry)
             {
+                if (_history.Count >= _maxHistory)
+                {
+                    _history.RemoveAt(0);
+                }
+
                 _history.Add(CurrentBuffer);
             }
 

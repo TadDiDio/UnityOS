@@ -1,6 +1,7 @@
 using System;
 using DeveloperConsole.Core.Shell;
 using UnityEditor;
+using UnityEngine;
 
 namespace DeveloperConsole.Command
 {
@@ -59,20 +60,25 @@ namespace DeveloperConsole.Command
 
     public static class UnityEnvironmentExtensions
     {
-        public static bool IsAvailable(this UnityEnvironment a)
+        /// <summary>
+        /// Tells if a particular environment is available at the moment.
+        /// </summary>
+        /// <param name="environment">The environment to test.</param>
+        /// <returns>True if it is available.</returns>
+        public static bool IsAvailable(this UnityEnvironment environment)
         {
 #if UNITY_EDITOR
             // If we are in play mode in the editor
             if (EditorApplication.isPlaying)
             {
-                return a is UnityEnvironment.PlayMode or UnityEnvironment.Editor or UnityEnvironment.Runtime;
+                return environment is UnityEnvironment.PlayMode or UnityEnvironment.Editor or UnityEnvironment.Runtime;
             }
 
             // If we are in edit mode
-            return a is UnityEnvironment.Editor or UnityEnvironment.EditMode;
+            return environment is UnityEnvironment.Editor or UnityEnvironment.EditMode;
 #else
             // If we are in a build
-            return a is UnityEnvironment.Build or UnityEnvironment.Runtime;
+            return environment is UnityEnvironment.Build or UnityEnvironment.Runtime;
 #endif
         }
     }

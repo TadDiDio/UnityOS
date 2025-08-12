@@ -5,7 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core.Shell;
+using DeveloperConsole.Persistence;
 using DeveloperConsole.Windowing;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace DeveloperConsole
 {
@@ -21,7 +26,7 @@ namespace DeveloperConsole
 
         private List<string> _outputBuffer = new();
         private Vector2 _scrollPosition = Vector2.zero;
-        private TerminalHistoryBuffer _historyBuffer = new();
+        private TerminalHistoryBuffer _historyBuffer;
         private DefaultCommandBatcher _batcher = new();
         private PromptChoice[] _choices;
         private TerminalState _state = TerminalState.General;
@@ -29,7 +34,21 @@ namespace DeveloperConsole
         private CancellationTokenSource _cancellationSource;
         private bool _bufferFocus;
 
-        public TerminalClient(WindowConfig windowConfig) : base(windowConfig) { }
+        public TerminalClient(WindowConfig windowConfig) : base(windowConfig)
+        {
+            _historyBuffer = HistoryPersistence.GetInitial();
+
+            Application.quitting += SaveHistory;
+#if UNITY_EDITOR
+            AssemblyReloadEvents.beforeAssemblyReload += SaveHistory;
+            EditorApplication.quitting += SaveHistory;
+#endif
+        }
+
+        private void SaveHistory()
+        {
+            HistoryPersistence.SaveHistory(_historyBuffer);
+        }
 
         protected override void DrawContent(Rect areaRect)
         {
