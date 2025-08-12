@@ -86,12 +86,17 @@ namespace DeveloperConsole.Windowing
 
         public ShellSignalHandler GetSignalHandler()
         {
-            return SignalHandler;
+            throw new System.NotImplementedException();
+        }
+
+        public void SetPromptHeader(string header)
+        {
+            throw new System.NotImplementedException();
         }
 
         private void SignalHandler(ShellSignal signal)
         {
-
+            throw new System.NotImplementedException();
         }
     }
 }

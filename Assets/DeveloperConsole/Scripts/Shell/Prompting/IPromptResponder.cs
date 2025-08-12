@@ -23,5 +23,11 @@ namespace DeveloperConsole.Core.Shell
         /// Gets the signal handler for this client.
         /// </summary>
         public ShellSignalHandler GetSignalHandler();
+
+        /// <summary>
+        /// Sets the prompt header to display. Should be used as is without further processing.
+        /// </summary>
+        /// <param name="header">The header.</param>
+        public void SetPromptHeader(string header);
     }
 }

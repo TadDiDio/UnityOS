@@ -11,10 +11,9 @@ namespace DeveloperConsole.Command
     public abstract class AsyncCommand : ICommand
     {
         public Guid CommandId { get; } = Guid.NewGuid();
-        public CommandSchema Schema => _schema;
+        public CommandSchema Schema { get; private set; }
 
         protected ShellSession Session;
-        private CommandSchema _schema;
 
         protected AsyncCommand()
         {
@@ -23,9 +22,9 @@ namespace DeveloperConsole.Command
 
         public void Initialize(CommandSchema schema)
         {
-            if (_schema != null) throw new InvalidOperationException("Schema already initialized.");
+            if (Schema != null) throw new InvalidOperationException("Schema already initialized.");
 
-            _schema = schema ?? throw new ArgumentNullException(nameof(schema));
+            Schema = schema ?? throw new ArgumentNullException(nameof(schema));
         }
 
         public async Task<CommandOutput> ExecuteCommandAsync(CommandContext context, CancellationToken cancellationToken)

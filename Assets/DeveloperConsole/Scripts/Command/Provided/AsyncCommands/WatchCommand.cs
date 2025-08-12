@@ -60,7 +60,7 @@ namespace DeveloperConsole
 
                 batch.Requests.Add(request);
 
-                await context.Session.SubmitBatch(batch, _userInterface, OnCommandResult);
+                await context.Session.SubmitBatch(batch, _userInterface, cancellationToken, OnCommandResult);
 
                 if (_kill) break;
 
@@ -83,6 +83,11 @@ namespace DeveloperConsole
             _receivedPrompt = true;
             WriteLine(MessageFormatter.Error("Watch command cannot handle prompts."));
             return null;
+        }
+
+        public void SetPromptHeader(string header)
+        {
+            // No-op
         }
 
         public CancellationToken GetCommandCancellationToken()

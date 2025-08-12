@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
@@ -52,6 +53,9 @@ namespace DeveloperConsole.Core.Shell
         private UserInterface _userInterface;
         private Dictionary<Guid, UserInterface> _interfaces = new();
 
+        private string _promptEnd = "> ";
+        private Stack<string> _promptStack = new();
+
         // TODO: get this file location from somewhere more suitable like a config.
         private const string StartupFilePath = "Assets/DeveloperConsole/Resources/console_start.txt";
 
@@ -88,6 +92,7 @@ namespace DeveloperConsole.Core.Shell
         {
             _shell = shell;
             _sessionId = sessionId;
+            responder.SetPromptHeader(_promptEnd);
             _interfaces[_sessionId] = new UserInterface(responder, new CompositeOutputChannel(outputs));
             _userInterface = _interfaces[_sessionId];
 
@@ -99,7 +104,7 @@ namespace DeveloperConsole.Core.Shell
         {
             try
             {
-                await SubmitBatch(startBatch, _userInterface);
+                await SubmitBatch(startBatch, _userInterface, _userInterface.Responder.GetCommandCancellationToken());
             }
             catch (Exception e)
             {
@@ -113,7 +118,7 @@ namespace DeveloperConsole.Core.Shell
                 {
                     var token = _interfaces[_sessionId].Responder.GetCommandCancellationToken();
                     var batch = await PromptAsync<CommandBatch>(_sessionId, Prompt.Command(), token);
-                    await SubmitBatch(batch, _userInterface);
+                    await SubmitBatch(batch, _userInterface, _userInterface.Responder.GetCommandCancellationToken());
                 }
                 catch (OperationCanceledException)
                 {
@@ -134,12 +139,12 @@ namespace DeveloperConsole.Core.Shell
         /// </summary>
         /// <param name="batch">The batch to run.</param>
         /// <param name="ui">The interface this submission should communicate with.</param>
+        /// <param name="token">A token to cancel the operation</param>
         /// <param name="onResult">A handle to call per command result.</param>
-        public async Task SubmitBatch(CommandBatch batch, UserInterface ui, Action<CommandExecutionResult> onResult = null)
+        public async Task SubmitBatch(CommandBatch batch, UserInterface ui, CancellationToken token, Action<CommandExecutionResult> onResult = null)
         {
             try
             {
-                CancellationToken token = ui.Responder.GetCommandCancellationToken();
                 var aliasExpanded = false;
                 var previousStatus = Status.Success;
 
@@ -181,7 +186,7 @@ namespace DeveloperConsole.Core.Shell
                             break;
                         case CommandResolutionStatus.Cancelled:
                             previousStatus = Status.Fail;
-                            WriteLine(ui, output.ErrorMessage);
+                            WriteLine(ui, $"{GetPromptHeader()}{output.ErrorMessage}");
                             break;
                         case CommandResolutionStatus.Fail:
                             previousStatus = Status.Fail;
@@ -271,6 +276,40 @@ namespace DeveloperConsole.Core.Shell
 
 
         /// <summary>
+        /// Gets the default user interface this session is attached to
+        /// </summary>
+        /// <returns></returns>
+        public UserInterface GetInterface() => _userInterface;
+
+
+        /// <summary>
+        /// Pushes a new string onto the prompt header.
+        /// </summary>
+        /// <param name="id">The id of the interface to update.</param>
+        /// <param name="prefix">The string to add.</param>
+        public void PushPromptPrefix(Guid id, string prefix)
+        {
+            _promptStack.Push(prefix);
+            _interfaces[id].Responder.SetPromptHeader(GetPromptHeader());
+        }
+
+
+        /// <summary>
+        /// Pops a string from the prompt header.
+        /// </summary>
+        /// <param name="id">The id of the interface to update.</param>
+        public void PopPromptPrefix(Guid id)
+        {
+            _promptStack.TryPop(out _);
+            _interfaces[id].Responder.SetPromptHeader(GetPromptHeader());
+        }
+
+        private string GetPromptHeader()
+        {
+            return string.Join("/", _promptStack.ToList()) + _promptEnd;
+        }
+
+        /// <summary>
         /// Adds an alias.
         /// </summary>
         /// <param name="key">The alias to add.</param>
@@ -282,7 +321,7 @@ namespace DeveloperConsole.Core.Shell
 
 
         /// <summary>
-        /// Removes an aliase.
+        /// Removes an alias.
         /// </summary>
         /// <param name="key">The alias to remove.</param>
         public void RemoveAlias(string key)

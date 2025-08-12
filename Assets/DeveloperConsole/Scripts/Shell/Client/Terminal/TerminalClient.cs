@@ -33,6 +33,7 @@ namespace DeveloperConsole
         private TaskCompletionSource<object> _promptResponseSource;
         private CancellationTokenSource _cancellationSource;
         private bool _bufferFocus;
+        private string _header = "> ";
 
         public TerminalClient(WindowConfig windowConfig) : base(windowConfig)
         {
@@ -91,7 +92,7 @@ namespace DeveloperConsole
         {
             GUILayout.BeginHorizontal();
 
-            GUILayout.Label("> ", GUILayout.ExpandWidth(false));
+            GUILayout.Label(_header, GUILayout.ExpandWidth(false));
             GUI.SetNextControlName("TerminalInputField");
             _historyBuffer.CurrentBuffer = GUILayout.TextField(_historyBuffer.CurrentBuffer);
 
@@ -159,7 +160,7 @@ namespace DeveloperConsole
             if (!int.TryParse(input, out int number) || number < 1 || number > _choices.Length)
             {
                 _historyBuffer.PushHistory();
-                WriteLine($"> {input}");
+                WriteLine($"{_header}{input}");
                 WriteLine("Invalid choice, please select a number that is in range of the choices:");
                 return;
             }
@@ -167,7 +168,7 @@ namespace DeveloperConsole
             var choice = _choices[number - 1];
 
             _historyBuffer.PushHistory();
-            WriteLine($"> {choice.Label}");
+            WriteLine($"{_header}{choice.Label}");
 
             _promptResponseSource.SetResult(choice.Value);
         }
@@ -177,8 +178,7 @@ namespace DeveloperConsole
             string input = _historyBuffer.CurrentBuffer;
             _historyBuffer.PushHistory();
 
-            // TODO: support dynamic prompt selection
-            WriteLine($"> {input}");
+            WriteLine($"{_header}{input}");
 
             if (_state is TerminalState.CommandPrompt)
             {
@@ -187,6 +187,11 @@ namespace DeveloperConsole
                 _promptResponseSource.SetResult(batch);
             }
             else _promptResponseSource.SetResult(input);
+        }
+
+        public void SetPromptHeader(string header)
+        {
+            _header = header;
         }
 
         public void Write(string message)

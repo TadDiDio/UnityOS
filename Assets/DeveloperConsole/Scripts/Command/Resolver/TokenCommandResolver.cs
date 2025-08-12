@@ -11,47 +11,43 @@ namespace DeveloperConsole.Command
     /// </summary>
     public class TokenCommandResolver : ICommandResolver
     {
-        private List<string> _tokens;
+        public List<string> Tokens;
 
         /// <summary>
         /// Creates a new text string resolver.
         /// </summary>
         /// <param name="tokens">The tokens.</param>
-        public TokenCommandResolver(List<string> tokens) => _tokens = tokens;
+        public TokenCommandResolver(List<string> tokens) => Tokens = tokens;
 
         public CommandResolutionResult Resolve(ShellSession session, bool expandAliases)
         {
             // Empty input means we give empty output
-            if (_tokens == null || _tokens.Count == 0) return CommandResolutionResult.Failed("");
+            if (Tokens == null || Tokens.Count == 0) return CommandResolutionResult.Failed("");
 
             if (expandAliases)
             {
-                var expanded = session.GetAlias(_tokens[0], out bool replaced);
+                var expanded = session.GetAlias(Tokens[0], out bool replaced);
 
-                expanded.AddRange(_tokens.Skip(1));
-                _tokens = expanded;
+                expanded.AddRange(Tokens.Skip(1));
+                Tokens = expanded;
 
                 if (replaced)
                 {
-                    return CommandResolutionResult.AliasExpansion(_tokens);
+                    return CommandResolutionResult.AliasExpansion(Tokens);
                 }
             }
 
-            if (!ConsoleAPI.Commands.TryResolveCommandSchema(_tokens, out var schema))
+            if (!ConsoleAPI.Commands.TryResolveCommandSchema(Tokens, out var schema))
             {
-                return CommandResolutionResult.Failed($"Could not find a command with name {_tokens[0]}.");
+                return CommandResolutionResult.Failed($"Could not find a command with name {Tokens[0]}.");
             }
 
             // Strip name
             string fullName = ConsoleAPI.Commands.GetFullyQualifiedName(schema.CommandType);
-            string[] parts = fullName.Split('.');
-
-            int idx = 0;
-            while (idx < parts.Length && parts[idx].Equals(_tokens[idx])) idx++;
-            _tokens.RemoveRange(0, idx);
+            Tokens = StripName(fullName, Tokens);
 
             // Parse command
-            TokenStream stream = new(_tokens);
+            TokenStream stream = new(Tokens);
             CommandParseTarget commandParseTarget = new(schema);
 
             var parseResult = ConsoleAPI.Parsing.ParseCommand(stream, commandParseTarget);
@@ -62,6 +58,45 @@ namespace DeveloperConsole.Command
             }
 
             return CommandResolutionResult.Success(commandParseTarget.Command);
+        }
+
+        private List<string> StripName(string fullyQualifiedName, List<string> tokens)
+        {
+            if (tokens == null || tokens.Count == 0) return new List<string>();
+
+            var commandParts = fullyQualifiedName.Split('.');
+
+            int commandIndex = 0;
+            int tokenIndex = 0;
+
+            while (commandIndex < commandParts.Length && tokenIndex < tokens.Count)
+            {
+                string token = tokens[tokenIndex];
+
+                var tokenSubParts = token.Split('.');
+
+                int subPartsMatched = 0;
+                int cmdPartCheckIndex = commandIndex;
+
+                while (subPartsMatched < tokenSubParts.Length && cmdPartCheckIndex < commandParts.Length)
+                {
+                    if (tokenSubParts[subPartsMatched] == commandParts[cmdPartCheckIndex])
+                    {
+                        subPartsMatched++;
+                        cmdPartCheckIndex++;
+                    }
+                    else break;
+                }
+
+                if (subPartsMatched == tokenSubParts.Length)
+                {
+                    commandIndex += subPartsMatched;
+                    tokenIndex++;
+                }
+                else break;
+            }
+
+            return tokens.Skip(tokenIndex).ToList();
         }
     }
 }
