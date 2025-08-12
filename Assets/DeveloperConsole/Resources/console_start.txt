@@ -2,4 +2,4 @@ alias ls reg
 
 
 clear
-print Console initialized! Happy coding :D
+print > Console initialized! Happy coding :D

@@ -115,14 +115,25 @@ namespace DeveloperConsole
 
         public override void OnInput(Event current)
         {
-            if (current.type is not (EventType.KeyDown or EventType.Used)) return;
+            void CursorToEnd()
+            {
+                if (GUI.GetNameOfFocusedControl() == "TerminalInputField")
+                {
+                    var textEditor = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
+                    textEditor.cursorIndex = textEditor.selectIndex = _historyBuffer.CurrentBuffer.Length;
+                }
+            }
 
+
+            if (current.type is not (EventType.KeyDown or EventType.Used)) return;
             if (current.keyCode is not KeyCode.None) _scrollPosition.y = float.MaxValue;
 
             if (current.keyCode == KeyCode.UpArrow)
             {
                 _historyBuffer.LessRecent();
                 current.Use();
+
+                CursorToEnd();
             }
             else if (current.keyCode == KeyCode.DownArrow)
             {
