@@ -17,14 +17,14 @@ namespace DeveloperConsole.Tests.Core
             Assert.DoesNotThrow(ConsoleBootstrapper.Bootstrap);
             Assert.NotNull(Kernel.Instance);
             Assert.True(Kernel.IsInitialized);
-            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Kill);
             Assert.False(Kernel.IsInitialized);
         }
         
         [Test]
         public void EditorBootstrapper_KillThenBootstrap()
         {
-            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Kill);
             Assert.False(Kernel.IsInitialized);
             Assert.DoesNotThrow(ConsoleBootstrapper.Bootstrap);
             Assert.NotNull(Kernel.Instance);
@@ -34,10 +34,10 @@ namespace DeveloperConsole.Tests.Core
         [Test]
         public void EditorBootstrapper_MultipleKills()
         {
-            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
-            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
-            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
-            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Kill);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Kill);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Kill);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Kill);
             Assert.False(Kernel.IsInitialized);
         }
         

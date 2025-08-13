@@ -19,7 +19,7 @@ namespace DeveloperConsole.Tests.Core
             Assert.DoesNotThrow(ConsoleBootstrapper.Bootstrap);
             Assert.NotNull(Kernel.Instance);
             Assert.True(Kernel.IsInitialized);
-            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Kill);
             yield return null;
             Assert.False(Kernel.IsInitialized);
         }
@@ -27,7 +27,7 @@ namespace DeveloperConsole.Tests.Core
         [UnityTest]
         public IEnumerator PlayBootstrapper_KillThenBootstrap()
         {
-            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Kill);
             Assert.False(Kernel.IsInitialized);
             Assert.DoesNotThrow(ConsoleBootstrapper.Bootstrap);
             Assert.NotNull(Kernel.Instance);
@@ -38,10 +38,10 @@ namespace DeveloperConsole.Tests.Core
         [UnityTest]
         public IEnumerator PlayBootstrapper_MultipleKills()
         {
-            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
-            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
-            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
-            Assert.DoesNotThrow(ConsoleBootstrapper.KillSystem);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Kill);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Kill);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Kill);
+            Assert.DoesNotThrow(ConsoleBootstrapper.Kill);
             Assert.False(Kernel.IsInitialized);
             yield return null;
         }

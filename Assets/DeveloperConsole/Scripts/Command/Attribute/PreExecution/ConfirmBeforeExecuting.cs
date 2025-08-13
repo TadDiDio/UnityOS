@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Core.Shell;
@@ -8,6 +9,7 @@ namespace DeveloperConsole.Command
     /// <summary>
     /// Requires a command to be confirmed by the user before running.
     /// </summary>
+    [AttributeUsage(AttributeTargets.Class)]
     public class ConfirmBeforeExecuting : PreExecutionValidatorAttribute
     {
         private string _message;

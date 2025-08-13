@@ -44,7 +44,7 @@ namespace DeveloperConsole
         /// </summary>
         public static void Bootstrap()
         {
-            KillSystem();
+            Kill();
             KernelUpdater updater = new KernelUpdater();
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
@@ -67,7 +67,7 @@ namespace DeveloperConsole
         /// <summary>
         /// Shuts down the developer console system.
         /// </summary>
-        public static void KillSystem()
+        public static void Kill()
         {
             _configurationOverride = null;
 
