@@ -22,7 +22,7 @@ namespace DeveloperConsole.Parsing.Rules
         /// <param name="token">The token.</param>
         /// <param name="allArgs">All arg specs that can be set.</param>
         /// <param name="context">The parse context.</param>
-        /// <returns>True if it can apply.</returns>
+        /// <returns>A list of matched arguments.</returns>
         public ArgumentSpecification[] Filter(string token, ArgumentSpecification[] allArgs, ParseContext context);
 
 

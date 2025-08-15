@@ -11,7 +11,7 @@ namespace DeveloperConsole.Tests
     {
         private string _name;
         private Type _parentType;
-        private Type _baseType = typeof(AsyncCommand);
+        private Type _baseType = typeof(CommandBase);
         private List<FieldInfo> fields = new();
         private List<PreExecutionValidatorAttribute> prevalidators = new();
 
@@ -174,7 +174,7 @@ namespace DeveloperConsole.Tests
                 methodToOverride!.Name,
                 MethodAttributes.Public | MethodAttributes.Virtual | MethodAttributes.HideBySig,
                 methodToOverride.ReturnType,
-                new [] { typeof(CommandContext) });
+                new [] { typeof(ICommandContext) });
 
             // Generate IL for the method (return Task.FromResult(default(CommandOutput)))
             var il = methodBuilder.GetILGenerator();

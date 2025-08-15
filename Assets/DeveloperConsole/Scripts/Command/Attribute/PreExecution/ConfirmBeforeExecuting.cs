@@ -18,10 +18,10 @@ namespace DeveloperConsole.Command
             _message = message;
         }
 
-        public override async Task<bool> Validate(CommandContext context, CancellationToken cancellationToken)
+        public override async Task<bool> Validate(FullCommandContext context, CancellationToken cancellationToken)
         {
             var prompt = Prompt.Confirmation(_message);
-            var result = await context.Session.PromptAsync<ConfirmationResult>(context.CommandId, prompt, cancellationToken);
+            var result = await context.Prompting.PromptAsync<ConfirmationResult>(prompt, cancellationToken);
             return result.Success;
         }
 

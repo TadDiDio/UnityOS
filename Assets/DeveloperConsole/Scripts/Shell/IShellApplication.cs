@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core.Kernel;
-using DeveloperConsole.IO;
 
 namespace DeveloperConsole.Core.Shell
 {
@@ -16,19 +14,8 @@ namespace DeveloperConsole.Core.Shell
         /// <summary>
         /// Creates a new shell session.
         /// </summary>
-        /// <param name="client">The client attached to this session.</param>
-        /// <param name="extraInputs">Any input channels in addition to the client.</param>
-        /// <param name="extraOutputs">Any output channels in addition to the client.</param>
-        /// <returns>The session id.</returns>
-        public Guid CreateSession(IPromptResponder client, List<IOutputChannel> extraOutputs = null);
-
-
-        /// <summary>
-        /// Creates a new human facing shell session.
-        /// </summary>
-        /// <param name="humanInterface">The human interface.</param>
-        /// <returns>The session id.</returns>
-        public Guid CreateSession(IHumanInterface humanInterface);
+        /// <param name="defaultContext">The default IO context attached to this session.</param>
+        public void CreateSession(IOContext defaultContext);
 
 
         /// <summary>
@@ -36,11 +23,13 @@ namespace DeveloperConsole.Core.Shell
         /// </summary>
         /// <param name="request">The request.</param>
         /// <param name="userToken">The commands cancellation token.</param>
-        /// <param name="defaultUserInterface">The default interface to use.</param>
-        public Task<CommandExecutionResult> HandleCommandRequestAsync(
+        /// <param name="ioContext">The IO Context to use.</param>
+        public Task<CommandExecutionResult> HandleCommandRequestAsync
+        (
             ShellRequest request,
             CancellationToken userToken,
-            UserInterface defaultUserInterface);
+            IOContext ioContext
+        );
 
 
         /// <summary>

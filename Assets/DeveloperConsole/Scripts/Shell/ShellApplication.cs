@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
-using DeveloperConsole.IO;
 using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole.Core.Shell
@@ -30,33 +29,10 @@ namespace DeveloperConsole.Core.Shell
             _windowManager = windowManager;
         }
 
-
-        /// <summary>
-        /// Creates a new shell session.
-        /// </summary>
-        /// <param name="promptResponder">The prompt responder.</param>
-        /// <param name="outputs">0 or more outputs associated with this session.</param>
-        /// <returns>The session id.</returns>
-        public Guid CreateSession(IPromptResponder promptResponder, List<IOutputChannel> outputs = null)
+        public void CreateSession(IOContext defaultContext)
         {
             Guid sessionId = Guid.NewGuid();
-            ShellSession session = new(this, promptResponder, sessionId, outputs);
-            _sessions.Add(sessionId, session);
-            return sessionId;
-        }
-
-
-        /// <summary>
-        /// Creates a new shell session for a human interface.
-        /// </summary>
-        /// <param name="humanInterface">The human interface.</param>
-        /// <returns></returns>
-        public Guid CreateSession(IHumanInterface humanInterface)
-        {
-            Guid sessionId = Guid.NewGuid();
-            ShellSession session = new(this, humanInterface, sessionId);
-            _sessions.Add(sessionId, session);
-            return sessionId;
+            _sessions[sessionId] = new ShellSession(this, defaultContext);
         }
 
         public ShellSession GetSession(Guid sessionId)
@@ -64,10 +40,7 @@ namespace DeveloperConsole.Core.Shell
             return _sessions.GetValueOrDefault(sessionId);
         }
 
-        public async Task<CommandExecutionResult> HandleCommandRequestAsync(
-            ShellRequest request,
-            CancellationToken userToken,
-            UserInterface defaultUserInterface)
+        public async Task<CommandExecutionResult> HandleCommandRequestAsync(ShellRequest request, CancellationToken userToken, IOContext ioContext)
         {
             try
             {
@@ -77,17 +50,19 @@ namespace DeveloperConsole.Core.Shell
                     return CommandExecutionResult.Success();
                 }
 
-                return await _executor.ExecuteCommand(request, defaultUserInterface, userToken);
+                return await _executor.ExecuteCommand(request, ioContext, userToken);
             }
             catch (OperationCanceledException)
             {
+                ioContext.Output.WriteLine("Command execution was cancelled.");
                 return CommandExecutionResult.Cancelled();
             }
             catch (Exception e)
             {
                 string error = $"Shell had an unexpected error while executing: {e}";
                 Log.Error(error);
-                return CommandExecutionResult.Fail(error);
+                ioContext.Output.WriteLine(error);
+                return CommandExecutionResult.Fail();
             }
         }
 
@@ -98,7 +73,9 @@ namespace DeveloperConsole.Core.Shell
             var commandWindow = new CommandWindow(config);
             _windowManager.RegisterWindow(commandWindow);
 
-            await _executor.ExecuteCommand(request, commandWindow.GetInterface(), commandWindow.GetCommandCancellationToken());
+            IOContext context = commandWindow.GetIOContext();
+            context.Prompt.InitializePromptHeader(ShellSession.PromptEnd);
+            await _executor.ExecuteCommand(request, context, commandWindow.GetPromptCancellationToken());
         }
 
         public void Tick() { /* TODO */ }

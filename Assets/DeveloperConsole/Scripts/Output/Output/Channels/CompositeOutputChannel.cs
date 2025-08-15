@@ -11,28 +11,14 @@ namespace DeveloperConsole.IO
             _outputChannels = outputChannels ?? new List<IOutputChannel>();
         }
 
-        public void Write(string message)
+        public void Write(string message, bool overwrite = false)
         {
-            foreach (var outputChannel in _outputChannels)
-            {
-                outputChannel.Write(message);
-            }
-        }
-
-        public void OverWrite(string message)
-        {
-            foreach (var outputChannel in _outputChannels)
-            {
-                outputChannel.OverWrite(message);
-            }
+            foreach (var o in _outputChannels) o.Write(message, overwrite);
         }
 
         public void WriteLine(string line)
         {
-            foreach (var outputChannel in _outputChannels)
-            {
-                outputChannel.WriteLine(line);
-            }
+            foreach (var o in _outputChannels) o.WriteLine(line);
         }
     }
 }

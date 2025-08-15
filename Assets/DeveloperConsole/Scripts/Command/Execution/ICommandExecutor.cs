@@ -14,12 +14,12 @@ namespace DeveloperConsole.Command
         /// Executes a command.
         /// </summary>
         /// <param name="executionRequest">The request.</param>
-        /// <param name="userInterface">The user interface this execution should use.</param>
+        /// <param name="ioContext">The IO context this command should use.</param>
         /// <param name="cancellationToken">The command's cancellation token.</param>
         /// <returns>The execution result.</returns>
         public Task<CommandExecutionResult> ExecuteCommand(
             ShellRequest executionRequest,
-            UserInterface userInterface,
+            IOContext ioContext,
             CancellationToken cancellationToken);
     }
 
@@ -40,27 +40,15 @@ namespace DeveloperConsole.Command
         public List<string> Tokens;
 
         /// <summary>
-        /// Tells if the error message is valid.
-        /// </summary>
-        public bool ErrorMessageValid;
-
-        /// <summary>
-        /// An error message.
-        /// </summary>
-        public string ErrorMessage;
-
-        /// <summary>
         /// Creates a failed result.
         /// </summary>
         /// <returns>The result.</returns>
-        public static CommandExecutionResult Fail(string errorMessage = null)
+        public static CommandExecutionResult Fail()
         {
             return new CommandExecutionResult
             {
                 Status = CommandResolutionStatus.Fail,
                 Tokens = null,
-                ErrorMessageValid = errorMessage != null,
-                ErrorMessage = errorMessage
             };
         }
 
@@ -101,7 +89,6 @@ namespace DeveloperConsole.Command
             return new CommandExecutionResult
             {
                 Status = CommandResolutionStatus.Cancelled,
-                ErrorMessage = "Command execution was canceled."
             };
         }
     }

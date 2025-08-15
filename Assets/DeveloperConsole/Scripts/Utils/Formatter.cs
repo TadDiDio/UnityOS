@@ -10,7 +10,7 @@ namespace DeveloperConsole
     /// <summary>
     /// A utility for formatting string messages.
     /// </summary>
-    public static class MessageFormatter
+    public static class Formatter
     {
         public static Color Blue => new Color(0f, 0.66f, 0.86f);
         public static Color Green => Color.green;

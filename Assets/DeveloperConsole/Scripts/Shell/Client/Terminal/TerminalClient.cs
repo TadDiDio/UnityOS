@@ -14,7 +14,7 @@ using UnityEditor;
 
 namespace DeveloperConsole
 {
-    public class TerminalClient : WindowBase, IHumanInterface
+    public class TerminalClient : WindowBase, IShellClient
     {
         private enum TerminalState
         {
@@ -44,6 +44,11 @@ namespace DeveloperConsole
             AssemblyReloadEvents.beforeAssemblyReload += SaveHistory;
             EditorApplication.quitting += SaveHistory;
 #endif
+        }
+
+        public IOContext GetIOContext()
+        {
+            return new IOContext(this, this, new SignalEmitter(this));
         }
 
         private void SaveHistory()
@@ -143,6 +148,8 @@ namespace DeveloperConsole
             }
             else if (current.keyCode is KeyCode.Return or KeyCode.KeypadEnter)
             {
+                Log.Info("Terminal window got enter key");
+
                 if (_promptResponseSource == null) return;
                 if (_state is TerminalState.ChoicePrompt) SubmitChoiceInput(); else SubmitInput();
                 current.Use();
@@ -194,17 +201,14 @@ namespace DeveloperConsole
             _header = header;
         }
 
-        public void Write(string message)
+        public void Write(string message, bool overwrite)
         {
-            _outputBuffer[^1] += message;
+            if (overwrite) _outputBuffer[^1] = message;
+            else _outputBuffer[^1] += message;
+
             _scrollPosition.y = float.MaxValue;
         }
 
-        public void OverWrite(string message)
-        {
-            _outputBuffer[^1] = message;
-            _scrollPosition.y = float.MaxValue;
-        }
 
         public void WriteLine(string line)
         {
@@ -248,7 +252,7 @@ namespace DeveloperConsole
             }
         }
 
-        public CancellationToken GetCommandCancellationToken()
+        public CancellationToken GetPromptCancellationToken()
         {
             _cancellationSource = new CancellationTokenSource();
             return _cancellationSource.Token;

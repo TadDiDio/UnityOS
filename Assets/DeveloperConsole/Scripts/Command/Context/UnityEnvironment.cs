@@ -1,32 +1,9 @@
-using System;
-using DeveloperConsole.Core.Shell;
+#if UNITY_EDITOR
 using UnityEditor;
-using UnityEngine;
+#endif
 
 namespace DeveloperConsole.Command
 {
-    /// <summary>
-    /// The context that the command executes in.
-    /// </summary>
-    public class CommandContext
-    {
-        /// <summary>
-        /// The session this command is running in.
-        /// </summary>
-        public ShellSession Session;
-
-        /// <summary>
-        /// The current environment.
-        /// </summary>
-        public UnityEnvironment Environment;
-
-        /// <summary>
-        /// The id of the current command.
-        /// </summary>
-        public Guid CommandId;
-    }
-
-
     /// <summary>
     /// The different environments in Unity.
     /// </summary>

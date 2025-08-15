@@ -18,7 +18,7 @@ namespace DeveloperConsole.Tests.TestUtils
             Type commandType = builder.BuildType();
 
             Assert.NotNull(commandType);
-            Assert.IsTrue(typeof(AsyncCommand).IsAssignableFrom(commandType));
+            Assert.IsTrue(typeof(CommandBase).IsAssignableFrom(commandType));
 
             var commandAttr = commandType.GetCustomAttribute<CommandAttribute>();
             Assert.NotNull(commandAttr);
@@ -116,7 +116,7 @@ namespace DeveloperConsole.Tests.TestUtils
     }
     public class DummyPreExecutionValidatorAttribute : PreExecutionValidatorAttribute
     {
-        public override Task<bool> Validate(CommandContext context, CancellationToken cancellationToken)
+        public override Task<bool> Validate(FullCommandContext context, CancellationToken cancellationToken)
         {
             throw new NotImplementedException();
         }

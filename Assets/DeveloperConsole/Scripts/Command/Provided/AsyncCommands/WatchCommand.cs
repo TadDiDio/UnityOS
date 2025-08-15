@@ -4,12 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core.Shell;
-using DeveloperConsole.IO;
 
 namespace DeveloperConsole
 {
     [Command("watch", "Runs a command repeatedly.")]
-    public class WatchCommand : AsyncCommand, IPromptResponder, IOutputChannel
+    public class WatchCommand : AsyncCommand
     {
         [Switch('i', "The interval to repeat on.")]
         private float intervalSeconds = 1.0f;
@@ -29,17 +28,16 @@ namespace DeveloperConsole
         private bool _receivedPrompt;
         private CancellationToken _token;
         private bool _kill;
-        private UserInterface _userInterface;
 
-        protected override async Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
+        protected override async Task<CommandOutput> Execute(AsyncCommandContext context, CancellationToken cancellationToken)
         {
             _token = cancellationToken;
-            _userInterface = new UserInterface(this, this);
+            // _shellClient = new ShellClient(this, this);
 
             if (!command.Any()) return new CommandOutput("Aborting: No command specified.");
 
             // Prevent overwriting the mirrored input line.
-            if (overwrite) base.WriteLine(" ");
+            // if (overwrite) base.WriteLine(" ");
 
             while (true)
             {
@@ -51,7 +49,7 @@ namespace DeveloperConsole
                     AllowPrompting = true
                 };
 
-                var request = new FrontEndCommandRequest
+                var request = new CommandRequest
                 {
                     Resolver = new TokenCommandResolver(command.ToList()),
                     Windowed = false,
@@ -60,7 +58,7 @@ namespace DeveloperConsole
 
                 batch.Requests.Add(request);
 
-                await context.Session.SubmitBatch(batch, _userInterface, cancellationToken, OnCommandResult);
+                // await context.Session.SubmitBatch(batch, _shellClient, cancellationToken, OnCommandResult);
 
                 if (_kill) break;
 
@@ -68,21 +66,6 @@ namespace DeveloperConsole
             }
 
             return new CommandOutput();
-        }
-
-        private void OnCommandResult(CommandExecutionResult result)
-        {
-            if (killOnError && result.Status is CommandResolutionStatus.Fail)
-            {
-                _kill = true;
-            }
-        }
-
-        public Task<object> HandlePrompt(Prompt prompt, CancellationToken cancellationToken)
-        {
-            _receivedPrompt = true;
-            WriteLine(MessageFormatter.Error("Watch command cannot handle prompts."));
-            return null;
         }
 
         public void SetPromptHeader(string header)
@@ -101,21 +84,5 @@ namespace DeveloperConsole
             return NullHandler;
         }
 
-        public void Write(string message)
-        {
-            if (overwrite) OverWrite(message);
-            else base.Write(label + ": " + message);
-        }
-
-        public void OverWrite(string message)
-        {
-            base.OverWrite(label + ": " + message);
-        }
-
-        public void WriteLine(string line)
-        {
-            if (overwrite) OverWrite(line);
-            else base.WriteLine(label + ": " + line);
-        }
     }
 }

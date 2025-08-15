@@ -8,9 +8,9 @@ namespace DeveloperConsole
     {
         [Positional(0, "The alias key.")] private string key;
         [Positional(1, "The alias value.")] private string value;
-        protected override CommandOutput Execute(CommandContext context)
+        protected override CommandOutput Execute(SimpleCommandContext context)
         {
-            context.Session.AddAlias(key, value);
+            context.Session.AliasManager.AddAlias(key, value);
             return new CommandOutput($"Added alias {key} = {value}");
         }
 
@@ -19,9 +19,9 @@ namespace DeveloperConsole
         public class RemoveCommand : SimpleCommand
         {
             [Positional(0, "The alias key")] private string key;
-            protected override CommandOutput Execute(CommandContext context)
+            protected override CommandOutput Execute(SimpleCommandContext context)
             {
-                context.Session.RemoveAlias(key);
+                context.Session.AliasManager.RemoveAlias(key);
                 return new CommandOutput($"Removed alias {key}");
             }
         }
@@ -29,21 +29,21 @@ namespace DeveloperConsole
         [Command("list", "Lists all current aliases.")]
         public class ListCommand : SimpleCommand
         {
-            protected override CommandOutput Execute(CommandContext context)
+            protected override CommandOutput Execute(SimpleCommandContext context)
             {
                 List<(string, string)> lines = new();
 
-                if (context.Session.GetAliases().Count == 0)
+                if (context.Session.AliasManager.GetAliases().Count == 0)
                 {
                     return new CommandOutput("No aliases created.");
                 }
 
-                foreach (var kvp in context.Session.GetAliases())
+                foreach (var kvp in context.Session.AliasManager.GetAliases())
                 {
                     lines.Add(($"{kvp.Key}", $" = {kvp.Value}"));
                 }
 
-                return new CommandOutput(MessageFormatter.PadLeft(lines));
+                return new CommandOutput(Formatter.PadLeft(lines));
             }
         }
     }

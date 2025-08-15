@@ -25,11 +25,8 @@ namespace DeveloperConsole
         [Switch('a', "Should the scene be loaded additively?")]
         private bool additive;
 
-        protected override CommandOutput Execute(CommandContext context)
+        protected override CommandOutput Execute(SimpleCommandContext context)
         {
-            if (string.IsNullOrWhiteSpace(sceneName))
-                return new CommandOutput("Scene name cannot be empty.");
-
             if (context.Environment is UnityEnvironment.EditMode)
             {
 #if UNITY_EDITOR
@@ -42,8 +39,6 @@ namespace DeveloperConsole
                 OpenSceneMode mode = additive ? OpenSceneMode.Additive : OpenSceneMode.Single;
                 EditorSceneManager.OpenScene(scenePath, mode);
                 return new CommandOutput($"Opened scene: {sceneName}");
-#else
-                return new CommandOutput("Scene loading in Edit Mode is only supported inside the Unity Editor.");
 #endif
             }
             else
@@ -109,7 +104,7 @@ namespace DeveloperConsole
         [Command("list", "Lists the scenes available.")]
         public class ListScenesCommand : SimpleCommand
         {
-            protected override CommandOutput Execute(CommandContext context)
+            protected override CommandOutput Execute(SimpleCommandContext context)
             {
                 string[] sceneNames;
 
@@ -149,7 +144,7 @@ namespace DeveloperConsole
             [Switch('a', "Loads the scene additively.")]
             private bool additive;
 
-            protected override CommandOutput Execute(CommandContext context)
+            protected override CommandOutput Execute(SimpleCommandContext context)
             {
                 string activeSceneName = SceneManager.GetActiveScene().name;
                 LoadSceneMode mode = additive ? LoadSceneMode.Additive : LoadSceneMode.Single;
@@ -175,7 +170,7 @@ namespace DeveloperConsole
             [Positional(0, "The name of the scene to close.")]
             private string sceneName;
 
-            protected override CommandOutput Execute(CommandContext context)
+            protected override CommandOutput Execute(SimpleCommandContext context)
             {
                 if (string.IsNullOrWhiteSpace(sceneName))
                     return new CommandOutput("Scene name cannot be empty.");
@@ -211,12 +206,7 @@ namespace DeveloperConsole
                 {
                     return new CommandOutput($"Closed scene: {sceneName}");
                 }
-                else
-                {
-                    return new CommandOutput($"Could not close the scene {sceneName}. Possibly the only open scene.");
-                }
-#else
-                return new CommandOutput("Scene closing in edit mode is only supported inside the Unity Editor.");
+                return new CommandOutput($"Could not close the scene {sceneName}. Possibly the only open scene.");
 #endif
             }
         }

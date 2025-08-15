@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace DeveloperConsole.Core.Shell
 {
-    public interface IPromptResponder
+    public interface IPromptable
     {
         /// <summary>
         /// Handles responding to a prompt.
@@ -17,7 +17,7 @@ namespace DeveloperConsole.Core.Shell
         /// Gets a cancellationToken to cancel executing commands.
         /// </summary>
         /// <returns>The cancellation token.</returns>
-        public CancellationToken GetCommandCancellationToken();
+        public CancellationToken GetPromptCancellationToken();
 
         /// <summary>
         /// Gets the signal handler for this client.

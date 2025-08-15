@@ -26,7 +26,7 @@ namespace DeveloperConsole.Command
 
             if (expandAliases)
             {
-                var expanded = session.GetAlias(Tokens[0], out bool replaced);
+                var expanded = session.AliasManager.GetAlias(Tokens[0], out bool replaced);
 
                 expanded.AddRange(Tokens.Skip(1));
                 Tokens = expanded;

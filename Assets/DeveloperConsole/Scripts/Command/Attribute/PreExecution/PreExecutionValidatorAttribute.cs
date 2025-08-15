@@ -13,7 +13,7 @@ namespace DeveloperConsole.Command
         /// <param name="context">The command's execution context.</param>
         /// <param name="cancellationToken">A cancellation token to cancel execution.</param>
         /// <returns>True if the validation passed.</returns>
-        public abstract Task<bool> Validate(CommandContext context, CancellationToken cancellationToken);
+        public abstract Task<bool> Validate(FullCommandContext context, CancellationToken cancellationToken);
 
 
         /// <summary>

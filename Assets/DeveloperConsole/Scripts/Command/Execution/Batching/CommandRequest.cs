@@ -1,6 +1,6 @@
 namespace DeveloperConsole.Command
 {
-    public class FrontEndCommandRequest
+    public class CommandRequest
     {
         public ICommandResolver Resolver;
         public CommandCondition Condition;

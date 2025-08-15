@@ -6,9 +6,9 @@ namespace DeveloperConsole
     [Command("Clear", "Clears the screen.")]
     public class ClearCommand : SimpleCommand
     {
-        protected override CommandOutput Execute(CommandContext context)
+        protected override CommandOutput Execute(SimpleCommandContext context)
         {
-            context.Session.Signal(new ClearSignal());
+            Signal(new ClearSignal());
             return new CommandOutput();
         }
     }

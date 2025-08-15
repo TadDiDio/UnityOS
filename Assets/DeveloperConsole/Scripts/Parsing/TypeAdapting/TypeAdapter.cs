@@ -39,7 +39,7 @@ namespace DeveloperConsole.Parsing.TypeAdapting
             {
                 Success = success,
                 Value = success ? convertResult : default,
-                ErrorMessage = success ? null : $"Could not parse {string.Join(", ", stream.Remaining().Take(numConsumed + 1).ToList())} as {TypeFriendlyNames.TypeToName(typeof(T))}."
+                ErrorMessage = success ? null : $"Could not parse '{string.Join(", ", stream.Remaining().Take(numConsumed + 1).ToList())}' as {TypeFriendlyNames.TypeToName(typeof(T))}."
             };
         }
 
