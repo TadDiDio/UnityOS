@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
+using DeveloperConsole.Parsing.Graph;
 
 namespace DeveloperConsole.Core.Shell
 {
@@ -43,9 +45,6 @@ namespace DeveloperConsole.Core.Shell
             _defaultIOContext = IOContext.CreateFromClient(client, this);
             _defaultIOContext.Prompt.InitializePromptHeader(PromptEnd);
 
-            // TODO: Need to run this start up file
-            // var startBatch = FileBatcher.BatchFile(StartupFilePath);
-
             GraphProcessor = new GraphProcessor(_shell, this, _defaultIOContext);
 
             _ = CommandPromptLoop();
@@ -53,6 +52,7 @@ namespace DeveloperConsole.Core.Shell
 
         private async Task CommandPromptLoop()
         {
+            await RunStartupFile();
             while (true) await PromptAndSubmit();
         }
 
@@ -71,6 +71,19 @@ namespace DeveloperConsole.Core.Shell
             catch (Exception e)
             {
                 Log.Error($"Exception thrown while prompting for command: {e}");
+            }
+        }
+
+        private async Task RunStartupFile()
+        {
+            foreach (string line in File.ReadLines(StartupFilePath))
+            {
+                var graphResult = new GraphParser().ParseToGraph(line, this);
+
+                if (graphResult.Succeeded)
+                {
+                    await GraphProcessor.ProcessCommandGraphAsync(graphResult.Graph, _defaultIOContext.Prompt.GetPromptCancellationToken());
+                }
             }
         }
     }
