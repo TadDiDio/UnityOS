@@ -7,7 +7,7 @@ public class UIToolkitIntegration
 {
     static UIToolkitIntegration()
     {
-        SceneView.duringSceneGui += OnScene;
+        //SceneView.duringSceneGui += OnScene;
     }
 
     private static void OnScene(SceneView sceneView)
