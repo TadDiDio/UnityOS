@@ -1,8 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
-using DeveloperConsole.Command;
 
 namespace DeveloperConsole.Core.Shell
 {
@@ -19,11 +16,11 @@ namespace DeveloperConsole.Core.Shell
         /// <summary>
         /// A module for submitting commands.
         /// </summary>
-        public CommandSubmitter CommandSubmitter { get; }
+        public GraphProcessor GraphProcessor { get; }
 
         public const string PromptEnd = "> ";
 
-        private IShellApplication _shell;
+        private IShell _shell;
         private IOContext _defaultIOContext;
 
         // TODO: get this file location from somewhere more suitable like a config.
@@ -33,34 +30,30 @@ namespace DeveloperConsole.Core.Shell
         /// Creates a new shell session for a human interface.
         /// </summary>
         /// <param name="shell">The shell.</param>
-        /// <param name="defaultIOContext">The default IOContext to route to.</param>
-        public ShellSession(IShellApplication shell, IOContext defaultIOContext)
+        /// <param name="client">The default client for this session.</param>
+        public ShellSession(IShell shell, IShellClient client)
         {
-            if (defaultIOContext == null)
+            if (client == null)
             {
-                Log.Error("The session was started with no IOContext (null) which is not allowed.");
+                Log.Error("The session was started with no client (null) which is not allowed.");
                 return;
             }
 
             _shell = shell;
-            _defaultIOContext = defaultIOContext;
+            _defaultIOContext = IOContext.CreateFromClient(client, this);
             _defaultIOContext.Prompt.InitializePromptHeader(PromptEnd);
 
-            // TODO: Start file not running right now
+            // TODO: Need to run this start up file
             // var startBatch = FileBatcher.BatchFile(StartupFilePath);
 
-            CommandSubmitter = new CommandSubmitter(_shell, this, _defaultIOContext);
+            GraphProcessor = new GraphProcessor(_shell, this, _defaultIOContext);
 
             _ = CommandPromptLoop();
         }
 
         private async Task CommandPromptLoop()
         {
-            while (true)
-            {
-                await PromptAndSubmit();
-            }
-            // ReSharper disable once FunctionNeverReturns
+            while (true) await PromptAndSubmit();
         }
 
         private async Task PromptAndSubmit()
@@ -68,16 +61,16 @@ namespace DeveloperConsole.Core.Shell
             try
             {
                 var token = _defaultIOContext.Prompt.GetPromptCancellationToken();
-                var batch = await _defaultIOContext.Prompt.PromptAsync<CommandBatch>(Prompt.Command(), token);
-                await CommandSubmitter.SubmitBatch(batch, token, _defaultIOContext);
+                var graph = await _defaultIOContext.Prompt.PromptAsync(PromptFactory.Command(), token);
+                await GraphProcessor.ProcessCommandGraphAsync(graph, token, _defaultIOContext);
             }
             catch (OperationCanceledException)
             {
-                // Ignored: This happens when the user cancels with nothing running.
+                // Expected
             }
             catch (Exception e)
             {
-                Log.Error($"An unhandled exception occured. This should not happen: {e}");
+                Log.Error($"Exception thrown while prompting for command: {e}");
             }
         }
     }

@@ -1,6 +1,6 @@
 using System;
 
-namespace DeveloperConsole.Scripts.Utils
+namespace DeveloperConsole
 {
     public sealed class DisposableAction : IDisposable
     {

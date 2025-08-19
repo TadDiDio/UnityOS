@@ -2,7 +2,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Core.Shell;
-using DeveloperConsole.Parsing.TypeAdapting.Types;
 
 namespace DeveloperConsole.Command
 {
@@ -20,14 +19,11 @@ namespace DeveloperConsole.Command
 
         public override async Task<bool> Validate(FullCommandContext context, CancellationToken cancellationToken)
         {
-            var prompt = Prompt.Confirmation(_message);
-            var result = await context.Prompting.PromptAsync<ConfirmationResult>(prompt, cancellationToken);
+            var prompt = PromptFactory.Confirmation(_message);
+            var result = await context.Prompting.PromptAsync(prompt, cancellationToken);
             return result.Success;
         }
 
-        public override string OnValidationFailedMessage()
-        {
-            return "Operation cancelled";
-        }
+        public override string OnValidationFailedMessage() => "Operation cancelled";
     }
 }

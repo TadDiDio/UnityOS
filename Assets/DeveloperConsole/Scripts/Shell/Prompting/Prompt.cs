@@ -1,63 +1,57 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using DeveloperConsole.Command;
+using System.Collections.Generic;
+using DeveloperConsole.Command.Execution;
 using DeveloperConsole.Parsing.TypeAdapting.Types;
 
 namespace DeveloperConsole.Core.Shell
 {
     public delegate bool PromptValidator(object input);
 
-    public class Prompt
+
+    public static class PromptFactory
     {
-        public readonly PromptKind Kind;
-        public readonly string Message;
-        public readonly Type RequestedType;
-        public readonly PromptValidator Validator;
-        public readonly Dictionary<string, object> Metadata = new();
-
-        private Prompt(PromptKind kind, Type requestedType, string message, PromptValidator validator)
+        public static Prompt<CommandGraph> Command()
         {
-            Kind = kind;
-            Message = message;
-            RequestedType = requestedType;
-            Validator = validator;
+            return new Prompt<CommandGraph>(PromptKind.Command, "", i => typeof(CommandGraph).IsAssignableFrom(i.GetType()));
         }
 
-        public static Prompt Command()
+        public static Prompt<T> General<T>(string message)
         {
-            return new Prompt(PromptKind.Command, typeof(ICommandResolver), "", i =>
-            {
-                return typeof(CommandBatch).IsAssignableFrom(i.GetType());
-            });
+            return new Prompt<T>(PromptKind.General, message, i => typeof(T).IsAssignableFrom(i.GetType()));
         }
 
-        public static Prompt General<T>(string message)
+        public static Prompt<T> Choice<T>(string message, PromptChoice[] choices)
         {
-            return new Prompt(PromptKind.General, typeof(T), message, i =>
-            {
-                return typeof(T).IsAssignableFrom(i.GetType());
-            });
-        }
-
-        public static Prompt Choice<T>(string message, PromptChoice[] choices)
-        {
-            var prompt = new Prompt(PromptKind.Choice, typeof(T), message, i =>
+            var prompt = new Prompt<T>(PromptKind.Choice, message, i =>
             {
                 return typeof(T).IsAssignableFrom(i.GetType()) &&
                        choices.Any(c => i.Equals(c.Value));
             });
+
             prompt.Metadata.Add(PromptMetaKeys.Choices, choices);
             return prompt;
         }
 
-        public static Prompt Confirmation(string message)
+        public static Prompt<ConfirmationResult> Confirmation(string message)
         {
-            var prompt = new Prompt(PromptKind.Confirmation, typeof(ConfirmationResult), message, i =>
-            {
-                return i is ConfirmationResult;
-            });
+            var prompt = new Prompt<ConfirmationResult>(PromptKind.Confirmation, message, i => i is ConfirmationResult);
             return prompt;
+        }
+    }
+
+
+    public class Prompt<T>
+    {
+        public readonly PromptKind Kind;
+        public readonly string Message;
+        public readonly PromptValidator Validator;
+        public readonly Dictionary<string, object> Metadata = new();
+
+        public Prompt(PromptKind kind, string message, PromptValidator validator)
+        {
+            Kind = kind;
+            Message = message;
+            Validator = validator;
         }
     }
 }

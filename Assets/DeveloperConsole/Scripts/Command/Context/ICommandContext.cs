@@ -86,7 +86,7 @@ namespace DeveloperConsole.Command
         }
     }
 
-    public class SimpleCommandContext : ICommandContext
+    public class SimpleContext : ICommandContext
     {
         public RestrictedSessionContext Session { get; }
         public UnityEnvironment Environment { get; }
@@ -96,7 +96,7 @@ namespace DeveloperConsole.Command
         IPromptContext ICommandContext.Prompting => null;
         ISignalContext ICommandContext.Signaling => null;
 
-        public SimpleCommandContext
+        public SimpleContext
         (
             RestrictedSessionContext session,
             UnityEnvironment env

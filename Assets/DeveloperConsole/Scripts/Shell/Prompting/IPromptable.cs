@@ -11,7 +11,7 @@ namespace DeveloperConsole.Core.Shell
         /// <param name="prompt">The requested prompt.</param>
         /// <param name="cancellationToken">A cancellation token to exit execution.</param>
         /// <returns>The result.</returns>
-        public Task<object> HandlePrompt(Prompt prompt, CancellationToken cancellationToken);
+        public Task<object> HandlePrompt<T>(Prompt<T> prompt, CancellationToken cancellationToken);
 
         /// <summary>
         /// Gets a cancellationToken to cancel executing commands.

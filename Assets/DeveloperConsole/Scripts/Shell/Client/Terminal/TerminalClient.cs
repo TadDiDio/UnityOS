@@ -3,7 +3,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using DeveloperConsole.Command;
 using DeveloperConsole.Core.Shell;
 using DeveloperConsole.Persistence;
 using DeveloperConsole.Windowing;
@@ -27,7 +26,6 @@ namespace DeveloperConsole
         private List<string> _outputBuffer = new();
         private Vector2 _scrollPosition = Vector2.zero;
         private TerminalHistoryBuffer _historyBuffer;
-        private DefaultCommandBatcher _batcher = new();
         private PromptChoice[] _choices;
         private TerminalState _state = TerminalState.General;
         private TaskCompletionSource<object> _promptResponseSource;
@@ -44,11 +42,6 @@ namespace DeveloperConsole
             AssemblyReloadEvents.beforeAssemblyReload += SaveHistory;
             EditorApplication.quitting += SaveHistory;
 #endif
-        }
-
-        public IOContext GetIOContext()
-        {
-            return new IOContext(this, this, new SignalEmitter(this));
         }
 
         private void SaveHistory()
@@ -148,8 +141,6 @@ namespace DeveloperConsole
             }
             else if (current.keyCode is KeyCode.Return or KeyCode.KeypadEnter)
             {
-                Log.Info("Terminal window got enter key");
-
                 if (_promptResponseSource == null) return;
                 if (_state is TerminalState.ChoicePrompt) SubmitChoiceInput(); else SubmitInput();
                 current.Use();
@@ -186,14 +177,7 @@ namespace DeveloperConsole
             _historyBuffer.PushHistory();
 
             WriteLine($"{_header}{input}");
-
-            if (_state is TerminalState.CommandPrompt)
-            {
-                var batch = _batcher.GetBatch(input);
-                batch.AllowPrompting = true;
-                _promptResponseSource.SetResult(batch);
-            }
-            else _promptResponseSource.SetResult(input);
+            _promptResponseSource.SetResult(input);
         }
 
         public void SetPromptHeader(string header)
@@ -218,7 +202,7 @@ namespace DeveloperConsole
         }
 
 
-        public async Task<object> HandlePrompt(Prompt prompt, CancellationToken cancellationToken)
+        public async Task<object> HandlePrompt<T>(Prompt<T> prompt, CancellationToken cancellationToken)
         {
             if (_promptResponseSource != null)
             {
@@ -259,7 +243,7 @@ namespace DeveloperConsole
         }
 
 
-        private void DisplayPromptOnce(Prompt prompt)
+        private void DisplayPromptOnce<T>(Prompt<T> prompt)
         {
             switch (prompt.Kind)
             {

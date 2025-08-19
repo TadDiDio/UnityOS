@@ -1,9 +1,8 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using DeveloperConsole.Command.Execution;
 using DeveloperConsole.Core.Shell;
-using DeveloperConsole.Parsing.TypeAdapting.Types;
-using DeveloperConsole.Scripts.Utils;
 
 namespace DeveloperConsole.Command
 {
@@ -33,8 +32,8 @@ namespace DeveloperConsole.Command
         /// <returns>True if the confirmation passed.</returns>
         protected async Task<bool> ConfirmAsync(string message, CancellationToken cancellationToken)
         {
-            var prompt = Prompt.Confirmation(message);
-            var result = await _context.Prompting.PromptAsync<ConfirmationResult>(prompt, cancellationToken);
+            var prompt = PromptFactory.Confirmation(message);
+            var result = await _context.Prompting.PromptAsync(prompt, cancellationToken);
             return result.Success;
         }
 
@@ -42,11 +41,11 @@ namespace DeveloperConsole.Command
         /// Prompts the user to input a command.
         /// </summary>
         /// <param name="cancellationToken">A cancellation token.</param>
-        /// <returns>A command batch to execute.</returns>
-        protected async Task<CommandBatch> PromptForCommand(CancellationToken cancellationToken)
+        /// <returns>A command chain to execute.</returns>
+        protected async Task<CommandGraph> PromptForCommand(CancellationToken cancellationToken)
         {
-            var prompt = Prompt.Command();
-            return await _context.Prompting.PromptAsync<CommandBatch>(prompt, cancellationToken);
+            var prompt = PromptFactory.Command();
+            return await _context.Prompting.PromptAsync(prompt, cancellationToken);
         }
 
         /// <summary>
@@ -58,8 +57,8 @@ namespace DeveloperConsole.Command
         /// <returns>The response.</returns>
         protected async Task<T> PromptAsync<T>(string message, CancellationToken cancellationToken)
         {
-            var prompt = Prompt.General<T>(message);
-            return await _context.Prompting.PromptAsync<T>(prompt, cancellationToken);
+            var prompt = PromptFactory.General<T>(message);
+            return await _context.Prompting.PromptAsync(prompt, cancellationToken);
         }
 
         /// <summary>
@@ -72,8 +71,8 @@ namespace DeveloperConsole.Command
         /// <returns>The response.</returns>
         protected async Task<T> PromptWithChoicesAsync<T>(string message, PromptChoice[] choices, CancellationToken cancellationToken)
         {
-            var prompt = Prompt.Choice<T>(message, choices);
-            return await _context.Prompting.PromptAsync<T>(prompt, cancellationToken);
+            var prompt = PromptFactory.Choice<T>(message, choices);
+            return await _context.Prompting.PromptAsync(prompt, cancellationToken);
         }
 
         /// <summary>
@@ -85,16 +84,6 @@ namespace DeveloperConsole.Command
             return _context.Prompting.PushPromptPrefixScope(prefix);
         }
 
-        /// <summary>
-        /// Runs a command batch in this session.
-        /// </summary>
-        /// <param name="commandBatch">The batch.</param>
-        /// <param name="cancellationToken">The token used to cancel these commands.</param>
-        /// <param name="ioContext">An override ioContext. If null, the default will be used.</param>
-        /// <returns>The command output.</returns>
-        protected async Task RunCommandBatch(CommandBatch commandBatch, CancellationToken cancellationToken, IOContext ioContext = null)
-        {
-            await _context.Session.CommandSubmitter.SubmitBatch(commandBatch, cancellationToken);
-        }
+        // TODO Add run command function
     }
 }

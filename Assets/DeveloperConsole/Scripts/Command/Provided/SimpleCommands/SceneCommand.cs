@@ -25,7 +25,7 @@ namespace DeveloperConsole
         [Switch('a', "Should the scene be loaded additively?")]
         private bool additive;
 
-        protected override CommandOutput Execute(SimpleCommandContext context)
+        protected override CommandOutput Execute(SimpleContext context)
         {
             if (context.Environment is UnityEnvironment.EditMode)
             {
@@ -104,7 +104,7 @@ namespace DeveloperConsole
         [Command("list", "Lists the scenes available.")]
         public class ListScenesCommand : SimpleCommand
         {
-            protected override CommandOutput Execute(SimpleCommandContext context)
+            protected override CommandOutput Execute(SimpleContext context)
             {
                 string[] sceneNames;
 
@@ -144,7 +144,7 @@ namespace DeveloperConsole
             [Switch('a', "Loads the scene additively.")]
             private bool additive;
 
-            protected override CommandOutput Execute(SimpleCommandContext context)
+            protected override CommandOutput Execute(SimpleContext context)
             {
                 string activeSceneName = SceneManager.GetActiveScene().name;
                 LoadSceneMode mode = additive ? LoadSceneMode.Additive : LoadSceneMode.Single;
@@ -170,7 +170,7 @@ namespace DeveloperConsole
             [Positional(0, "The name of the scene to close.")]
             private string sceneName;
 
-            protected override CommandOutput Execute(SimpleCommandContext context)
+            protected override CommandOutput Execute(SimpleContext context)
             {
                 if (string.IsNullOrWhiteSpace(sceneName))
                     return new CommandOutput("Scene name cannot be empty.");

@@ -1,10 +1,10 @@
 using System;
+using DeveloperConsole.Parsing.Graph;
 using UnityEngine;
-using DeveloperConsole.Command;
+using DeveloperConsole.Windowing;
 using DeveloperConsole.Parsing.Rules;
 using DeveloperConsole.Parsing.TypeAdapting;
 using DeveloperConsole.Parsing.TypeAdapting.Types;
-using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole
 {
@@ -39,7 +39,6 @@ namespace DeveloperConsole
             ConsoleAPI.Parsing.RegisterTypeAdapter<Vector2>(new Vector2Adapter());
             ConsoleAPI.Parsing.RegisterTypeAdapter<Vector3>(new Vector3Adapter());
             ConsoleAPI.Parsing.RegisterTypeAdapter<ConfirmationResult>(new ConfirmationResultAdapter());
-            ConsoleAPI.Parsing.RegisterTypeAdapter<ICommandResolver>(new TokenCommandResolverAdapter());
         }
     }
 
@@ -47,7 +46,6 @@ namespace DeveloperConsole
     {
         public void Install()
         {
-
             var config = new WindowConfigFactory()
                 .Resizeable()
                 .WithMinSize(400, 300)
@@ -57,7 +55,7 @@ namespace DeveloperConsole
                 .WithName("Terminal")
                 .Build();
             var terminal = new TerminalClient(config);
-            ConsoleAPI.Shell.CreateShellSession(terminal.GetIOContext());
+            ConsoleAPI.Shell.CreateShellSession(terminal);
             ConsoleAPI.Windowing.RegisterWindow(terminal);
         }
     }

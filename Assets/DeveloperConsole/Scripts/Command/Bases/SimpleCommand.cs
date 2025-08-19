@@ -10,7 +10,7 @@ namespace DeveloperConsole.Command
     {
         protected override async Task<CommandOutput> ExecuteAsync(FullCommandContext fullContext, CancellationToken cancellationToken)
         {
-            SimpleCommandContext context = new SimpleCommandContext
+            SimpleContext context = new SimpleContext
             (
                 new RestrictedSessionContext(fullContext.Session.AliasManager),
                 fullContext.Environment
@@ -25,6 +25,6 @@ namespace DeveloperConsole.Command
         /// </summary>
         /// <param name="context">The execution context.</param>
         /// <returns>The command's output.</returns>
-        protected abstract CommandOutput Execute(SimpleCommandContext context);
+        protected abstract CommandOutput Execute(SimpleContext context);
     }
 }

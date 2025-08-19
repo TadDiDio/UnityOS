@@ -16,8 +16,7 @@ namespace DeveloperConsole
                     cancellationToken.ThrowIfCancellationRequested();
 
                     var batch = await PromptForCommand(cancellationToken);
-
-                    await RunCommandBatch(batch, cancellationToken);
+                    
                 }
             }
             // ReSharper disable once FunctionNeverReturns

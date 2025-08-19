@@ -319,10 +319,10 @@ namespace DeveloperConsole
             /// <summary>
             /// Creates a new session for a human interface.
             /// </summary>
-            /// <param name="defaultContext">The default IO interface.</param>
-            public static void CreateShellSession(IOContext defaultContext)
+            /// <param name="client">The default client for this session.</param>
+            public static void CreateShellSession(IShellClient client)
             {
-                WithService<IShellApplication>(s => s.CreateSession(defaultContext));
+                WithService<IShell>(s => s.CreateSession(client));
             }
 
 
@@ -333,7 +333,7 @@ namespace DeveloperConsole
             /// <returns>The session.</returns>
             public static ShellSession GetShellSession(Guid sessionId)
             {
-                return WithService<IShellApplication, ShellSession>(s => s.GetSession(sessionId));
+                return WithService<IShell, ShellSession>(s => s.GetSession(sessionId));
             }
         }
 

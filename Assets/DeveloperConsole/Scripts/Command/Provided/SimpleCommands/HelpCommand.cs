@@ -20,7 +20,7 @@ namespace DeveloperConsole
         private List<ArgumentSpecification> _switches;
         private ArgumentSpecification _variadic;
 
-        protected override CommandOutput Execute(SimpleCommandContext context)
+        protected override CommandOutput Execute(SimpleContext context)
         {
             if (command.Count == 0) return new CommandOutput(Describe());
 

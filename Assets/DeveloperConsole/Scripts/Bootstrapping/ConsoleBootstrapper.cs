@@ -59,6 +59,8 @@ namespace DeveloperConsole
             EditModeTicker.Initialize(() => new EditModeTicker(updater));
 #endif
 
+            UnityMainThreadDispatcher.Initialize(() => new UnityMainThreadDispatcher());
+            
             CommonBootstrap();
             InstallComponents();
 

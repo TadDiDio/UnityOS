@@ -3,18 +3,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using DeveloperConsole.Command.Execution;
 using DeveloperConsole.Core.Shell;
-using DeveloperConsole.Core.Shell.Prompting;
 using DeveloperConsole.IO;
-using DeveloperConsole.Scripts.Utils;
+using DeveloperConsole.Parsing.Graph;
 
-namespace DeveloperConsole.Scripts.Shell.Prompting
+namespace DeveloperConsole.Shell.Prompting
 {
     public class PromptManager
     {
-        private IPromptable _prompt;
-        private IPromptWrapper _wrapper;
+        private IPromptable _promptable;
         private IOutputChannel _output;
+
+        private ShellSession _session;
 
         private string _promptEnd;
         private Stack<string> _promptStack = new();
@@ -22,11 +23,11 @@ namespace DeveloperConsole.Scripts.Shell.Prompting
         private bool _promptActive;
         private readonly object _lock = new();
 
-        public PromptManager(IPromptable prompt, IOutputChannel output, IPromptWrapper wrapper)
+        public PromptManager(IPromptable promptable, IOutputChannel output, ShellSession session)
         {
-            _prompt = prompt;
-            _wrapper = wrapper;
+            _promptable = promptable;
             _output = output;
+            _session = session;
         }
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace DeveloperConsole.Scripts.Shell.Prompting
         /// <returns>The token.</returns>
         public CancellationToken GetPromptCancellationToken()
         {
-            return _prompt.GetPromptCancellationToken();
+            return _promptable.GetPromptCancellationToken();
         }
 
         /// <summary>
@@ -55,57 +56,161 @@ namespace DeveloperConsole.Scripts.Shell.Prompting
         public void InitializePromptHeader(string header)
         {
             _promptEnd = header;
-            _prompt.SetPromptHeader(header);
+            _promptable.SetPromptHeader(header);
         }
 
         /// <summary>
         /// Handles exclusive prompting. Only a single entity may prompt at a time.
         /// </summary>
         /// <param name="prompt">The submitted prompt.</param>
-        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <param name="token">A cancellation token.</param>
+        /// <param name="retryOnFail">Whether to retry the prompt on a failure.</param>
         /// <typeparam name="T">The type of response to ask for.</typeparam>
-        /// <returns>The response.</returns>
+        /// <returns>The response or null if no retry was attempted.</returns>
         /// <exception cref="InvalidOperationException">Throws if another prompt is in session.</exception>
-        public async Task<T> PromptAsync<T>(Prompt prompt, CancellationToken cancellationToken)
+        public async Task<T> PromptAsync<T>(Prompt<T> prompt, CancellationToken token, bool retryOnFail = true)
         {
             lock (_lock)
             {
-                if (_promptActive) throw new InvalidOperationException
-                    ($"Prompt was already active when a {{prompt.Kind}} prompt was received.");
-
+                if (_promptActive) throw new InvalidOperationException($"Prompt was already active when a {{prompt.Kind}} prompt was received.");
                 _promptActive = true;
             }
 
             try
             {
-                var result = await _wrapper.HandlePrompt<T>(_prompt, _output, prompt, cancellationToken);
-
-                if (!result.Success)
+                while (true)
                 {
-                    _output.WriteLine(result.ErrorMessage);
-                }
+                    token.ThrowIfCancellationRequested();
+                    var response = await _promptable.HandlePrompt(prompt, token);
 
-                return result.Value;
+
+                    // ====================================
+                    // Handle correctly typed responses directly
+                    // ====================================
+
+                    if (response is T typed)
+                    {
+                        if (prompt.Validator.Invoke(typed)) return typed;
+
+                        _output.WriteLine(Formatter.Error($"Cannot convert {response.GetType().FullName} to type {typeof(T).FullName}."));
+                        continue;
+                    }
+
+
+                    // ====================================
+                    // Fail loudly when the response is
+                    // not a string or the correct type
+                    // ====================================
+
+                    if (response is not string stringResponse) throw new InvalidOperationException
+                        ($"{_promptable.GetType().Name} responded with {response.GetType().Name} when asked for {{prompt.RequestedType.Name}}!");
+
+                    if (stringResponse is "") continue;
+
+
+                    // ====================================
+                    // Fail loudly when the string response
+                    // cannot be adapted by any registered
+                    // adapter
+                    // ====================================
+
+                    if (!ConsoleAPI.Parsing.CanAdaptType(typeof(T)))
+                    {
+                        throw new InvalidOperationException($"No type adapter registered for type {typeof(T).Name}");
+                    }
+
+                    // Try adapting and show result
+                    var result = ConsoleAPI.Parsing.AdaptTypeFromString(typeof(T), stringResponse);
+
+                    if (!result.Success)
+                    {
+                        _output.WriteLine(Formatter.Error($"{result.ErrorMessage}"));
+                        continue;
+                    }
+
+                    // Success
+                    if (prompt.Validator.Invoke(result.As<T>())) return result.As<T>();
+
+                    // Failure
+                    _output.WriteLine(Formatter.Error($"Could not validate converting {response.GetType().FullName} to type {typeof(T).FullName}."));
+                }
             }
-            finally
+            catch (OperationCanceledException)
             {
-                lock (_lock)
+                // Caught by either Shell or ShellSession
+                throw;
+            }
+            catch (Exception e)
+            {
+                // Display all other exceptions
+                _output.WriteLine(Formatter.Error(e.Message));
+                throw;
+            }
+            finally { lock (_lock) { _promptActive = false; } }
+        }
+
+        public async Task<CommandGraph> PromptAsync(Prompt<CommandGraph> prompt, CancellationToken token, bool retryOnFail = true)
+        {
+            lock (_lock)
+            {
+                if (_promptActive)
+                    throw new InvalidOperationException(
+                        $"Prompt was already active when a {{prompt.Kind}} prompt was received.");
+                _promptActive = true;
+            }
+
+            try
+            {
+                while (true)
                 {
-                    _promptActive = false;
+                    token.ThrowIfCancellationRequested();
+                    var response = await _promptable.HandlePrompt(prompt, token);
+
+                    if (response is CommandGraph typed)
+                    {
+                        if (prompt.Validator.Invoke(typed)) return typed;
+
+                        _output.WriteLine(Formatter.Error(
+                            $"Cannot convert {response.GetType().FullName} to type {typeof(CommandGraph).FullName}."));
+                        continue;
+                    }
+
+                    if (response is not string stringResponse) throw new InvalidOperationException
+                        ($"{_promptable.GetType().Name} responded with {response.GetType().Name} when asked for {{prompt.RequestedType.Name}}!");
+
+                    if (stringResponse is "") continue;
+
+                    var result = new GraphParser().ParseToGraph(stringResponse, _session);
+
+                    if (result.Succeeded) return result.Graph;
+
+                    _output.WriteLine(Formatter.Error(result.ErrorMessage));
                 }
             }
+            catch (OperationCanceledException)
+            {
+                // Caught by either Shell or ShellSession
+                throw;
+            }
+            catch (Exception e)
+            {
+                // Display all other exceptions
+                _output.WriteLine(Formatter.Error(e.Message));
+                throw;
+            }
+            finally { lock (_lock) { _promptActive = false; } }
         }
 
         private void PushPromptPrefix(string prefix)
         {
             _promptStack.Push(prefix);
-            _prompt.SetPromptHeader(GetPromptHeader());
+            _promptable.SetPromptHeader(GetPromptHeader());
         }
 
         private void PopPromptPrefix()
         {
             _promptStack.TryPop(out _);
-            _prompt.SetPromptHeader(GetPromptHeader());
+            _promptable.SetPromptHeader(GetPromptHeader());
         }
 
         private string GetPromptHeader() => string.Join("/", _promptStack.Reverse()) + _promptEnd;

@@ -11,7 +11,7 @@ namespace DeveloperConsole
     [Command("play", "Enters play mode.")]
     public class PlayCommand : SimpleCommand
     {
-        protected override CommandOutput Execute(SimpleCommandContext context)
+        protected override CommandOutput Execute(SimpleContext context)
         {
             #if UNITY_EDITOR
             EditorApplication.isPlaying = true;
@@ -25,7 +25,7 @@ namespace DeveloperConsole
     [Command("stop", "Exits play mode or the application.")]
     public class StopCommand : SimpleCommand
     {
-        protected override CommandOutput Execute(SimpleCommandContext context)
+        protected override CommandOutput Execute(SimpleContext context)
         {
             if (context.Environment is UnityEnvironment.Build)
             {
@@ -44,7 +44,7 @@ namespace DeveloperConsole
     [Command("stopf", "Exits play mode or the application without confirming.")]
     public class StopFCommand : SimpleCommand
     {
-        protected override CommandOutput Execute(SimpleCommandContext context)
+        protected override CommandOutput Execute(SimpleContext context)
         {
             if (context.Environment is UnityEnvironment.Build)
             {

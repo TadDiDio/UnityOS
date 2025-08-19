@@ -10,13 +10,13 @@ namespace DeveloperConsole
     {
         private static T _instance;
 
-        
+
         /// <summary>
         /// Tells if the singleton is initialized.
         /// </summary>
         public static bool IsInitialized => _instance != null;
-        
-        
+
+
         /// <summary>
         /// Gets a reference to the singleton instance.
         /// </summary>
@@ -32,7 +32,7 @@ namespace DeveloperConsole
             }
         }
 
-   
+
         /// <summary>
         /// Initializes the singleton/
         /// </summary>
@@ -48,9 +48,9 @@ namespace DeveloperConsole
             _instance = factory() ?? throw new InvalidOperationException($"{typeof(T).Name} factory returned null.");
         }
 
-        
+
         /// <summary>
-        /// Destroyes the singleton.
+        /// Destroys the singleton.
         /// </summary>
         public static void Reset()
         {

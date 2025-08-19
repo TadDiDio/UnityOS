@@ -9,7 +9,7 @@ namespace DeveloperConsole
         [Variadic("The message to display")]
         public List<string> message;
 
-        protected override CommandOutput Execute(SimpleCommandContext context)
+        protected override CommandOutput Execute(SimpleContext context)
         {
             string m = string.Join(" ", message);
             return new CommandOutput(m);

@@ -2,16 +2,16 @@ namespace DeveloperConsole.Core.Shell
 {
     public class SignalEmitter
     {
-        private IShellClient _client;
+        private IPromptable _promptable;
 
-        public SignalEmitter(IShellClient client)
+        public SignalEmitter(IPromptable promptable)
         {
-            _client = client;
+            _promptable = promptable;
         }
 
         public void Signal(ShellSignal signal)
         {
-            _client.GetSignalHandler().Invoke(signal);
+            _promptable.GetSignalHandler().Invoke(signal);
         }
     }
 }

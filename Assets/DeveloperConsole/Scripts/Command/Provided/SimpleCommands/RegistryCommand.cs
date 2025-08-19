@@ -12,7 +12,7 @@ namespace DeveloperConsole
         [Switch('n', "Shows nested commands as well", "nested")]
         private bool nested;
 
-        protected override CommandOutput Execute(SimpleCommandContext context)
+        protected override CommandOutput Execute(SimpleContext context)
         {
             var names = ConsoleAPI.Commands.GetAllCommandNames();
             names.Sort();

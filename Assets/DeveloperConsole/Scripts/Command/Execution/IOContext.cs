@@ -1,7 +1,5 @@
-using DeveloperConsole.Core.Shell.Prompting;
 using DeveloperConsole.IO;
-using DeveloperConsole.Scripts.Shell.Prompting;
-
+using DeveloperConsole.Shell.Prompting;
 
 namespace DeveloperConsole.Core.Shell
 {
@@ -9,13 +7,20 @@ namespace DeveloperConsole.Core.Shell
     {
         public IOutputChannel Output { get; }
         public PromptManager Prompt { get; }
-        // TODO: Clean up this because if they give a signal emitter they must be a shell client which restricts rerouting io maybe
         public SignalEmitter SignalEmitter { get; }
-        public IOContext(IPromptable prompt, IOutputChannel output, SignalEmitter emitter, IPromptWrapper promptWrapper = null)
+        public ShellSession ShellSession { get; }
+
+        public IOContext(IPromptable prompt, IOutputChannel output, SignalEmitter emitter, ShellSession session)
         {
-            Prompt = new PromptManager(prompt, output, promptWrapper ?? new RetryUntilSuccessPromptWrapper());
+            Prompt = new PromptManager(prompt, output, session);
             Output = output;
             SignalEmitter = emitter;
+            ShellSession = session;
+        }
+
+        public static IOContext CreateFromClient(IShellClient client, ShellSession session)
+        {
+            return new IOContext(client, client, new SignalEmitter(client), session);
         }
     }
 }

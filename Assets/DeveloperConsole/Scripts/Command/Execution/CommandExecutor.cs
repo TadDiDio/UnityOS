@@ -20,50 +20,33 @@ namespace DeveloperConsole.Command
             new BindingProcessor()
         };
 
-        public async Task<CommandExecutionResult> ExecuteCommand(ShellRequest request, IOContext ioContext, CancellationToken cancellationToken)
+        public async Task<Status> ExecuteCommand(ShellRequest request, IOContext ioContext, CancellationToken cancellationToken)
         {
-            // 1. Resolve
-            var resolution = request.CommandResolver.Resolve(request.Session, request.ExpandAliases);
-
-            switch (resolution.Status)
-            {
-                case CommandResolutionStatus.Success: break;
-                case CommandResolutionStatus.AliasExpansion:
-                    return CommandExecutionResult.AliasExpansion(resolution.Tokens);
-                case CommandResolutionStatus.Fail:
-                    ioContext.Output.WriteLine(Formatter.Error(resolution.ErrorMessage));
-                    return CommandExecutionResult.Fail();
-                case CommandResolutionStatus.Cancelled: break;
-                default: throw new ArgumentOutOfRangeException();
-            }
-
-            // 2. Build context
+            // 1. Build context
             var context = BuildContext(request, ioContext);
 
-            // 3. Pre-execution wiring and validation
-            ICommand command = resolution.Command;
-
+            // 2. Pre-execution wiring and validation
             try
             {
-                var validators = command.GetType().GetCustomAttributes<PreExecutionValidatorAttribute>();
+                var validators = request.Command.GetType().GetCustomAttributes<PreExecutionValidatorAttribute>();
 
                 foreach (var validator in validators)
                 {
                     if (await validator.Validate(context, cancellationToken)) continue;
                     ioContext.Output.WriteLine(Formatter.Error(validator.OnValidationFailedMessage()));
-                    return CommandExecutionResult.Fail();
+                    return Status.Fail;
                 }
 
                 // 4. Command validators
                 foreach (var cmdValidator in _commandValidators)
                 {
-                    if (cmdValidator.Validate(command, out var error)) continue;
+                    if (cmdValidator.Validate(request.Command, out var error)) continue;
                     ioContext.Output.WriteLine(Formatter.Error(error));
-                    return CommandExecutionResult.Fail();
+                    return Status.Fail;
                 }
 
                 // 5. Execute
-                var output = await command.ExecuteCommandAsync(context, cancellationToken);
+                var output = await request.Command.ExecuteCommandAsync(context, cancellationToken);
 
                 if (cancellationToken.IsCancellationRequested)
                 {
@@ -74,7 +57,7 @@ namespace DeveloperConsole.Command
                 string message = output.Status is Status.Success ? output.Message : Formatter.Error(output.Message);
                 ioContext.Output.WriteLine(message);
 
-                return output.Status is Status.Success ? CommandExecutionResult.Success() : CommandExecutionResult.Fail();
+                return output.Status;
             }
             catch (OperationCanceledException)
             {
@@ -82,15 +65,15 @@ namespace DeveloperConsole.Command
             }
             catch (Exception e)
             {
-                string commandName = command.GetType().Name;
+                string commandName = request.Command.GetType().Name;
                 string message = $"Command '{commandName}' threw an exception during execution: {e.Message}";
                 ioContext.Output.WriteLine(Formatter.Error(message));
 
-                return CommandExecutionResult.Fail();
+                return Status.Fail;
             }
             finally
             {
-                command.Dispose();
+                request.Command.Dispose();
             }
         }
 
@@ -107,7 +90,7 @@ namespace DeveloperConsole.Command
                 new WriteContext(ioContext.Output),
                 new PromptContext(ioContext.Prompt),
                 new SignalContext(ioContext.SignalEmitter),
-                new FullSessionContext(request.Session.CommandSubmitter, request.Session.AliasManager),
+                new FullSessionContext(request.Session.GraphProcessor, request.Session.AliasManager),
                 environment
             );
             return context;

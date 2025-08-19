@@ -6,7 +6,7 @@ namespace DeveloperConsole
     [Command("Clear", "Clears the screen.")]
     public class ClearCommand : SimpleCommand
     {
-        protected override CommandOutput Execute(SimpleCommandContext context)
+        protected override CommandOutput Execute(SimpleContext context)
         {
             Signal(new ClearSignal());
             return new CommandOutput();

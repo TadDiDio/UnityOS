@@ -12,11 +12,11 @@ namespace DeveloperConsole.Command
 
     public class FullSessionContext : RestrictedSessionContext
     {
-        public CommandSubmitter CommandSubmitter { get; }
+        public GraphProcessor GraphProcessor { get; }
 
-        public FullSessionContext(CommandSubmitter submitter, AliasManager alias) : base(alias)
+        public FullSessionContext(GraphProcessor submitter, AliasManager alias) : base(alias)
         {
-            CommandSubmitter = submitter;
+            GraphProcessor = submitter;
         }
     }
 }

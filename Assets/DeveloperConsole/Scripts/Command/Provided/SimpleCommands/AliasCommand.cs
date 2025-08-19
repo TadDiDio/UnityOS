@@ -8,7 +8,7 @@ namespace DeveloperConsole
     {
         [Positional(0, "The alias key.")] private string key;
         [Positional(1, "The alias value.")] private string value;
-        protected override CommandOutput Execute(SimpleCommandContext context)
+        protected override CommandOutput Execute(SimpleContext context)
         {
             context.Session.AliasManager.AddAlias(key, value);
             return new CommandOutput($"Added alias {key} = {value}");
@@ -19,7 +19,7 @@ namespace DeveloperConsole
         public class RemoveCommand : SimpleCommand
         {
             [Positional(0, "The alias key")] private string key;
-            protected override CommandOutput Execute(SimpleCommandContext context)
+            protected override CommandOutput Execute(SimpleContext context)
             {
                 context.Session.AliasManager.RemoveAlias(key);
                 return new CommandOutput($"Removed alias {key}");
@@ -29,7 +29,7 @@ namespace DeveloperConsole
         [Command("list", "Lists all current aliases.")]
         public class ListCommand : SimpleCommand
         {
-            protected override CommandOutput Execute(SimpleCommandContext context)
+            protected override CommandOutput Execute(SimpleContext context)
             {
                 List<(string, string)> lines = new();
 

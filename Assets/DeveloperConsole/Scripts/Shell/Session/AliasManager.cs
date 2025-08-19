@@ -34,25 +34,15 @@ namespace DeveloperConsole.Core.Shell
         /// <returns>The alias table.</returns>
         public Dictionary<string, string> GetAliases() => _aliasTable;
 
-
         /// <summary>
-        /// Replaces a token with its alias.
+        /// Tries getting an alias for the key.
         /// </summary>
-        /// <param name="token">The token to replace.</param>
-        /// <param name="replaced">Tells if an alias was applied.</param>
-        /// <returns>The tokenized alias or the token if it doesn't have one.</returns>
-        public List<string> GetAlias(string token, out bool replaced)
+        /// <param name="key">The key.</param>
+        /// <param name="alias">The alias if there is one.</param>
+        /// <returns>True if there was an alias.</returns>
+        public bool TryGetAlias(string key, out string alias)
         {
-            if (_aliasTable.TryGetValue(token, out var value))
-            {
-                var result = ConsoleAPI.Parsing.Tokenize(value);
-
-                replaced = result.Status is not TokenizationStatus.Empty;
-                return replaced ? result.Tokens : new List<string> { token };
-            }
-
-            replaced = false;
-            return new List<string> { token };
+            return _aliasTable.TryGetValue(key, out alias);
         }
     }
 }

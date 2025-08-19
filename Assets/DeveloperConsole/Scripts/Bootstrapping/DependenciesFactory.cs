@@ -17,7 +17,7 @@ namespace DeveloperConsole
         /// <summary>
         /// The shell.
         /// </summary>
-        public IShellApplication Shell;
+        public IShell Shell;
 
         /// <summary>
         /// The command executor.
@@ -58,7 +58,7 @@ namespace DeveloperConsole
         /// <summary>
         /// Creates a shell.
         /// </summary>
-        public Func<IShellApplication> ShellApplicationFactory;
+        public Func<IShell> ShellApplicationFactory;
 
         /// <summary>
         /// Creates a command executor.
@@ -108,7 +108,7 @@ namespace DeveloperConsole
             };
 
             // Compose complex components
-            container.Shell = ShellApplicationFactory?.Invoke() ?? new ShellApplication(container.CommandExecutor, container.WindowManager);
+            container.Shell = ShellApplicationFactory?.Invoke() ?? new Core.Shell.Shell(container.CommandExecutor, container.WindowManager);
 
             return container;
         }
