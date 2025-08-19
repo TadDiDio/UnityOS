@@ -20,7 +20,9 @@ namespace DeveloperConsole.Parsing.TypeAdapting
 
         public TypeAdaptResult AdaptFromString(Type type, string value, ITokenizer tokenizer = null)
         {
-            return GetAdapter(type).ConvertFromString(value, tokenizer);
+            var adapter = GetAdapter(type);
+            var result =  adapter.ConvertFromString(value, tokenizer);
+            return result;
         }
 
         private ITypeAdapter GetAdapter(Type type)

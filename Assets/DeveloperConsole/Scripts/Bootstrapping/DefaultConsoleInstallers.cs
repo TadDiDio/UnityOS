@@ -1,10 +1,10 @@
 using System;
+using DeveloperConsole.Parsing.Graph;
 using UnityEngine;
-using DeveloperConsole.Command;
+using DeveloperConsole.Windowing;
 using DeveloperConsole.Parsing.Rules;
 using DeveloperConsole.Parsing.TypeAdapting;
 using DeveloperConsole.Parsing.TypeAdapting.Types;
-using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole
 {
@@ -29,17 +29,16 @@ namespace DeveloperConsole
     {
         public void Install()
         {
-            ConsoleAPI.Parsing.RegisterTypeParser<int>(new IntAdapter());
-            ConsoleAPI.Parsing.RegisterTypeParser<bool>(new BoolAdapter());
-            ConsoleAPI.Parsing.RegisterTypeParser<float>(new FloatAdapter());
-            ConsoleAPI.Parsing.RegisterTypeParser<Color>(new ColorAdapter());
-            ConsoleAPI.Parsing.RegisterTypeParser<Color>(new AlphaColorAdapter());
-            ConsoleAPI.Parsing.RegisterTypeParser<string>(new StringAdapter());
-            ConsoleAPI.Parsing.RegisterTypeParser<Type>(new TypeAdapter());
-            ConsoleAPI.Parsing.RegisterTypeParser<Vector2>(new Vector2Adapter());
-            ConsoleAPI.Parsing.RegisterTypeParser<Vector3>(new Vector3Adapter());
-            ConsoleAPI.Parsing.RegisterTypeParser<ConfirmationResult>(new ConfirmationResultAdapter());
-            ConsoleAPI.Parsing.RegisterTypeParser<ICommandResolver>(new TokenCommandResolverAdapter());
+            ConsoleAPI.Parsing.RegisterTypeAdapter<int>(new IntAdapter());
+            ConsoleAPI.Parsing.RegisterTypeAdapter<bool>(new BoolAdapter());
+            ConsoleAPI.Parsing.RegisterTypeAdapter<float>(new FloatAdapter());
+            ConsoleAPI.Parsing.RegisterTypeAdapter<Color>(new ColorAdapter());
+            ConsoleAPI.Parsing.RegisterTypeAdapter<Color>(new AlphaColorAdapter());
+            ConsoleAPI.Parsing.RegisterTypeAdapter<string>(new StringAdapter());
+            ConsoleAPI.Parsing.RegisterTypeAdapter<Type>(new TypeAdapter());
+            ConsoleAPI.Parsing.RegisterTypeAdapter<Vector2>(new Vector2Adapter());
+            ConsoleAPI.Parsing.RegisterTypeAdapter<Vector3>(new Vector3Adapter());
+            ConsoleAPI.Parsing.RegisterTypeAdapter<ConfirmationResult>(new ConfirmationResultAdapter());
         }
     }
 
@@ -55,7 +54,6 @@ namespace DeveloperConsole
                 .WithPadding(12)
                 .WithName("Terminal")
                 .Build();
-
             var terminal = new TerminalClient(config);
             ConsoleAPI.Shell.CreateShellSession(terminal);
             ConsoleAPI.Windowing.RegisterWindow(terminal);

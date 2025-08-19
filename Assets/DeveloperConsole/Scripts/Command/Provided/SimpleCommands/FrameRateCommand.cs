@@ -7,7 +7,7 @@ namespace DeveloperConsole
     [Command("fps", "Shows the current frame rate.")]
     public class FrameRateCommand : SimpleCommand
     {
-        protected override CommandOutput Execute(CommandContext context)
+        protected override CommandOutput Execute(SimpleContext context)
         {
             return new CommandOutput(1 / Time.deltaTime);
         }

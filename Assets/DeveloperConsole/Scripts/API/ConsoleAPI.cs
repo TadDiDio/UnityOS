@@ -184,7 +184,7 @@ namespace DeveloperConsole
             /// </summary>
             /// <param name="adapter">The adapter.</param>
             /// <typeparam name="T">The type the adapter adapts to.</typeparam>
-            public static void RegisterTypeParser<T>(ITypeAdapter adapter)
+            public static void RegisterTypeAdapter<T>(ITypeAdapter adapter)
             {
                 WithService<ITypeAdapterRegistry>(r => r.RegisterAdapter<T>(adapter));
             }
@@ -317,25 +317,12 @@ namespace DeveloperConsole
         public static class Shell
         {
             /// <summary>
-            /// Creates a new shell session for a client.
-            /// </summary>
-            /// <param name="promptResponder">The client to create.</param>
-            /// <param name="outputs">0 or more outputs associated with this session.</param>
-            /// <returns>The session id.</returns>
-            public static Guid CreateShellSession(IPromptResponder promptResponder, List<IOutputChannel> outputs = null)
-            {
-                return WithService<IShellApplication, Guid>(s => s.CreateSession(promptResponder, outputs));
-            }
-
-
-            /// <summary>
             /// Creates a new session for a human interface.
             /// </summary>
-            /// <param name="humanInterface">The human interface.</param>
-            /// <returns>The session id.</returns>
-            public static Guid CreateShellSession(IHumanInterface humanInterface)
+            /// <param name="client">The default client for this session.</param>
+            public static void CreateShellSession(IShellClient client)
             {
-                return WithService<IShellApplication, Guid>(s => s.CreateSession(humanInterface));
+                WithService<IShell>(s => s.CreateSession(client));
             }
 
 
@@ -346,7 +333,7 @@ namespace DeveloperConsole
             /// <returns>The session.</returns>
             public static ShellSession GetShellSession(Guid sessionId)
             {
-                return WithService<IShellApplication, ShellSession>(s => s.GetSession(sessionId));
+                return WithService<IShell, ShellSession>(s => s.GetSession(sessionId));
             }
         }
 

@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using DeveloperConsole.Command;
 using DeveloperConsole.Parsing.Tokenizing;
@@ -17,14 +16,14 @@ namespace DeveloperConsole.Parsing.Rules
         /// <param name="context">The parse context.</param>
         /// <returns>The single argument to set.</returns>
         protected abstract ArgumentSpecification FindMatchingArg(string token, ArgumentSpecification[] allArgs, ParseContext context);
-        
+
         public ArgumentSpecification[] Filter(string token, ArgumentSpecification[] allArgs, ParseContext context)
         {
             var withAttributes = allArgs.Where(arg => arg.Attributes.Count > 0);
 
             var filtered = withAttributes.ToArray();
             if (!filtered.Any()) return null;
-            
+
             var arg = FindMatchingArg(token, filtered.ToArray(), context);
             return arg == null ? null : new[] { arg };
         }
@@ -37,9 +36,9 @@ namespace DeveloperConsole.Parsing.Rules
         /// <param name="argument">The argument being applied.</param>
         /// <returns>The result.</returns>
         protected abstract ParseResult ApplyToArg(TokenStream tokenStream, ArgumentSpecification argument);
-        
+
         public ParseResult Apply(TokenStream tokenStream, ArgumentSpecification[] args)
-        {   
+        {
             if (args.Length != 1)
             {
                 Log.Error("Too many arguments attempting to set while applying long bool switch rule.");

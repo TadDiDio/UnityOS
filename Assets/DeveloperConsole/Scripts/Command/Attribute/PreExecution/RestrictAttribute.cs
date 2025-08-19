@@ -13,7 +13,7 @@ namespace DeveloperConsole.Command
             Environment = environment;
         }
 
-        public override Task<bool> Validate(CommandContext context, CancellationToken cancellationToken)
+        public override Task<bool> Validate(FullCommandContext context, CancellationToken cancellationToken)
         {
             return Task.FromResult(Environment.IsAvailable());
         }

@@ -18,7 +18,7 @@ namespace DeveloperConsole
             Debug.Log(message);
         }
 
-        
+
         /// <summary>
         /// Logs a warning.
         /// </summary>
@@ -28,7 +28,7 @@ namespace DeveloperConsole
             Debug.LogWarning(message);
         }
 
-        
+
         /// <summary>
         /// Logs an error.
         /// </summary>
@@ -37,8 +37,8 @@ namespace DeveloperConsole
         {
             Debug.LogError(message);
         }
-        
-        
+
+
         /// <summary>
         /// Logs an exception.
         /// </summary>

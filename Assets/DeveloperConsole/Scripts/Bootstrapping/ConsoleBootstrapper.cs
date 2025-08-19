@@ -45,7 +45,9 @@ namespace DeveloperConsole
         public static void Bootstrap()
         {
             Kill();
+
             KernelUpdater updater = new KernelUpdater();
+
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (Application.isPlaying)
@@ -57,6 +59,8 @@ namespace DeveloperConsole
             EditModeTicker.Initialize(() => new EditModeTicker(updater));
 #endif
 
+            UnityMainThreadDispatcher.Initialize(() => new UnityMainThreadDispatcher());
+            
             CommonBootstrap();
             InstallComponents();
 

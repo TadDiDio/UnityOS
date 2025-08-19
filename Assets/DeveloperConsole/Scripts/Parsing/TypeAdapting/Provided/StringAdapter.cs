@@ -7,7 +7,7 @@ namespace DeveloperConsole.Parsing.TypeAdapting
         protected override bool TryConsumeAndConvert(TokenStream stream, out string result)
         {
             result = stream.Next();
-            return true;
+            return result != null;
         }
     }
 }

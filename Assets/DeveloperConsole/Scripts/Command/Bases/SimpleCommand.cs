@@ -6,10 +6,16 @@ namespace DeveloperConsole.Command
     /// <summary>
     /// A simple command which exhibits one-shot behavior.
     /// </summary>
-    public abstract class SimpleCommand : AsyncCommand
+    public abstract class SimpleCommand : CommandBase
     {
-        protected override async Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken)
+        protected override async Task<CommandOutput> ExecuteAsync(FullCommandContext fullContext, CancellationToken cancellationToken)
         {
+            SimpleContext context = new SimpleContext
+            (
+                new RestrictedSessionContext(fullContext.Session.AliasManager),
+                fullContext.Environment
+            );
+
             return await Task.FromResult(Execute(context));
         }
 
@@ -19,6 +25,6 @@ namespace DeveloperConsole.Command
         /// </summary>
         /// <param name="context">The execution context.</param>
         /// <returns>The command's output.</returns>
-        protected abstract CommandOutput Execute(CommandContext context);
+        protected abstract CommandOutput Execute(SimpleContext context);
     }
 }

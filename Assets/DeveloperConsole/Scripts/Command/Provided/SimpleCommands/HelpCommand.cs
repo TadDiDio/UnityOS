@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using DeveloperConsole.Command;
 
 namespace DeveloperConsole
@@ -22,7 +20,7 @@ namespace DeveloperConsole
         private List<ArgumentSpecification> _switches;
         private ArgumentSpecification _variadic;
 
-        protected override CommandOutput Execute(CommandContext context)
+        protected override CommandOutput Execute(SimpleContext context)
         {
             if (command.Count == 0) return new CommandOutput(Describe());
 
@@ -43,17 +41,17 @@ namespace DeveloperConsole
             StringBuilder builder = new();
 
             builder.AppendLine();
-            builder.AppendLine($"Command: {MessageFormatter.AddColor(name, MessageFormatter.Blue)}");
+            builder.AppendLine($"Command: {Formatter.AddColor(name, Formatter.Blue)}");
             builder.AppendLine();
 
             builder.AppendLine(schema.Description);
             builder.AppendLine();
 
             builder.AppendLine("Usage:");
-            builder.AppendLine(MessageFormatter.IndentLines(GetCommandUsage(name, schema, true), IndentAmount));
+            builder.AppendLine(Formatter.IndentLines(GetCommandUsage(name, schema, true), IndentAmount));
             foreach (var subcommand in schema.Subcommands)
             {
-                builder.AppendLine(MessageFormatter.IndentLines(GetCommandUsage($"{name} {subcommand.Name}", subcommand, false), IndentAmount));
+                builder.AppendLine(Formatter.IndentLines(GetCommandUsage($"{name} {subcommand.Name}", subcommand, false), IndentAmount));
             }
 
             if (verbose)
@@ -68,7 +66,7 @@ namespace DeveloperConsole
         {
             StringBuilder builder = new();
 
-            builder.Append(MessageFormatter.AddColor(fqn, MessageFormatter.Blue));
+            builder.Append(Formatter.AddColor(fqn, Formatter.Blue));
 
             var positionals = schema.ArgumentSpecifications
                 .Where(spec => spec.Attributes.OfType<PositionalAttribute>().Any())
@@ -139,7 +137,7 @@ namespace DeveloperConsole
                     positionals.Add(($"({argIndex++}) <{positional.Name} ({TypeFriendlyNames.TypeToName(positional.FieldInfo.FieldType)})>:", $"{positional.Description}"));
                 }
 
-                builder.AppendLine(MessageFormatter.IndentLines(MessageFormatter.PadLeft(positionals), IndentAmount));
+                builder.AppendLine(Formatter.IndentLines(Formatter.PadLeft(positionals), IndentAmount));
             }
 
             if (_optionals.Count > 0)
@@ -152,7 +150,7 @@ namespace DeveloperConsole
                     optionals.Add(($"({argIndex++}) [{optional.Name} ({TypeFriendlyNames.TypeToName(optional.FieldInfo.FieldType)})]:", $"{optional.Description}"));
                 }
 
-                builder.AppendLine(MessageFormatter.IndentLines(MessageFormatter.PadLeft(optionals), IndentAmount));
+                builder.AppendLine(Formatter.IndentLines(Formatter.PadLeft(optionals), IndentAmount));
             }
 
             if (_switches.Count > 0)
@@ -166,7 +164,7 @@ namespace DeveloperConsole
                     switches.Add(($"[--{s.Name} or -{s.Attributes.OfType<SwitchAttribute>().FirstOrDefault()!.Alias}{value} ({TypeFriendlyNames.TypeToName(s.FieldInfo.FieldType)})]:", $"{s.Description}"));
                 }
 
-                builder.AppendLine(MessageFormatter.IndentLines(MessageFormatter.PadLeft(switches), IndentAmount));
+                builder.AppendLine(Formatter.IndentLines(Formatter.PadLeft(switches), IndentAmount));
             }
 
             if (_variadic != null)
@@ -175,7 +173,7 @@ namespace DeveloperConsole
                 builder.AppendLine("Variadic Arguments (optional):");
 
                 string type = $"0 or more {TypeFriendlyNames.TypeToName(_variadic.FieldInfo.FieldType.GetGenericArguments()[0])}s";
-                builder.AppendLine(MessageFormatter.IndentLines($"[{_variadic.Name} ({type})]: {_variadic.Description}", IndentAmount));
+                builder.AppendLine(Formatter.IndentLines($"[{_variadic.Name} ({type})]: {_variadic.Description}", IndentAmount));
             }
 
             return builder.ToString();

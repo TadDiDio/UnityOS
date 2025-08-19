@@ -1,26 +1,14 @@
 using DeveloperConsole.Command;
+using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole.Core.Shell
 {
     public class ShellRequest
     {
-        public ICommandResolver CommandResolver;
+        public ICommand Command;
         public ShellSession Session;
 
-        public bool Windowed;
-        public bool ExpandAliases;
+        public CommandWindow Window = null;
         public bool NoPrompt; // TODO: Change this for prompt filter to allow some but not all
-
-        private IHumanInterface _humanInterface;
-
-
-        /// <summary>
-        /// Overrides the human interface to allow something other than the spawning GUI to control it.
-        /// </summary>
-        /// <param name="humanInterface"></param>
-        public void OverrideHumanInterface(IHumanInterface humanInterface)
-        {
-            _humanInterface = humanInterface;
-        }
     }
 }

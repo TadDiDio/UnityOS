@@ -2,7 +2,6 @@ using System;
 using UnityEngine;
 using System.Reflection;
 using System.Collections.Generic;
-using System.Linq;
 using DeveloperConsole.Bindings;
 using DeveloperConsole.Command;
 using DeveloperConsole.Core.Shell;
@@ -20,7 +19,6 @@ namespace DeveloperConsole.Core.Kernel
     public class Kernel : Singleton<Kernel>, IDisposable
     {
         private DependenciesContainer _dependencies;
-        private List<IKernelApplication> _applications = new();
         private readonly Dictionary<Type, object> _proxies = new();
         private readonly Dictionary<Type, object> _serviceMap = new();
 
@@ -34,12 +32,11 @@ namespace DeveloperConsole.Core.Kernel
             _dependencies = config.Create();
 
             RegisterCoreServices(_dependencies);
-            RegisterCoreApplications(_dependencies);
         }
 
         private void RegisterCoreServices(DependenciesContainer dependencies)
         {
-            TryAddService(typeof(IShellApplication), dependencies.Shell);
+            TryAddService(typeof(IShell), dependencies.Shell);
             TryAddService(typeof(ICommandExecutor), dependencies.CommandExecutor);
             TryAddService(typeof(ICommandRegistry), dependencies.CommandRegistry);
             TryAddService(typeof(ITypeAdapterRegistry), dependencies.TypeAdapterRegistry);
@@ -55,37 +52,6 @@ namespace DeveloperConsole.Core.Kernel
                 Log.Warning($"Service for {type.Name} already existed and will not be replaced.");
             }
         }
-
-        private void RegisterCoreApplications(DependenciesContainer dependencies)
-        {
-            // TODO: Will probably include window manager here.
-            RegisterApplication(dependencies.Shell);
-        }
-
-        /// <summary>
-        /// Registers an application for consistent ticking.
-        /// </summary>
-        /// <param name="kernelApplication">The application.</param>
-        public void RegisterApplication(IKernelApplication kernelApplication)
-        {
-            if (_applications.Contains(kernelApplication))
-            {
-                Log.Error($"Attempted to register a duplicate kernel application: {kernelApplication.GetType().Name}");
-                return;
-            }
-            _applications.Add(kernelApplication);
-        }
-
-
-        /// <summary>
-        /// Removes an application from being consistently ticked.
-        /// </summary>
-        /// <param name="kernelApplication">The application.</param>
-        public void UnregisterApplication(IKernelApplication kernelApplication)
-        {
-            _applications.Remove(kernelApplication);
-        }
-
 
         // Client-facing: wraps services in dynamically created interfaces to avoid reference caching problems.
         // This ensures that when the kernel dies, so do all its systems even if clients cache references.
@@ -123,15 +89,13 @@ namespace DeveloperConsole.Core.Kernel
             return null;
         }
 
-
         /// <summary>
         /// Makes the kernel tick all applications.
         /// </summary>
         public void Tick()
         {
-            foreach (var application in _applications) application.Tick();
+            UnityMainThreadDispatcher.Instance.Update();
         }
-
 
         /// <summary>
         /// Makes the kernel distribute an input event.
@@ -142,7 +106,6 @@ namespace DeveloperConsole.Core.Kernel
             _dependencies.WindowManager.OnInput(current);
         }
 
-
         /// <summary>
         /// Makes the kernel distribute a draw call.
         /// </summary>
@@ -152,14 +115,11 @@ namespace DeveloperConsole.Core.Kernel
             _dependencies.WindowManager.OnGUI(isSceneView);
         }
 
-
         /// <summary>
         /// Destroys all applications and services.
         /// </summary>
         public void Dispose()
         {
-            foreach (var application in _applications.ToList()) UnregisterApplication(application);
-            foreach (var application in _applications) application.Dispose();
             _dependencies = null;
             _proxies.Clear();
         }

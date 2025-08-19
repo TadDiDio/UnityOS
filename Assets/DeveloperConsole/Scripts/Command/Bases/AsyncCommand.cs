@@ -1,71 +1,97 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using DeveloperConsole.Command.Execution;
 using DeveloperConsole.Core.Shell;
 
 namespace DeveloperConsole.Command
 {
-    /// <summary>
-    /// Simply a more ergonomic name for an async command.
-    /// </summary>
-    public abstract class AsyncCommand : ICommand
+    public abstract class AsyncCommand : CommandBase
     {
-        public Guid CommandId { get; } = Guid.NewGuid();
-        public CommandSchema Schema { get; private set; }
-
-        protected ShellSession Session;
-
-        protected AsyncCommand()
+        private FullCommandContext _context;
+        protected override async Task<CommandOutput> ExecuteAsync(FullCommandContext fullContext, CancellationToken cancellationToken)
         {
-            // Delete constructor to force use of creation factory
-        }
-
-        public void Initialize(CommandSchema schema)
-        {
-            if (Schema != null) throw new InvalidOperationException("Schema already initialized.");
-
-            Schema = schema ?? throw new ArgumentNullException(nameof(schema));
-        }
-
-        public async Task<CommandOutput> ExecuteCommandAsync(CommandContext context, CancellationToken cancellationToken)
-        {
-            Session = context.Session;
-            return await ExecuteAsync(context, cancellationToken);
-        }
-
-        protected abstract Task<CommandOutput> ExecuteAsync(CommandContext context, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Writes a message to the output channel.
-        /// </summary>
-        /// <param name="message">The message.</param>
-        protected void Write(object message)
-        {
-            Session.Write(CommandId, message);
+            _context = fullContext;
+            return await Execute(new AsyncCommandContext(_context.Environment), cancellationToken);
         }
 
         /// <summary>
-        /// Overwrites the current output line on the output channel.
+        /// Executes this command.
         /// </summary>
-        /// <param name="message">The message.</param>
-        protected void OverWrite(object message)
+        /// <param name="context">The context and permissions this command has.</param>
+        /// <param name="cancellationToken">The </param>
+        /// <returns></returns>
+        protected abstract Task<CommandOutput> Execute(AsyncCommandContext context, CancellationToken cancellationToken);
+
+
+        /// <summary>
+        /// Prompts the user for a confirmation.
+        /// </summary>
+        /// <param name="message">A message to display.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>True if the confirmation passed.</returns>
+        protected async Task<bool> ConfirmAsync(string message, CancellationToken cancellationToken)
         {
-            Session.OverWrite(CommandId, message);
+            var prompt = PromptFactory.Confirmation(message);
+            var result = await _context.Prompting.PromptAsync(prompt, cancellationToken);
+            return result.Success;
         }
 
         /// <summary>
-        /// Writes a line to the output channel.
+        /// Prompts the user to input a command.
         /// </summary>
-        /// <param name="line">The line.</param>
-        protected void WriteLine(object line)
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <returns>A command chain to execute.</returns>
+        protected async Task<CommandGraph> PromptForCommand(CancellationToken cancellationToken)
         {
-            Session.WriteLine(CommandId, line);
+            var prompt = PromptFactory.Command();
+            return await _context.Prompting.PromptAsync(prompt, cancellationToken);
         }
 
-
-        public virtual void Dispose()
+        /// <summary>
+        /// Prompts for a general type.
+        /// </summary>
+        /// <param name="message">A message to display.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <typeparam name="T">The type of response to ask for.</typeparam>
+        /// <returns>The response.</returns>
+        protected async Task<T> PromptAsync<T>(string message, CancellationToken cancellationToken)
         {
-            // No-op
+            var prompt = PromptFactory.General<T>(message);
+            return await _context.Prompting.PromptAsync(prompt, cancellationToken);
+        }
+
+        /// <summary>
+        /// Prompts with a set range of choices.
+        /// </summary>
+        /// <param name="message">A message to display.</param>
+        /// <param name="choices">The array of choices to limit answers to.</param>
+        /// <param name="cancellationToken">A cancellation token.</param>
+        /// <typeparam name="T">The type of the response to ask for.</typeparam>
+        /// <returns>The response.</returns>
+        protected async Task<T> PromptWithChoicesAsync<T>(string message, PromptChoice[] choices, CancellationToken cancellationToken)
+        {
+            var prompt = PromptFactory.Choice<T>(message, choices);
+            return await _context.Prompting.PromptAsync(prompt, cancellationToken);
+        }
+
+        /// <summary>
+        /// Call this method in a using tag to push a prompt header for the duration.
+        /// </summary>
+        /// <param name="prefix">The prefix to add.</param>
+        protected IDisposable PushPromptForScope(string prefix)
+        {
+            return _context.Prompting.PushPromptPrefixScope(prefix);
+        }
+
+        /// <summary>
+        /// Runs a command graph asynchronously.
+        /// </summary>
+        /// <param name="graph">The graph to run.</param>
+        /// <param name="cancellationToken">The token used to cancel it.</param>
+        protected async Task RunCommandGraph(CommandGraph graph, CancellationToken cancellationToken)
+        {
+            await _context.Session.GraphProcessor.ProcessCommandGraphAsync(graph, cancellationToken);
         }
     }
 }

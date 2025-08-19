@@ -1,23 +1,25 @@
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using DeveloperConsole.Core.Shell;
-using DeveloperConsole.IO;
 using UnityEngine;
 
 namespace DeveloperConsole.Windowing
 {
-    public class CommandWindow : WindowBase, IPromptResponder, IOutputChannel
+    // TODO: Redo all of this its almost an exact duplicate of terminal client
+    public class CommandWindow : WindowBase, IShellClient
     {
         private List<string> _outputBuffer = new();
         private Vector2 _scrollPosition = Vector2.zero;
-        private UserInterface _userInterface;
-
+        private PromptChoice[] _choices;
+        private TaskCompletionSource<object> _promptResponseSource;
         private CancellationTokenSource _cancellationTokenSource;
+
+        private string _promptHeader;
 
         public CommandWindow(WindowConfig config) : base(config)
         {
-            _userInterface = new UserInterface(this, this);
             OnClose += CancelCommand;
         }
 
@@ -37,33 +39,28 @@ namespace DeveloperConsole.Windowing
                 GUILayout.Label(line);
             }
 
-            // TODO: Add input here if needed.
-
             GUILayout.EndScrollView();
             GUILayout.EndVertical();
         }
 
         public override void OnInput(Event current)
         {
-            // TODO: Add input capture if needed.
+            // Nothing
         }
 
-        public UserInterface GetInterface()
+
+        public void SetPromptHeader(string header)
         {
-            return _userInterface;
         }
 
-        public void Write(string message)
+        public void Write(string message, bool overwrite)
         {
-            _outputBuffer[^1] += message;
+            if (overwrite) _outputBuffer[^1] = message;
+            else _outputBuffer[^1] += message;
+
             _scrollPosition.y = float.MaxValue;
         }
 
-        public void OverWrite(string message)
-        {
-            _outputBuffer[^1] = message;
-            _scrollPosition.y = float.MaxValue;
-        }
 
         public void WriteLine(string line)
         {
@@ -72,31 +69,28 @@ namespace DeveloperConsole.Windowing
             _scrollPosition.y = float.MaxValue;
         }
 
-        public Task<object> HandlePrompt(Prompt prompt, CancellationToken cancellationToken)
+
+        public Task<object> HandlePrompt<T>(Prompt<T> prompt, CancellationToken cancellationToken)
         {
-            // No prompting allowed currently. This should never be called.
-            throw new System.NotImplementedException();
+            throw new NotImplementedException("Windows cannot be prompted yet.");
         }
 
-        public CancellationToken GetCommandCancellationToken()
+        public CancellationToken GetPromptCancellationToken()
         {
             _cancellationTokenSource = new CancellationTokenSource();
             return _cancellationTokenSource.Token;
         }
 
-        public ShellSignalHandler GetSignalHandler()
-        {
-            throw new System.NotImplementedException();
-        }
 
-        public void SetPromptHeader(string header)
-        {
-            throw new System.NotImplementedException();
-        }
+        // TODO: Convert signal handlers to data driven.
+        public ShellSignalHandler GetSignalHandler() => SignalHandler;
 
         private void SignalHandler(ShellSignal signal)
         {
-            throw new System.NotImplementedException();
+            if (signal is ClearSignal)
+            {
+                _outputBuffer.Clear();
+            }
         }
     }
 }

@@ -3,7 +3,6 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using DeveloperConsole.Command;
 using DeveloperConsole.Core.Shell;
 using DeveloperConsole.Persistence;
 using DeveloperConsole.Windowing;
@@ -14,7 +13,7 @@ using UnityEditor;
 
 namespace DeveloperConsole
 {
-    public class TerminalClient : WindowBase, IHumanInterface
+    public class TerminalClient : WindowBase, IShellClient
     {
         private enum TerminalState
         {
@@ -27,7 +26,6 @@ namespace DeveloperConsole
         private List<string> _outputBuffer = new();
         private Vector2 _scrollPosition = Vector2.zero;
         private TerminalHistoryBuffer _historyBuffer;
-        private DefaultCommandBatcher _batcher = new();
         private PromptChoice[] _choices;
         private TerminalState _state = TerminalState.General;
         private TaskCompletionSource<object> _promptResponseSource;
@@ -179,14 +177,7 @@ namespace DeveloperConsole
             _historyBuffer.PushHistory();
 
             WriteLine($"{_header}{input}");
-
-            if (_state is TerminalState.CommandPrompt)
-            {
-                var batch = _batcher.GetBatch(input);
-                batch.AllowPrompting = true;
-                _promptResponseSource.SetResult(batch);
-            }
-            else _promptResponseSource.SetResult(input);
+            _promptResponseSource.SetResult(input);
         }
 
         public void SetPromptHeader(string header)
@@ -194,17 +185,14 @@ namespace DeveloperConsole
             _header = header;
         }
 
-        public void Write(string message)
+        public void Write(string message, bool overwrite)
         {
-            _outputBuffer[^1] += message;
+            if (overwrite) _outputBuffer[^1] = message;
+            else _outputBuffer[^1] += message;
+
             _scrollPosition.y = float.MaxValue;
         }
 
-        public void OverWrite(string message)
-        {
-            _outputBuffer[^1] = message;
-            _scrollPosition.y = float.MaxValue;
-        }
 
         public void WriteLine(string line)
         {
@@ -214,7 +202,7 @@ namespace DeveloperConsole
         }
 
 
-        public async Task<object> HandlePrompt(Prompt prompt, CancellationToken cancellationToken)
+        public async Task<object> HandlePrompt<T>(Prompt<T> prompt, CancellationToken cancellationToken)
         {
             if (_promptResponseSource != null)
             {
@@ -248,14 +236,14 @@ namespace DeveloperConsole
             }
         }
 
-        public CancellationToken GetCommandCancellationToken()
+        public CancellationToken GetPromptCancellationToken()
         {
             _cancellationSource = new CancellationTokenSource();
             return _cancellationSource.Token;
         }
 
 
-        private void DisplayPromptOnce(Prompt prompt)
+        private void DisplayPromptOnce<T>(Prompt<T> prompt)
         {
             switch (prompt.Kind)
             {
