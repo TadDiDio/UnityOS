@@ -84,6 +84,14 @@ namespace DeveloperConsole.Command
             return _context.Prompting.PushPromptPrefixScope(prefix);
         }
 
-        // TODO Add run command function
+        /// <summary>
+        /// Runs a command graph asynchronously.
+        /// </summary>
+        /// <param name="graph">The graph to run.</param>
+        /// <param name="cancellationToken">The token used to cancel it.</param>
+        protected async Task RunCommandGraph(CommandGraph graph, CancellationToken cancellationToken)
+        {
+            await _context.Session.GraphProcessor.ProcessCommandGraphAsync(graph, cancellationToken);
+        }
     }
 }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using DeveloperConsole.Command.Execution;
 using DeveloperConsole.Parsing.Graph;
 using DeveloperConsole.Scripts.Command.Execution;
+using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole.Core.Shell
 {
@@ -25,14 +26,22 @@ namespace DeveloperConsole.Core.Shell
         /// </summary>
         /// <param name="graph">The graph to run.</param>
         /// <param name="token">A token to cancel the operation</param>
-        /// <param name="ioContext">The IO context this command should run with.</param>
-        public async Task ProcessCommandGraphAsync(CommandGraph graph, CancellationToken token, IOContext ioContext = null)
+        public async Task ProcessCommandGraphAsync(CommandGraph graph, CancellationToken token)
         {
+
             foreach (var node in GraphIterator.TraverseBFS(graph.Root))
             {
-                // TODO: Replace null with a windowed context
-                node.ExecutionContext.IoContext = node.ExecutionContext.Windowed ?
-                    null : ioContext ?? _defaultIOContext;
+                bool windowed = node.ExecutionContext.Windowed;
+
+                if (windowed)
+                {
+                    var windowConfig = WindowConfigFactory.CommandWindow();
+                    var commandWindow = new CommandWindow(windowConfig);
+                    node.ExecutionContext.IoContext = IOContext.CreateFromClient(commandWindow, _session);
+                    node.ExecutionContext.IoContext.Prompt.InitializePromptHeader(ShellSession.PromptEnd);
+                    node.ExecutionContext.CommandWindow = commandWindow;
+                }
+                else node.ExecutionContext.IoContext = _defaultIOContext.Clone();
             }
 
             foreach (var annotation in graph.Annotations)
@@ -121,11 +130,10 @@ namespace DeveloperConsole.Core.Shell
             {
                 Command = node.Command,
                 Session = _session,
-                Windowed = node.ExecutionContext.Windowed
+                Window = node.ExecutionContext.CommandWindow
             };
 
             return await _shell.HandleCommandRequestAsync(request, node.ExecutionContext.IoContext, token);
         }
-
     }
 }

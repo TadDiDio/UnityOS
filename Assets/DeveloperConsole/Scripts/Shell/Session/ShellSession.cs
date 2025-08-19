@@ -62,7 +62,7 @@ namespace DeveloperConsole.Core.Shell
             {
                 var token = _defaultIOContext.Prompt.GetPromptCancellationToken();
                 var graph = await _defaultIOContext.Prompt.PromptAsync(PromptFactory.Command(), token);
-                await GraphProcessor.ProcessCommandGraphAsync(graph, token, _defaultIOContext);
+                await GraphProcessor.ProcessCommandGraphAsync(graph, token);
             }
             catch (OperationCanceledException)
             {

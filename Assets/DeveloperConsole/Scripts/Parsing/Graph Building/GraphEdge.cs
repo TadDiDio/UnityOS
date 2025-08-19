@@ -1,3 +1,6 @@
+using DeveloperConsole.Core.Shell;
+using DeveloperConsole.Scripts.Command.Execution;
+
 namespace DeveloperConsole.Parsing.Graph
 {
     public class GraphEdge
@@ -30,7 +33,25 @@ namespace DeveloperConsole.Parsing.Graph
 
         public override void Setup()
         {
-            // TODO: Make a pipe between source and target
+            var pipe = new CommandPipe();
+
+            Source.ExecutionContext.IoContext = new IOContext(
+                prompt: Source.ExecutionContext.IoContext.Prompt.Promptable,
+                output: pipe,
+                emitter: Source.ExecutionContext.IoContext.SignalEmitter,
+                session: Source.ExecutionContext.IoContext.ShellSession,
+                autoRetry: true,
+                name: "Source Pipe"
+            );
+
+            Target.ExecutionContext.IoContext = new IOContext(
+                prompt: pipe,
+                output: Target.ExecutionContext.IoContext.Output,
+                emitter: Target.ExecutionContext.IoContext.SignalEmitter,
+                session: Target.ExecutionContext.IoContext.ShellSession,
+                autoRetry: true,
+                name: "Target Pipe"
+            );
         }
     }
 }

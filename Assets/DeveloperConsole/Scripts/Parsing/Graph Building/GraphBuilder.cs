@@ -75,10 +75,9 @@ namespace DeveloperConsole.Parsing.Graph
             if (_lastWasSerial) _parallelAnchor = _serialParent;
 
             _lastWasSerial = false;
+            _annotations.Add(new PipeAnnotation(_serialAnchor, node));
             _parallelAnchor.Outgoing.Add(new GraphEdge(node));
             _serialAnchor = node;
-
-            _annotations.Add(new PipeAnnotation(_serialAnchor, node));
 
             return this;
         }

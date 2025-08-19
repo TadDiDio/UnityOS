@@ -44,9 +44,9 @@ namespace DeveloperConsole.Core.Shell
         {
             try
             {
-                if (request.Windowed)
+                if (request.Window != null)
                 {
-                    _ = RunWindowedCommand(request);
+                    _ = RunWindowedCommand(request, ioContext);
                     return Status.Success;
                 }
 
@@ -66,16 +66,10 @@ namespace DeveloperConsole.Core.Shell
             }
         }
 
-        private async Task RunWindowedCommand(ShellRequest request)
+        private async Task RunWindowedCommand(ShellRequest request, IOContext ioContext)
         {
-            var config = WindowConfigFactory.CommandWindow();
-
-            var commandWindow = new CommandWindow(config);
-            _windowManager.RegisterWindow(commandWindow);
-
-            IOContext context = IOContext.CreateFromClient(commandWindow, request.Session);
-            context.Prompt.InitializePromptHeader(ShellSession.PromptEnd);
-            await _executor.ExecuteCommand(request, context, commandWindow.GetPromptCancellationToken());
+            _windowManager.RegisterWindow(request.Window);
+            await _executor.ExecuteCommand(request, ioContext, request.Window.GetPromptCancellationToken());
         }
     }
 }

@@ -12,7 +12,7 @@ namespace DeveloperConsole.Shell.Prompting
 {
     public class PromptManager
     {
-        private IPromptable _promptable;
+        public IPromptable Promptable;
         private IOutputChannel _output;
 
         private ShellSession _session;
@@ -23,11 +23,14 @@ namespace DeveloperConsole.Shell.Prompting
         private bool _promptActive;
         private readonly object _lock = new();
 
-        public PromptManager(IPromptable promptable, IOutputChannel output, ShellSession session)
+        private bool _autoRetryPrompt;
+
+        public PromptManager(IPromptable promptable, IOutputChannel output, ShellSession session, bool autoRetryPrompt = true)
         {
-            _promptable = promptable;
+            Promptable = promptable;
             _output = output;
             _session = session;
+            _autoRetryPrompt = autoRetryPrompt;
         }
 
         /// <summary>
@@ -46,7 +49,7 @@ namespace DeveloperConsole.Shell.Prompting
         /// <returns>The token.</returns>
         public CancellationToken GetPromptCancellationToken()
         {
-            return _promptable.GetPromptCancellationToken();
+            return Promptable.GetPromptCancellationToken();
         }
 
         /// <summary>
@@ -56,7 +59,7 @@ namespace DeveloperConsole.Shell.Prompting
         public void InitializePromptHeader(string header)
         {
             _promptEnd = header;
-            _promptable.SetPromptHeader(header);
+            Promptable.SetPromptHeader(header);
         }
 
         /// <summary>
@@ -64,24 +67,27 @@ namespace DeveloperConsole.Shell.Prompting
         /// </summary>
         /// <param name="prompt">The submitted prompt.</param>
         /// <param name="token">A cancellation token.</param>
-        /// <param name="retryOnFail">Whether to retry the prompt on a failure.</param>
         /// <typeparam name="T">The type of response to ask for.</typeparam>
         /// <returns>The response or null if no retry was attempted.</returns>
         /// <exception cref="InvalidOperationException">Throws if another prompt is in session.</exception>
-        public async Task<T> PromptAsync<T>(Prompt<T> prompt, CancellationToken token, bool retryOnFail = true)
+        public async Task<T> PromptAsync<T>(Prompt<T> prompt, CancellationToken token)
         {
             lock (_lock)
             {
-                if (_promptActive) throw new InvalidOperationException($"Prompt was already active when a {{prompt.Kind}} prompt was received.");
+                if (_promptActive) throw new InvalidOperationException($"Prompt was already active when a {prompt.Kind} prompt was received.");
                 _promptActive = true;
             }
 
             try
             {
-                while (true)
+                bool condition = true;
+                while (condition)
                 {
                     token.ThrowIfCancellationRequested();
-                    var response = await _promptable.HandlePrompt(prompt, token);
+
+                    condition = _autoRetryPrompt;
+
+                    var response = await Promptable.HandlePrompt(prompt, token);
 
 
                     // ====================================
@@ -103,7 +109,7 @@ namespace DeveloperConsole.Shell.Prompting
                     // ====================================
 
                     if (response is not string stringResponse) throw new InvalidOperationException
-                        ($"{_promptable.GetType().Name} responded with {response.GetType().Name} when asked for {{prompt.RequestedType.Name}}!");
+                        ($"{Promptable.GetType().Name} responded with {response.GetType().Name} when asked for {{prompt.RequestedType.Name}}!");
 
                     if (stringResponse is "") continue;
 
@@ -147,24 +153,29 @@ namespace DeveloperConsole.Shell.Prompting
                 throw;
             }
             finally { lock (_lock) { _promptActive = false; } }
+
+            throw new InvalidOperationException("Auto retry on invalid prompt is off and an invalid prompt was submitted.");
         }
 
-        public async Task<CommandGraph> PromptAsync(Prompt<CommandGraph> prompt, CancellationToken token, bool retryOnFail = true)
+        public async Task<CommandGraph> PromptAsync(Prompt<CommandGraph> prompt, CancellationToken token)
         {
             lock (_lock)
             {
                 if (_promptActive)
                     throw new InvalidOperationException(
-                        $"Prompt was already active when a {{prompt.Kind}} prompt was received.");
+                        $"Prompt was already active when a {prompt.Kind} prompt was received.");
                 _promptActive = true;
             }
 
             try
             {
-                while (true)
+                bool condition = true;
+                while (condition)
                 {
                     token.ThrowIfCancellationRequested();
-                    var response = await _promptable.HandlePrompt(prompt, token);
+
+                    condition = _autoRetryPrompt;
+                    var response = await Promptable.HandlePrompt(prompt, token);
 
                     if (response is CommandGraph typed)
                     {
@@ -176,7 +187,7 @@ namespace DeveloperConsole.Shell.Prompting
                     }
 
                     if (response is not string stringResponse) throw new InvalidOperationException
-                        ($"{_promptable.GetType().Name} responded with {response.GetType().Name} when asked for {{prompt.RequestedType.Name}}!");
+                        ($"{Promptable.GetType().Name} responded with {response.GetType().Name} when asked for {{prompt.RequestedType.Name}}!");
 
                     if (stringResponse is "") continue;
 
@@ -199,18 +210,20 @@ namespace DeveloperConsole.Shell.Prompting
                 throw;
             }
             finally { lock (_lock) { _promptActive = false; } }
+
+            throw new InvalidOperationException("Auto retry on invalid prompt is off and an invalid prompt was submitted.");
         }
 
         private void PushPromptPrefix(string prefix)
         {
             _promptStack.Push(prefix);
-            _promptable.SetPromptHeader(GetPromptHeader());
+            Promptable.SetPromptHeader(GetPromptHeader());
         }
 
         private void PopPromptPrefix()
         {
             _promptStack.TryPop(out _);
-            _promptable.SetPromptHeader(GetPromptHeader());
+            Promptable.SetPromptHeader(GetPromptHeader());
         }
 
         private string GetPromptHeader() => string.Join("/", _promptStack.Reverse()) + _promptEnd;

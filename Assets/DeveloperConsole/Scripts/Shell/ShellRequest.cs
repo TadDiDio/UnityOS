@@ -1,4 +1,5 @@
 using DeveloperConsole.Command;
+using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole.Core.Shell
 {
@@ -7,7 +8,7 @@ namespace DeveloperConsole.Core.Shell
         public ICommand Command;
         public ShellSession Session;
 
-        public bool Windowed;
+        public CommandWindow Window = null;
         public bool NoPrompt; // TODO: Change this for prompt filter to allow some but not all
     }
 }
