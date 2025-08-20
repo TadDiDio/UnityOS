@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 using System.Reflection;
 using System.Collections.Generic;
 using DeveloperConsole.Bindings;
@@ -95,24 +94,6 @@ namespace DeveloperConsole.Core.Kernel
         public void Tick()
         {
             UnityMainThreadDispatcher.Instance.Update();
-        }
-
-        /// <summary>
-        /// Makes the kernel distribute an input event.
-        /// </summary>
-        /// <param name="current"></param>
-        public void OnInput(Event current)
-        {
-            _dependencies.WindowManager.OnInput(current);
-        }
-
-        /// <summary>
-        /// Makes the kernel distribute a draw call.
-        /// </summary>
-        /// <param name="isSceneView">Whether this is the scene or game view.</param>
-        public void OnDraw(bool isSceneView)
-        {
-            _dependencies.WindowManager.OnGUI(isSceneView);
         }
 
         /// <summary>

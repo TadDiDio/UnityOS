@@ -1,6 +1,5 @@
 #if UNITY_EDITOR
 using UnityEditor;
-using UnityEngine;
 
 namespace DeveloperConsole
 {
@@ -18,10 +17,8 @@ namespace DeveloperConsole
             _updater = updater;
 
             EditorApplication.update += OnTick;
-            SceneView.beforeSceneGui += OnGUI;
             AssemblyReloadEvents.beforeAssemblyReload += Clear;
         }
-
 
         /// <summary>
         /// Clears the subscriptions to update hooks.
@@ -30,9 +27,7 @@ namespace DeveloperConsole
         {
             _disposed = true;
             EditorApplication.update -= OnTick;
-            SceneView.beforeSceneGui -= OnGUI;
         }
-
 
         private void OnTick()
         {
@@ -41,16 +36,6 @@ namespace DeveloperConsole
             if (_disposed) return;
 
             _updater.Tick();
-        }
-
-
-        private void OnGUI(SceneView sceneView)
-        {
-            if (_disposed) return;
-
-            _updater.Input(Event.current);
-            _updater.Draw(true);
-            sceneView.Repaint();
         }
     }
 }

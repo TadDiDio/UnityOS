@@ -7,7 +7,9 @@ namespace DeveloperConsole.Scripts.Command.Execution
     {
         public IOContext IoContext;
         public bool Windowed;
-        public CommandWindow CommandWindow;
+
+        // TODO WINDOW
+        // public CommandWindow CommandWindow;
 
         // Add more details as needed
     }

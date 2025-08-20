@@ -29,7 +29,8 @@ namespace DeveloperConsole
             }
         }
 
-        public List<string> GetBuffer() => _history.ToList();
+        public List<string> CloneBuffer() => _history.ToList();
+        public List<string> GetBuffer() => _history;
 
         public void PushHistory()
         {

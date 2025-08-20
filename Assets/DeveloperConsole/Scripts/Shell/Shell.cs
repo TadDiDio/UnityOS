@@ -44,10 +44,11 @@ namespace DeveloperConsole.Core.Shell
         {
             try
             {
-                if (request.Window != null)
+                // TODO WINDOW
+                // if (request.Window != null)
                 {
-                    _ = RunWindowedCommand(request, ioContext);
-                    return Status.Success;
+                    // _ = RunWindowedCommand(request, ioContext);
+                    // return Status.Success;
                 }
 
                 return await _executor.ExecuteCommand(request, ioContext, userToken);
@@ -66,10 +67,11 @@ namespace DeveloperConsole.Core.Shell
             }
         }
 
-        private async Task RunWindowedCommand(ShellRequest request, IOContext ioContext)
-        {
-            _windowManager.RegisterWindow(request.Window);
-            await _executor.ExecuteCommand(request, ioContext, request.Window.GetPromptCancellationToken());
-        }
+        // TODO WINDOW
+        // private async Task RunWindowedCommand(ShellRequest request, IOContext ioContext)
+        // {
+        //     _windowManager.RegisterWindow(request.Window);
+        //     await _executor.ExecuteCommand(request, ioContext, request.Window.GetPromptCancellationToken());
+        // }
     }
 }

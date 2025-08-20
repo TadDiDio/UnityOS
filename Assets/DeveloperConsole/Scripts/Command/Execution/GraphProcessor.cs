@@ -35,11 +35,11 @@ namespace DeveloperConsole.Core.Shell
 
                 if (windowed)
                 {
-                    var windowConfig = WindowConfigFactory.CommandWindow();
-                    var commandWindow = new CommandWindow(windowConfig);
-                    node.ExecutionContext.IoContext = IOContext.CreateFromClient(commandWindow, _session);
-                    node.ExecutionContext.IoContext.Prompt.InitializePromptHeader(ShellSession.PromptEnd);
-                    node.ExecutionContext.CommandWindow = commandWindow;
+                    // TODO WINDOW
+                    // var commandWindow = new CommandWindow();
+                    // node.ExecutionContext.IoContext = IOContext.CreateFromClient(commandWindow, _session);
+                    // node.ExecutionContext.IoContext.Prompt.InitializePromptHeader(ShellSession.PromptEnd);
+                    // node.ExecutionContext.CommandWindow = commandWindow;
                 }
                 else node.ExecutionContext.IoContext = _defaultIOContext.Clone();
             }
@@ -130,7 +130,8 @@ namespace DeveloperConsole.Core.Shell
             {
                 Command = node.Command,
                 Session = _session,
-                Window = node.ExecutionContext.CommandWindow
+                // TODO WINDOW
+                // Window = node.ExecutionContext.CommandWindow
             };
 
             return await _shell.HandleCommandRequestAsync(request, node.ExecutionContext.IoContext, token);

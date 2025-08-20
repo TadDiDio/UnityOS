@@ -36,7 +36,7 @@ namespace DeveloperConsole.Persistence
 
             try
             {
-                var container = new PersistentHistoryContainer(historyBuffer.GetBuffer());
+                var container = new PersistentHistoryContainer(historyBuffer.CloneBuffer());
                 var json = JsonUtility.ToJson(container, prettyPrint: true);
                 File.WriteAllText(path, json);
             }

@@ -343,23 +343,9 @@ namespace DeveloperConsole
         /// </summary>
         public static class Windowing
         {
-            /// <summary>
-            /// Registers a window.
-            /// </summary>
-            /// <param name="window">The window.</param>
-            public static void RegisterWindow(IWindow window)
+            public static void AddWindow(WindowModel model, IEnumerable<IWindowBehavior> behaviors)
             {
-                WithService<IWindowManager>(m => m.RegisterWindow(window));
-            }
-
-
-            /// <summary>
-            /// Unregisters a window.
-            /// </summary>
-            /// <param name="window">The window.</param>
-            public static void UnregisterWindow(IWindow window)
-            {
-                WithService<IWindowManager>(m => m.UnregisterWindow(window));
+                WithService<IWindowManager>(m => m.AddWindow(model, behaviors));
             }
         }
     }

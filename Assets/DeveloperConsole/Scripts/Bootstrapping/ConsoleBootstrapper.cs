@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using UnityEngine;
 using DeveloperConsole.Core.Kernel;
+using UnityEngine.UIElements;
 
 namespace DeveloperConsole
 {
@@ -20,7 +21,6 @@ namespace DeveloperConsole
     public static class ConsoleBootstrapper
     {
         public static event Action SystemInitialized;
-        private static DependenciesFactory _configurationOverride;
 
         #region AUTO BOOTSTRAP
         // Handles bootstrapping while in the editor but not play mode.
@@ -46,13 +46,14 @@ namespace DeveloperConsole
         {
             Kill();
 
+            UIDocument uiDocument = null;
             KernelUpdater updater = new KernelUpdater();
-
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
             if (Application.isPlaying)
             {
                 PlayModeTickerSpawner.Initialize(() => new PlayModeTickerSpawner(updater));
+                uiDocument = PlayModeTickerSpawner.Instance.GetUIDocument();
             }
 #endif
 #if UNITY_EDITOR
@@ -60,8 +61,8 @@ namespace DeveloperConsole
 #endif
 
             UnityMainThreadDispatcher.Initialize(() => new UnityMainThreadDispatcher());
-            
-            CommonBootstrap();
+
+            CommonBootstrap(uiDocument);
             InstallComponents();
 
             SystemInitialized?.Invoke();
@@ -73,8 +74,6 @@ namespace DeveloperConsole
         /// </summary>
         public static void Kill()
         {
-            _configurationOverride = null;
-
             // Unload runners
             if (PlayModeTickerSpawner.IsInitialized)
             {
@@ -99,24 +98,10 @@ namespace DeveloperConsole
         }
 
 
-        /// <summary>
-        /// Sets an override configuration to inject custom dependencies.
-        /// </summary>
-        /// <param name="config"></param>
-        public static void SetConfigurationOverride(DependenciesFactory config)
+        private static void CommonBootstrap(UIDocument uiDocument)
         {
-            _configurationOverride = config;
-        }
-
-        private static void CommonBootstrap()
-        {
-            DependenciesFactory config = GetConfiguration();
+            DependenciesFactory config = new DependenciesFactory(uiDocument);
             Kernel.Initialize(() => new Kernel(config));
-        }
-
-        private static DependenciesFactory GetConfiguration()
-        {
-            return _configurationOverride ?? new DependenciesFactory();
         }
 
         private static IEnumerable<Type> SafeGetTypes(Assembly assembly)

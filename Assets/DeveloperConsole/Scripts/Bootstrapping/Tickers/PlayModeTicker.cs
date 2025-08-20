@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace DeveloperConsole
 {
@@ -16,11 +17,5 @@ namespace DeveloperConsole
         public void SetUpdater(KernelUpdater updater) => _updater = updater;
 
         private void Update() => _updater.Tick();
-
-        private void OnGUI()
-        {
-            _updater.Input(Event.current);
-            _updater.Draw(false);
-        }
     }
 }

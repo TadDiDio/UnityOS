@@ -1,10 +1,10 @@
 using System;
-using DeveloperConsole.Parsing.Graph;
+using System.Collections.Generic;
 using UnityEngine;
-using DeveloperConsole.Windowing;
 using DeveloperConsole.Parsing.Rules;
 using DeveloperConsole.Parsing.TypeAdapting;
 using DeveloperConsole.Parsing.TypeAdapting.Types;
+using DeveloperConsole.Windowing;
 
 namespace DeveloperConsole
 {
@@ -46,17 +46,12 @@ namespace DeveloperConsole
     {
         public void Install()
         {
-            var config = new WindowConfigFactory()
-                .Resizeable()
-                .WithMinSize(400, 300)
-                .WithHeaderHeight(30)
-                .FullScreen()
-                .WithPadding(12)
-                .WithName("Terminal")
-                .Build();
-            var terminal = new TerminalClient(config);
+            // TODO: Make builder for all this
+            var model = new WindowModel();
+            var terminal = new TerminalClientModel();
+            model.AddFeature(terminal);
             ConsoleAPI.Shell.CreateShellSession(terminal);
-            ConsoleAPI.Windowing.RegisterWindow(terminal);
+            ConsoleAPI.Windowing.AddWindow(model, new List<IWindowBehavior>{ new DraggableBehavior(), new TerminalClientBehavior()});
         }
     }
 }

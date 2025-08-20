@@ -8,7 +8,8 @@ namespace DeveloperConsole.Core.Shell
         public ICommand Command;
         public ShellSession Session;
 
-        public CommandWindow Window = null;
+        // TODO WINDOW
+        // public CommandWindow Window = null;
         public bool NoPrompt; // TODO: Change this for prompt filter to allow some but not all
     }
 }

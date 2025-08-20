@@ -6,6 +6,7 @@ using DeveloperConsole.Parsing;
 using DeveloperConsole.Windowing;
 using DeveloperConsole.Parsing.Tokenizing;
 using DeveloperConsole.Parsing.TypeAdapting;
+using UnityEngine.UIElements;
 
 namespace DeveloperConsole
 {
@@ -55,6 +56,12 @@ namespace DeveloperConsole
     /// </summary>
     public class DependenciesFactory
     {
+        private UIDocument _uiDocument;
+        public DependenciesFactory(UIDocument uiDocument)
+        {
+            _uiDocument = uiDocument;
+        }
+
         /// <summary>
         /// Creates a shell.
         /// </summary>
@@ -104,7 +111,7 @@ namespace DeveloperConsole
                 CommandRegistry = CommandRegistryFactory?.Invoke() ?? new CommandRegistry(new ReflectionCommandDiscovery()),
                 TypeAdapterRegistry = TypeAdapterRegistryFactory?.Invoke() ?? new TypeAdapterRegistry(),
                 ObjectBindingsManager = ObjectBindingsFactory?.Invoke() ?? new ObjectBindingsManager(),
-                WindowManager = WindowManagerFactory?.Invoke() ?? new WindowManager()
+                WindowManager = WindowManagerFactory?.Invoke() ?? new WindowManager(_uiDocument)
             };
 
             // Compose complex components

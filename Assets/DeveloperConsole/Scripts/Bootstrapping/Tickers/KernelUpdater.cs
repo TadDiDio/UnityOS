@@ -2,7 +2,6 @@
 using UnityEditor;
 #endif
 
-using UnityEngine;
 using DeveloperConsole.Core.Kernel;
 
 namespace DeveloperConsole
@@ -34,54 +33,6 @@ namespace DeveloperConsole
             SceneView.RepaintAll();
 #endif
             Kernel.Instance.Tick();
-        }
-
-
-        /// <summary>
-        /// Ticks the kernal input hook.
-        /// </summary>
-        /// <param name="current">The current event.</param>
-        public void Input(Event current)
-        {
-            if (_disabled) return;
-
-            // TODO: Allow other event types through as needed
-            if (current.type is not (EventType.KeyDown or EventType.Used)) return;
-
-            if (!Kernel.IsInitialized)
-            {
-                Log.Error("Kernel not initialized, yet edit mode ticker is. This should not happen. Console will not initialize.");
-                _disabled = true;
-                return;
-            }
-
-            Kernel.Instance.OnInput(current);
-        }
-
-
-        /// <summary>
-        /// Ticks the kernel draw hook.
-        /// </summary>
-        /// <param name="sceneView">The SceneView.</param>
-        public void Draw(bool sceneView)
-        {
-            if (_disabled) return;
-
-            if (!Kernel.IsInitialized)
-            {
-                Log.Error("Kernel not initialized, yet edit mode ticker is. This should not happen. Console will not initialize.");
-                _disabled = true;
-                return;
-            }
-
-#if UNITY_EDITOR
-            Handles.BeginGUI();
-#endif
-            Kernel.Instance.OnDraw(sceneView);
-
-#if UNITY_EDITOR
-            Handles.EndGUI();
-#endif
         }
     }
 }
