@@ -11,6 +11,7 @@ With this pacakge you can author and execute arbitray commands via a bash like t
 - Write type adapters to specify how strings convert on the CLI to custom types.
 - If you want, you can write your own parser rules and add them to the system seamlessly. The console ships with a functionally complete set.
 - Automatic build culling. The console is available in developer builds but automatically strips itself during release builds
+- Pipe data between commands and run them in windows that stay open during playmode when the terminal is closed. Asynchronous commands are fully supported by the system and all reading and writing is automatically syncrhonized on the main thread to avoid race conditions on Unity objects.
  
 # Installation
 Simply install the package using the Import Package menu in Unity. There is no additional set up and pressing the '/' key will bring up the terminal for use. Type reg for a list of all commands and 'help <command> -v' for detailed information on a specific command
