@@ -12,7 +12,7 @@ namespace DeveloperConsole
         protected override async Task<CommandOutput> Execute(AsyncCommandContext context, CancellationToken cancellationToken)
         {
             await Task.Delay((int)(1000 * seconds), cancellationToken);
-            return new();
+            return new CommandOutput();
         }
     }
 }
